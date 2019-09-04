@@ -5,6 +5,16 @@
 # Session Data files
 .RData
 
+# Docs 
+.pdf
+.doc
+.docx
+.ppt
+
+# Directoris a iognorar
+/docs
+/dades
+
 # Example code in package build process
 *-Ex.R
 
