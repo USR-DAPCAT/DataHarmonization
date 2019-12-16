@@ -1,66 +1,21 @@
-#--------------------------------#
-############
-#04.12.2019#
-############
-#--------------------------------#
-citation("Epi")
-citation("haven")
-citation("dplyr")
-#--------------------------------#
-library(Epi)
-#library(haven)
-library(dplyr)
-library(foreign)
-#install.packages("broom")
-library(broom)
-library(popEpi)
-# Llibreries necessaries 
-library("data.table")
-library("SNPassoc")
-library("htmlwidgets")
-library("compareGroups")
-library("foreign")
-library("lattice")
-library("Hmisc")
-# library("ggplot2")
-library("pander")
-library("readxl")
-library("knitr")
-library("data.table")
-library("MatchIt")
-library("survival")
-library("dplyr")
-# library("survminer")
-library("purrr")
-library("stringr")
-library("tidyr")
-library("devtools")
-library(lubridate)
-#install.packages("here")
-library("here")
-#install.packages("data.table")
-library("data.table")
-#install.packages("remotes")
-#remotes::install_github("tagteam/heaven")
-#install.packages("digest")
-library("digest")
-#install.packages("rlang")
-library("rlang")
+# Lectura de fitxers --------------------
 
 #--------------------------------#
-#N O  F U N C I O N A     !!!
-#--------------------------------#
-#--------------------------------#
-#install.packages("githubinstall")
-#--------------------------------#
-library("githubinstall")
+
+
+
 #install.packages("remotes")
 #remotes::install_github("tagteam/heaven")
 #--------------------------------#
 #library(heaven)
 #heaven::riskSetMatch
-#--------------------------------#
-#unlink("C:/Program Files/R/R-3.6.1/library/00LOCK-heaven, recursive = TRUE")
+
+# Per installar llibreria heaven::riskSetMatch
+
+library("githubinstall")
+githubinstall("heaven",ref="964bbbd",force=T) # "2018.8.9"
+
+
 
 
 #--------------------------------##--------------------------------#
@@ -97,16 +52,6 @@ memory.limit()
 link_source<-paste0("https://github.com/jrealgatius/Stat_codis/blob/master/funcions_propies.R","?raw=T")
 devtools::source_url(link_source)
 #--------------------------------------------------------------------------#
-####    DIRECTORI DE TREBALL              
-#### setwd en directori de treball 
-
-
-#--------------------------------#
-#setwd("R:/LRWE_Proj26/sl617/dataset/analysis") 
-#setwd("R:/LRWE_Proj26/sl617/dataset/analysis") 
-
-#setwd("C:/Users/38122893W/Desktop/DataHarmonization")
-
 #--------------------------------#
 #testDAPCRMM_entregable_cmbdh_diagnostics_padris_20190930_093320
 #--------------------------------#
@@ -115,169 +60,58 @@ devtools::source_url(link_source)
 
 # Llegir tots els fitxers RDS dins d'un directori i generar una mostra aleatoria i salvar-lo en un directori "mostra"
 
-# 1 Llegir fitxers sequencialment d'un directori
-# 2 posarlos en una llista 
-# 3 Afafar la mostra i filtrar-los 
-# 4 Salvar-los en un directori
 
-
-# mirara!!!
-
-
-#generar_mostra_fitxers<-function(directori="dades/SIDIAP",
-#                                 fitxer_poblacio="METPLUS_entregable_poblacio_20181126_190346.rds",
-#                                 mida_mostra=10000,
-#                                 prefix="test",
-#                                 directori_test="mostra_test") {
-#  
-#   #directori="dades/SIDIAP"
-#   #fitxer_poblacio="testDAPCRMM_entregable_cmbdh_diagnostics_padris_20190930_093320.rds"
-#   #mida_mostra=10069
-#   #prefix="test"
-#   #directori_test="mostra_test"
-#   
-#   
-#  # Funció interna per llegir fitxer txt o rds
-#  LLEGIR.fitxer<-function(n,directori,fitxer) {
-#    
-#    if (stringr::str_detect(fitxer,"\\.txt$")){
-#      dt<-data.table::fread(directori %>% here::here(fitxer)) %>% as_tibble() %>% head(n)}
-#    
-#    if (stringr::str_detect(fitxer,"\\.rds$")){
-#      dt<-readRDS(directori %>% here::here(fitxer)) %>% as_tibble() %>% head(n)}
-#    dt}
-#   
-#   
-#  #k<-LLEGIR.fitxer(n=10069, directori="dades/SIDIAP",fitxer="testDAPCRMM_entregable_cmbdh_diagnostics_padris_20190930_093320.rds")
-#   
-#   
-#   # Llista de fitxers .rds | .txt
-#   llista_de_fitxers<-list.files(directori) [list.files(directori) %>% stringr::str_detect("\\.rds$") |
-#                                               list.files(directori) %>% stringr::str_detect("\\.txt$")] 
-#   
-#   # Genero el directori mostra
-#   directori_mostra<-paste0(directori,"/",directori_test)
-#   if (!file.exists(directori_mostra)) {
-#     # Crear directori si no existeix 
-#     dir.create(file.path(directori,directori_test), showWarnings = FALSE)
-#   }
-#   
-#   
-#   
-#   
-#   # Si NO existeix algun fitxer GENERAR LOS / Si EXISTEIX algun  saltar 
-#   if (!file.exists(paste0(directori_mostra,"/",llista_de_fitxers)) %>% any()) {
-#     
-#     # Llegir ids mostra de fitxer poblacio
-#     dt_ids<-LLEGIR.fitxer(mida_mostra,directori,fitxer_poblacio) %>% select(idp)
-#     
-#     # Posar noms per que els guardi
-#     llista_de_fitxers<-setNames(llista_de_fitxers,llista_de_fitxers)
-#     # Llegir fitxers complerts
-#     llista_rds<-llista_de_fitxers %>% purrr::map(~LLEGIR.fitxer(n=Inf,directori = directori,fitxer=.x))
-#     
-#     # Filtrar via semijoint de tota la llista
-#     llista_rds_redux<-llista_rds %>% purrr::map(~semi_join(.x,dt_ids))
-#     
-#     # Ara salvar-los en un surbdirectori amb el nom triat 
-#     
-#     # Genero noms de fitxers dins directori test
-#     llista_de_fitxers<-str_replace_all(llista_de_fitxers, "\\.txt$", ".rds")
-#     llista_de_noms_fitxers_nous<-paste0(directori_mostra,"/",prefix,llista_de_fitxers)
-#     
-#     
-#     # Salvo en format rds tots els fitxers en directori
-#     # saveRDS(llista_rds_redux[[1]],file=llista_de_fitxers_nous[1])
-#     purrr::map2(llista_rds_redux,llista_de_noms_fitxers_nous,~saveRDS(.x,file=.y))
-#     
-#   }
-#   
-#   if (file.exists(paste0(directori_mostra,"/",llista_de_fitxers)) %>% any()) {
-#     print ("Algun d'aquests fitxers ja existeix")
-#   }
-#   
-#   
-# }
-###############################################################
-
-###############################################################
-# generar_mostra_fitxers(
-#  directori="dades/SIDIAP",
-#  fitxer_poblacio="testDAPCRMM_entregable_cmbdh_diagnostics_padris_20190930_093320.rds",
-#  mida_mostra=1000,
-#  prefix="test",
-#  directori_test="mostra_test"
-# )
-###############################################################
-
-
-###############################################################
-#generar_mostra:
-###############################################################
-#[[C:\Users\38122893W\Desktop\DataHarmonization\dades\SIDIAP]]#
-###############################################################
-#testtestDAPCRMM_entregable_cmbdh_diagnostics_padris_20190930_093320.rds
-#testtestDAPCRMM_entregable_diagnostics_20190926_103409.rds
-#testtestDAPCRMM_entregable_farmacs_facturats_20190926_103409.rds
-#testtestDAPCRMM_entregable_farmacs_prescrits_20190926_103409.rds
-#testtestDAPCRMM_entregable_poblacio_20190926_103409.rds
-#testtestDAPCRMM_entregable_tabaquisme_20190926_103409.rds
-#testtestDAPCRMM_entregable_variables_analitiques_20190926_103409.rds
-#testtestDAPCRMM_entregable_variables_cliniques_20190926_103409.rds
-#testtestDAPCRMM_entregable_variables_geo_sanitaries_20190926_103409.rds
-#testtestDAPCRMM_entregable_variables_socioeconomiques_20190926_103409.rds
-###############################################################
 #i        [cmbdh_diagnostics] mult
-LLEGIR.cmbdh_diagnostics_padris<-readRDS("dades/SIDIAP/dades" %>% here::here("testDAPCRMM_entregable_cmbdh_diagnostics_padris_20190930_093320.rds")) %>% as_tibble()
+LLEGIR.cmbdh_diagnostics_padris<-readRDS("dades/SIDIAP/test" %>% here::here("testDAPCRMM_entregable_cmbdh_diagnostics_padris_20190930_093320.rds")) %>% as_tibble()
 variable.names(LLEGIR.cmbdh_diagnostics_padris)
 #[1] "idp"    "cod"    "dat"    "dx_pos" "dalta"  "calta"  "agr" 
 #----------------------------------------------#
 #ii       [dianostics]  mult
-LLEGIR.diagnostics<-readRDS("dades/SIDIAP/dades" %>% here::here("testDAPCRMM_entregable_diagnostics_20190926_103409.rds")) %>% as_tibble()
+LLEGIR.diagnostics<-readRDS("dades/SIDIAP/test" %>% here::here("testDAPCRMM_entregable_diagnostics_20190926_103409.rds")) %>% as_tibble()
 variable.names(LLEGIR.diagnostics)
 #[1] "idp"    "cod"    "dat"    "dbaixa" "agr"   
 #----------------------------------------------#
 
 #iii      [farmacs_facturats] mult
-LLEGIR.farmacs_facturat<-readRDS("dades/SIDIAP/dades" %>% here::here("testDAPCRMM_entregable_farmacs_facturats_20190926_103409.rds")) %>% as_tibble()
+LLEGIR.farmacs_facturat<-readRDS("dades/SIDIAP/test" %>% here::here("testDAPCRMM_entregable_farmacs_facturats_20190926_103409.rds")) %>% as_tibble()
 variable.names(LLEGIR.farmacs_facturat)
 #[1]"idp" "cod" "dat" "agr" "env"
 #----------------------------------------------#
 #iv       [farmacs_prescrits] mult
-LLEGIR.farmacs_prescrits<-readRDS("dades/SIDIAP/dades" %>% here::here("testDAPCRMM_entregable_farmacs_prescrits_20190926_103409.rds")) %>% as_tibble()
+LLEGIR.farmacs_prescrits<-readRDS("dades/SIDIAP/test" %>% here::here("testDAPCRMM_entregable_farmacs_prescrits_20190926_103409.rds")) %>% as_tibble()
 variable.names(LLEGIR.farmacs_prescrits)
 #[1] "idp"    "cod"    "dat"    "dbaixa" "ics"    "ap"     "agr"
 #----------------------------------------------#
 
 #v        [població] unic
-LLEGIR.poblacio<-readRDS("dades/SIDIAP/dades" %>% here::here("testDAPCRMM_entregable_poblacio_20190926_103409.rds")) %>% as_tibble()
+LLEGIR.poblacio<-readRDS("dades/SIDIAP/test" %>% here::here("testDAPCRMM_entregable_poblacio_20190926_103409.rds")) %>% as_tibble()
 variable.names(LLEGIR.poblacio)
 #[1]  "idp"      "sexe"     "dnaix"    "entrada"  "sortida"  "situacio"
 #----------------------------------------------#
 #vi       [tabaquisme] unic
-LLEGIR.tabaquisme<-readRDS("dades/SIDIAP/dades" %>% here::here("testDAPCRMM_entregable_tabaquisme_20190926_103409.rds")) %>% as_tibble()
+LLEGIR.tabaquisme<-readRDS("dades/SIDIAP/test" %>% here::here("testDAPCRMM_entregable_tabaquisme_20190926_103409.rds")) %>% as_tibble()
 variable.names(LLEGIR.tabaquisme)
 #[1] "idp"    "val"    "dat"    "dbaixa"
 #----------------------------------------------#
 
 #vii      [analitiques] mult
-LLEGIR.variables_analitiques<-readRDS("dades/SIDIAP/dades" %>% here::here("testDAPCRMM_entregable_variables_analitiques_20190926_103409.rds")) %>% as_tibble()
+LLEGIR.variables_analitiques<-readRDS("dades/SIDIAP/test" %>% here::here("testDAPCRMM_entregable_variables_analitiques_20190926_103409.rds")) %>% as_tibble()
 variable.names(LLEGIR.variables_analitiques)
 #[1] "idp" "cod" "dat" "val" "agr"
 #----------------------------------------------#
 #viii     [variables_cliíniques] mult
-LLEGIR.variables_cliniques<-readRDS("dades/SIDIAP/dades" %>% here::here("testDAPCRMM_entregable_variables_cliniques_20190926_103409.rds")) %>% as_tibble()
+LLEGIR.variables_cliniques<-readRDS("dades/SIDIAP/test" %>% here::here("testDAPCRMM_entregable_variables_cliniques_20190926_103409.rds")) %>% as_tibble()
 variable.names(LLEGIR.variables_cliniques)
 #[1] "idp" "cod" "dat" "val" "agr"
 #----------------------------------------------#
 
 #ix       [variables geo_sanitàries] unic
-LLEGIR.variables_geo_sanitaries<-readRDS("dades/SIDIAP/dades" %>% here::here("testDAPCRMM_entregable_variables_geo_sanitaries_20190926_103409.rds")) %>% as_tibble()
+LLEGIR.variables_geo_sanitaries<-readRDS("dades/SIDIAP/test" %>% here::here("testDAPCRMM_entregable_variables_geo_sanitaries_20190926_103409.rds")) %>% as_tibble()
 variable.names(LLEGIR.variables_geo_sanitaries)
 #[1] "idp"     "idup"    "idabs"   "idrs"    "iddap"   "idambit"  
 #----------------------------------------------#  
 #x        [variables socioeconòmiques] unic
-LLEGIR.variables_socioeconomiques<-readRDS("dades/SIDIAP/dades" %>% here::here("testDAPCRMM_entregable_variables_socioeconomiques_20190926_103409.rds")) %>% as_tibble()
+LLEGIR.variables_socioeconomiques<-readRDS("dades/SIDIAP/test" %>% here::here("testDAPCRMM_entregable_variables_socioeconomiques_20190926_103409.rds")) %>% as_tibble()
 variable.names(LLEGIR.variables_socioeconomiques)
 #[1] "idp"       "qmedea"    "ruralitat"
 
@@ -337,22 +171,23 @@ variable.names(LLEGIR.variables_socioeconomiques)
 
 
 
-
-
-
-
-
-
 ##############################################################################################################################
 # Generar data index -----------
 dt_diagnostics<-LLEGIR.cmbdh_diagnostics_padris %>% 
   transmute(idp,cod=as.character(cod),dat,agr) %>% 
   bind_rows(select(LLEGIR.diagnostics,idp,cod,dat,agr))
 
+dt_diagnostics_global<-LLEGIR.cmbdh_diagnostics_padris %>% 
+  transmute(idp,cod=as.character(cod),dat,agr) %>% 
+  bind_rows(select(LLEGIR.diagnostics,idp,cod,dat,agr))
+
+
 #data minima[]#
 dt_cataleg<-read_excel("Spain_codes.xls") %>% select(cod,agr,exposed)
 
 dt_diagnostics<-dt_diagnostics %>% left_join(dt_cataleg,by="cod") %>% filter(exposed=="exposed") 
+
+
 #-----#
 DINDEX<-dt_diagnostics%>% group_by(idp)%>%summarise(data_index=min(dat,na.rm = TRUE))%>%ungroup()
 DINDEX
@@ -360,24 +195,171 @@ DINDEX
 #-----------------------------------------------------------------------------------------------------------------------#
 #[ Crearé una base de dades dels exposat( TOTS ELS DELS DINDEX!!), amb ANY DE NAIXAMENT+SEXE]
 #[[població]] 
-C_EXPOSATS<-DINDEX%>%left_join(LLEGIR.poblacio,by="idp")%>%mutate(Edat=as.numeric(ymd(data_index)-ymd(dnaix))/365.25 )
-C_EXPOSATS<-C_EXPOSATS%>%filter(sortida<=20181231) #Excluits finalitazar després de (31/12/2018)
+# C_EXPOSATS<-DINDEX%>%left_join(LLEGIR.poblacio,by="idp")%>%mutate(Edat=as.numeric(lubridate::ymd(data_index)-lubridate::ymd(dnaix))/365.25 )
+C_EXPOSATS<-DINDEX%>%left_join(LLEGIR.poblacio,by="idp")
+C_EXPOSATS<-C_EXPOSATS%>%filter(entrada<=20181231) #Excluits entrada després de (31/12/2018)
 variable.names(C_EXPOSATS)
 #[1] "idp"        "data_index" "sexe"       "dnaix"      "entrada"    "sortida"    "situacio"   "Edat"  
 #-----------------------------------------------------------------------------------------------------------------------#
 #[ Crearé una altre base de dades , que seran els No exposats,tots menys els exposats!!]
 C_NO_EXPOSATS<-LLEGIR.poblacio %>% anti_join(C_EXPOSATS,by="idp")
-C_NO_EXPOSATS<-C_NO_EXPOSATS%>%filter(sortida<=20181231) #Excluits finalitazar després de (31/12/2018)
+C_NO_EXPOSATS<-C_NO_EXPOSATS%>%filter(entrada<=20181231) #Excluits entrada després de (31/12/2018)
 variable.names(C_NO_EXPOSATS)
 #[1]  "idp"      "sexe"     "dnaix"    "entrada"  "sortida"  "situacio"
 #-----------------------------------------------------------------------------------------------------------------------#
-##############################################################################################################################
+
+
+# Fusionar base de dades en dues : 
+
+dt_matching<-mutate(C_EXPOSATS,grup=1) %>% bind_rows(mutate(C_NO_EXPOSATS,grup=0))
+
+# Preparar matching i setriskmatching #
+dt_matching<-dt_matching %>% transmute(idp,dnaix,sexe,grup,dtevent=data_index,sortida)
+
+#   5.2.1 Generar data de sortida (Data event / Data de censura)     -----------------
+## dtindex_case 
+dt_matching<-dt_matching %>% mutate(dtindex_case=ifelse(grup==1, as.Date(as.character(dtevent),format="%Y%m%d"),NA)) 
+
+## dtindex_control
+dt_matching<-dt_matching %>% mutate (dtindex_control=as.Date(as.character(sortida),format="%Y%m%d")%>% as.numeric())
+
+## Generar any de naixament i grups cada 10 
+dt_matching<-dt_matching %>% mutate (
+  any_naix=lubridate::year(lubridate::ymd(dnaix))) 
+
+
+#### Parametres d'aparellament
+llistaPS=c("sexe","any_naix")
+num_controls<-10
+llavor<-125
+set.seed(llavor)
+
+# 5.4.1. Aplicar algoritme   -----------
+dades_match<-heaven::riskSetMatch(ptid="idp"                                # Unique patient identifier
+                                  ,event="grup"                # 0=Control, 1=case
+                                  ,terms=llistaPS   # terms c("n1","n2",...) - list of vairables to match by
+                                  ,dat=dt_matching             # dataset with all variables
+                                  ,Ncontrols=num_controls       # number of controls to provide
+                                  ,oldevent="oldevent"          # To distinguish cases used as controls
+                                  ,caseid="caseid"              # variable to group cases and controls (case-ptid)
+                                  ,reuseCases=F                 # T og F or NULL - can a case be a control prior to being a case?
+                                  ,reuseControls=F              # T or F or NULL - can controls be reused?
+                                  ,caseIndex="dtindex_case"       # Integer or date, date where controls must be prior
+                                  ,controlIndex="dtindex_control" # controlIndex - Index date for controls
+                                  ,NoIndex=FALSE                # If T ignore index
+                                  ,cores=1                      # Number of cores to use, default 1
+                                  ,dateterms=NULL               # character list of date variables
+)
+
+
+# Report matchreport -------------
+heaven::matchReport(dades_match, id="idp",case="grup",caseid="caseid")
+
+# Número de controls per conjunt a risk  ------------
+dades_match[,numControls:=.N,by=caseid]
+dades_match<- dades_match %>% mutate(numControls=numControls-1)
+
+
+# Verificació d'aparellament per edad + sexe 
+descrTable(grup~dnaix+any_naix+sexe,data=dt_matching)
+descrTable(grup~dnaix+any_naix+sexe,data=dades_match)
+
+
+# Selecciono
+dt_index_match<-dades_match %>% transmute(idp,caseid,grup,dnaix,sexe,dtindex=dtindex_case,numControls) %>% as_tibble()
+
+
+# Agregar problemes de salut utilitzant com a referencia la data index nova
+
+bd_index<-dt_index_match %>% transmute(idp,dtindex=lubridate::as_date(dtindex))
+
+dt_agregada_agr<-agregar_problemes(select(dt_diagnostics_global,idp,cod,dat),bd.dindex = bd_index,dt.agregadors=select(dt_cataleg,cod,agr))
+
+
+# Filtrar per exclusions (Eliminar prevalents i cancer)
+dt_index_match<-dt_index_match %>% left_join(select(dt_agregada_agr,-dtindex),by="idp") %>% 
+  filter(is.na(DG.prevalent) & is.na(DG.cancer))
+
+
+# Selecciona 5 random 1:5 
+
+table(dt_index_match$numControls,dt_index_match$grup)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ##############################################################################################################################
 # (demà fer-ho!)
 #[ DESPRÉS FARÉ UN MATCHED COHORT [ 1 Exposició: 10 No Exposició], ANY DE NAIXAMENT (+/- 1 ANY), SEXE]
 ##############################################################################################################################
+
 
 
 ##############################################################################################################################
