@@ -392,7 +392,8 @@ riskSetMatch <- function(ptid     # Unique patient identifier
 #--------------------------------------------------------------------------#
 #library("heaven")
 #--------------------------------------------------------------------------#
-#githubinstall("heaven",ref="964bbbd",force=T)
+library("githubinstall")
+githubinstall("heaven",ref="964bbbd",force=T)
 #--------------------------------------------------------------------------#
 # 1. Lectura de fitxers 
 #memory.size(max=160685)

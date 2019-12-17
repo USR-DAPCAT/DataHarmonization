@@ -2,7 +2,7 @@
 
 #--------------------------------#
 
-
+##17.12.2019
 
 #install.packages("remotes")
 #remotes::install_github("tagteam/heaven")
@@ -12,8 +12,10 @@
 
 # Per installar llibreria heaven::riskSetMatch
 
-library("githubinstall")
-githubinstall("heaven",ref="964bbbd",force=T) # "2018.8.9"
+#noooo
+
+#library("githubinstall")
+#githubinstall("heaven",ref="964bbbd",force=T) # "2018.8.9"
 
 
 
@@ -109,6 +111,9 @@ variable.names(LLEGIR.variables_cliniques)
 LLEGIR.variables_geo_sanitaries<-readRDS("dades/SIDIAP/test" %>% here::here("testDAPCRMM_entregable_variables_geo_sanitaries_20190926_103409.rds")) %>% as_tibble()
 variable.names(LLEGIR.variables_geo_sanitaries)
 #[1] "idp"     "idup"    "idabs"   "idrs"    "iddap"   "idambit"  
+
+
+
 #----------------------------------------------#  
 #x        [variables socioeconòmiques] unic
 LLEGIR.variables_socioeconomiques<-readRDS("dades/SIDIAP/test" %>% here::here("testDAPCRMM_entregable_variables_socioeconomiques_20190926_103409.rds")) %>% as_tibble()
@@ -208,13 +213,12 @@ variable.names(C_NO_EXPOSATS)
 #[1]  "idp"      "sexe"     "dnaix"    "entrada"  "sortida"  "situacio"
 #-----------------------------------------------------------------------------------------------------------------------#
 
-
 # Fusionar base de dades en dues : 
 
 dt_matching<-mutate(C_EXPOSATS,grup=1) %>% bind_rows(mutate(C_NO_EXPOSATS,grup=0))
 
 # Preparar matching i setriskmatching #
-dt_matching<-dt_matching %>% transmute(idp,dnaix,sexe,grup,dtevent=data_index,sortida)
+dt_matching<-dt_matching %>% transmute(idp,dnaix,sexe,grup,dtevent=data_index,sortida) %>%left_join(LLEGIR.variables_geo_sanitaries,by="idp")
 
 #   5.2.1 Generar data de sortida (Data event / Data de censura)     -----------------
 ## dtindex_case 
@@ -228,8 +232,14 @@ dt_matching<-dt_matching %>% mutate (
   any_naix=lubridate::year(lubridate::ymd(dnaix))) 
 
 
+
+
+
+
+#birth (+/-1year), sex, and practice, 
+
 #### Parametres d'aparellament
-llistaPS=c("sexe","any_naix")
+llistaPS=c("sexe","any_naix","iddap")
 num_controls<-10
 llavor<-125
 set.seed(llavor)
@@ -260,20 +270,42 @@ dades_match[,numControls:=.N,by=caseid]
 dades_match<- dades_match %>% mutate(numControls=numControls-1)
 
 
+#---------------------------------------------------------------------------------------------#
+dades_match<-dades_match%>%group_by(caseid)%>%mutate(idp2 = row_number())%>%ungroup()
+dades_match<-dades_match%>%mutate(idp2=ifelse(grup==1,0,idp2))
+#---------------------------------------------------------------------------------------------#
+
+
+
 # Verificació d'aparellament per edad + sexe 
 descrTable(grup~dnaix+any_naix+sexe,data=dt_matching)
 descrTable(grup~dnaix+any_naix+sexe,data=dades_match)
+#---------------------------------------------------------------------------------------------#
+# Selecciono  1 cas , max 5 controls!!!
+dt_index_match<-dades_match %>% transmute(idp,idp2, iddap,caseid,grup,dnaix,sexe,dtindex=dtindex_case,numControls) %>%
+  filter(idp2<=5)%>% 
+  as_tibble()
 
 
-# Selecciono
-dt_index_match<-dades_match %>% transmute(idp,caseid,grup,dnaix,sexe,dtindex=dtindex_case,numControls) %>% as_tibble()
+#dades_match[,numControls:=.N,by=caseid]
+#dades_match<- dades_match %>% mutate(numControls=numControls-1)
 
 
+
+
+#---------------------------------------------------------------------------------------------#
+#dt_index_match
+#---------------------------------------------------------------------------------------------#
 # Agregar problemes de salut utilitzant com a referencia la data index nova
+
+#bd_index<-dt_index_match %>% transmute(idp,dtindex=lubridate::as_date(dtindex))
 
 bd_index<-dt_index_match %>% transmute(idp,dtindex=lubridate::as_date(dtindex))
 
-dt_agregada_agr<-agregar_problemes(select(dt_diagnostics_global,idp,cod,dat),bd.dindex = bd_index,dt.agregadors=select(dt_cataleg,cod,agr))
+
+dt_agregada_agr<-agregar_problemes(select(dt_diagnostics_global,idp,cod,dat),
+                                   bd.dindex = bd_index,
+                                   dt.agregadors=select(dt_cataleg,cod,agr))
 
 
 # Filtrar per exclusions (Eliminar prevalents i cancer)
