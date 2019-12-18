@@ -44,6 +44,24 @@
 #--------------------------------------------------------------------------#
 #githubinstall("heaven",ref="964bbbd",force=T)
 #--------------------------------------------------------------------------#
+
+#--------------------------------------------------------------------------#
+library("githubinstall")
+githubinstall("heaven",ref="964bbbd",force=T)
+#--------------------------------------------------------------------------#
+
+# S'ha de treure :[00LOCK-heaven]
+
+#ERROR: failed to lock directory 'C:/Program Files/R/R-3.6.1/library' for modifying
+#Try removing 'C:/Program Files/R/R-3.6.1/library/00LOCK-heaven'
+#Error: Failed to install 'heaven' from GitHub:
+
+
+# 1. Lectura de fitxers 
+#memory.size(max=160685)
+memory.limit()
+#
+
 # 1. Lectura de fitxers 
 #memory.size(max=160685)
 memory.limit()
