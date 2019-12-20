@@ -1,8 +1,16 @@
+#20.12.2019#
+############
+#19.12.2019#
+############
+
+
 # Lectura de fitxers --------------------
 
+
+#--------------------------------#
+##17.12.2019
 #--------------------------------#
 
-##17.12.2019
 
 #install.packages("remotes")
 #remotes::install_github("tagteam/heaven")
@@ -18,6 +26,12 @@
 #githubinstall("heaven",ref="964bbbd",force=T) # "2018.8.9"
 
 
+
+#Ray Puig <raypuig@gmail.com>
+#  dc., 11 de des. 16:27 (fa 7 dies)
+#per a mi
+
+#https://github.com/RayPuig
 
 
 #--------------------------------##--------------------------------#
@@ -46,25 +60,20 @@
 #--------------------------------------------------------------------------#
 
 #--------------------------------------------------------------------------#
-library("githubinstall")
-githubinstall("heaven",ref="964bbbd",force=T)
+#library("githubinstall")
+#githubinstall("heaven",ref="964bbbd",force=T)
 #--------------------------------------------------------------------------#
-
 # S'ha de treure :[00LOCK-heaven]
-
 #ERROR: failed to lock directory 'C:/Program Files/R/R-3.6.1/library' for modifying
 #Try removing 'C:/Program Files/R/R-3.6.1/library/00LOCK-heaven'
 #Error: Failed to install 'heaven' from GitHub:
-
+#--------------------------------------------------------------------------#
 
 # 1. Lectura de fitxers 
 #memory.size(max=160685)
 memory.limit()
 #
 
-# 1. Lectura de fitxers 
-#memory.size(max=160685)
-memory.limit()
 #
 # Directori Font     ==============================  
 
@@ -280,47 +289,26 @@ dades_match<-heaven::riskSetMatch(ptid="idp"                                # Un
 )
 
 
-# Report matchreport -------------
+# Número de controls per conjunt a risk  ------------
 heaven::matchReport(dades_match, id="idp",case="grup",caseid="caseid")
 
 # Número de controls per conjunt a risk  ------------
 dades_match[,numControls:=.N,by=caseid]
 dades_match<- dades_match %>% mutate(numControls=numControls-1)
 
-
-#---------------------------------------------------------------------------------------------#
-dades_match<-dades_match%>%group_by(caseid)%>%mutate(idp2 = row_number())%>%ungroup()
-dades_match<-dades_match%>%mutate(idp2=ifelse(grup==1,0,idp2))
-#---------------------------------------------------------------------------------------------#
-
-
+table(dades_match$numControls,dades_match$grup)
 
 # Verificació d'aparellament per edad + sexe 
 descrTable(grup~dnaix+any_naix+sexe,data=dt_matching)
 descrTable(grup~dnaix+any_naix+sexe,data=dades_match)
 #---------------------------------------------------------------------------------------------#
-# Selecciono  1 cas , max 5 controls!!!
-dt_index_match<-dades_match %>% transmute(idp,idp2, iddap,caseid,grup,dnaix,sexe,dtindex=dtindex_case,numControls) %>%
-  filter(idp2<=5)%>% 
-  as_tibble()
-
-
-#dades_match[,numControls:=.N,by=caseid]
-#dades_match<- dades_match %>% mutate(numControls=numControls-1)
-
-
-
-
-#---------------------------------------------------------------------------------------------#
-#dt_index_match
-#---------------------------------------------------------------------------------------------#
-# Agregar problemes de salut utilitzant com a referencia la data index nova
-
-#bd_index<-dt_index_match %>% transmute(idp,dtindex=lubridate::as_date(dtindex))
-
+---------------------------------------------------------------------------------------------#
+# Preparo dt_index_match per 
+dt_index_match<-dades_match %>% transmute(idp,idp2, iddap,caseid,grup,dnaix,sexe,dtindex=dtindex_case,numControls2)%>%as_tibble()
+#
 bd_index<-dt_index_match %>% transmute(idp,dtindex=lubridate::as_date(dtindex))
 
-
+# Agrego problemes de Salut
 dt_agregada_agr<-agregar_problemes(select(dt_diagnostics_global,idp,cod,dat),
                                    bd.dindex = bd_index,
                                    dt.agregadors=select(dt_cataleg,cod,agr))
@@ -331,13 +319,27 @@ dt_index_match<-dt_index_match %>% left_join(select(dt_agregada_agr,-dtindex),by
   filter(is.na(DG.prevalent) & is.na(DG.cancer))
 
 
-# Selecciona 5 random 1:5 
+# Seleccionar com a molt 5 No exposats ---------
+#---------------------------------------------------------------------------------------------#
+dt_index_match<-dt_index_match%>%group_by(caseid)%>%mutate(idp2 = row_number())%>%ungroup()
+dt_index_match<-dt_index_match%>%mutate(idp2=ifelse(grup==1,0,idp2))
+#---------------------------------------------------------------------------------------------#
+dt_index_match<-dt_index_match%>%filter(idp2<=5)%>%as_tibble()
+#---------------------------------------------------------------------------------------------#
+dt_index_match<-dt_index_match %>% group_by(caseid) %>% mutate(numControls2=n()-1)
 
-table(dt_index_match$numControls,dt_index_match$grup)
+#---------------------------------------------------------------------------------------------#
 
 
+# Eliminem pajaros que notenen controls o casos
+dt_index_match<-dt_index_match %>% filter(numControls2>=1)
 
 
+table(dt_index_match$numControls2,dt_index_match$grup)
+
+# Verificació d'aparellament per edad + sexe 
+descrTable(grup~dnaix+sexe,data=dt_index_match)
+descrTable(grup~dnaix+sexe,data=dt_matching)
 
 
 
