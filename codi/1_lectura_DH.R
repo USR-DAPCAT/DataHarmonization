@@ -1,3 +1,4 @@
+#24.12.2019#
 #20.12.2019#
 ############
 #19.12.2019#
@@ -259,10 +260,6 @@ dt_matching<-dt_matching %>% mutate (
   any_naix=lubridate::year(lubridate::ymd(dnaix))) 
 
 
-
-
-
-
 #birth (+/-1year), sex, and practice, 
 
 #### Parametres d'aparellament
@@ -299,15 +296,16 @@ dades_match<- dades_match %>% mutate(numControls=numControls-1)
 table(dades_match$numControls,dades_match$grup)
 
 # Verificació d'aparellament per edad + sexe 
+
 descrTable(grup~dnaix+any_naix+sexe,data=dt_matching)
 descrTable(grup~dnaix+any_naix+sexe,data=dades_match)
 #---------------------------------------------------------------------------------------------#
----------------------------------------------------------------------------------------------#
-# Preparo dt_index_match per 
-dt_index_match<-dades_match %>% transmute(idp,idp2, iddap,caseid,grup,dnaix,sexe,dtindex=dtindex_case,numControls2)%>%as_tibble()
+# ---------------------------------------------------------------------------------------------#
+# Preparo dt_index_match per
+  
+dt_index_match<-dades_match %>% transmute(idp,iddap,caseid,grup,dnaix,sexe,dtindex=dtindex_case,numControls)%>%as_tibble()
 #
 bd_index<-dt_index_match %>% transmute(idp,dtindex=lubridate::as_date(dtindex))
-
 # Agrego problemes de Salut
 dt_agregada_agr<-agregar_problemes(select(dt_diagnostics_global,idp,cod,dat),
                                    bd.dindex = bd_index,
@@ -326,321 +324,76 @@ dt_index_match<-dt_index_match%>%mutate(idp2=ifelse(grup==1,0,idp2))
 #---------------------------------------------------------------------------------------------#
 dt_index_match<-dt_index_match%>%filter(idp2<=5)%>%as_tibble()
 #---------------------------------------------------------------------------------------------#
-dt_index_match<-dt_index_match %>% group_by(caseid) %>% mutate(numControls2=n()-1)
+dt_index_match<-dt_index_match %>% group_by(caseid) %>% mutate(numControls=n()-1) %>% ungroup() %>% select(-idp2)
 
 #---------------------------------------------------------------------------------------------#
 
-
 # Eliminem pajaros que notenen controls o casos
-dt_index_match<-dt_index_match %>% filter(numControls2>=1)
+dt_index_match<-dt_index_match %>% filter(numControls>=1)
 
-
-table(dt_index_match$numControls2,dt_index_match$grup)
+# Verifiquem num controls x cas 
+table(dt_index_match$numControls,dt_index_match$grup)
 
 # Verificació d'aparellament per edad + sexe 
 descrTable(grup~dnaix+sexe,data=dt_index_match)
 descrTable(grup~dnaix+sexe,data=dt_matching)
 
+# Agregar resta d'historics  -----------------
 
+# LLEGIR.farmacs_facturat
+# LLEGIR.farmacs_prescrits
+# LLEGIR.variables_analitiques
+# LLEGIR.variables_cliniques
+# LLEGIR.tabaquisme
 
+# Agregar variables --------------
+dt_variables<-LLEGIR.variables_analitiques %>% bind_rows(LLEGIR.variables_cliniques) %>% 
+  transmute(idp,cod=agr,dat,val)
+dt_temp<-dt_index_match %>% transmute(idp,dtindex=lubridate::as_date(dtindex))
+dtagr_variables<-agregar_analitiques(dt=dt_variables,bd.dindex=dt_temp,finestra.dies = c(-365,0))
 
+# Agregar tabac --------------
+LLEGIR.tabaquisme<-LLEGIR.tabaquisme %>% transmute(idp,cod="tabac",dat,val)
+dtagr_tabac<-agregar_analitiques(dt=LLEGIR.tabaquisme,bd.dindex=dt_temp,finestra.dies = c(-Inf,0))
 
 
+# Prescripcions / facturació pendent de CODIS / AGREGADORS 
+LLEGIR.farmacs_prescrits<-LLEGIR.farmacs_prescrits %>% transmute(idp,cod,dat,dbaixa)
 
+# dtagr_prescrip<-agregar_prescripcions(dt=LLEGIR.farmacs_prescrits,bd.dindex=dt_temp,dt.agregadors=select(dt_cataleg,cod,agr),prefix="FP.",finestra.dies=c(-45,+45),
+#                       camp_agregador="agr",agregar_data=F)
+# 
 
 
+# Unió de totes les agregacions ----------------
 
+dt_total<-dt_index_match %>% left_join(select(LLEGIR.poblacio,idp,sortida,situacio))
 
 
 
+# PREPARACIÓ ------------------
 
+library(lubridate)
 
+dt_total<-dt_total %>% mutate(any_index=lubridate::year(lubridate::as_date(dtindex)))
+dt_total<-dt_total %>% mutate(agein=(as_date(dtindex)-ymd(dnaix))/365.25)
+dt_total<-dt_total %>% mutate(exitus=if_else(situacio=="D",1,0))
+dt_total<-dt_total %>% mutate(temps_FU=ymd(sortida)-as_date(dtindex))
 
+dt_total$temps_FU
 
+# FILTRE C.INCLUSIÓ   --------------- 
 
 
+# ANALISIS  --------------
 
+# Survival 
 
+fit<- survfit(Surv(temps_FU, exitus) ~ grup, data = dt_total)
+survminer::ggsurvplot(fit)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-##############################################################################################################################
-# (demà fer-ho!)
-#[ DESPRÉS FARÉ UN MATCHED COHORT [ 1 Exposició: 10 No Exposició], ANY DE NAIXAMENT (+/- 1 ANY), SEXE]
-##############################################################################################################################
-
-
-
-##############################################################################################################################
-#[ De la coohrt aparellada, eliminarem els pacients Morts abans de la data Index,eliminem els pacients amb qualsevol
-#  codi en el full "prevalent" o "Cancer"]
-##############################################################################################################################
-
-
-
-#[12.12.2019]--> fet!!! acabar-ho!!!!
-
-
-
-
-
-
-
-
-#-----#
-#mirar si a la data del dia Index  tenen 35 anys o mes!, tenir un minim un any d'història clínica prèvia
-#abans de de dia index ?
-
-# MATCH amb els controls!
-
-#Introducció
-
-#Al present document tractarem de traduir el protocol original del projecte a l’estructura actual del SIDIAP,
-#convertint-se aquest en el manual fet servir pels Data Managers del SIDIAP durant l’extracció de les dades. 
-#És un document INTERN del SIDIAP.
-
-
-#Objectius del projecte
-
-
-#   Objectius principals  #
-###########################
-#-----------------------------------------------------------------------------------------------------------------------------#
-#●	Avaluar les tendències al llarg del temps en mortalitat  de totes les causes entre el 20060101 i
-#   la captura més recent del SIDIAP (20181231) en persones amb recent diabetis tipus 2 
-#   ien comparació amb una població control  sense diabetis.
-#-----------------------------------------------------------------------------------------------------------------------------#
-#●	Avaluar les diferències i les proporcions de les taxes de mortalitat de totes les causes en persones amb diabetis tipus 2
-#   i sense diabetis entre el 20060101 i la captura més recent del SIDIAP (20181231). 
-#-----------------------------------------------------------------------------------------------------------------------------#
-#   Objectius secundaris  #
-###########################
-#-----------------------------------------------------------------------------------------------------------------------------#
-#●	Avaluar les tendències al llarg del temps en la mortalitat cardiovascula r entre 20060101
-#   i la captura més recent del SIDIAP en persones amb diabetis tipus 2 i sense diabetis.
-#-----------------------------------------------------------------------------------------------------------------------------#
-#●	Avaluar les diferències i les proporcions 
-#   de les taxes de mortalitat per causes determinades en persones amb diabetis tipus 2 i sense diabetis entre el 20060101
-#   i la captura més recent del SIDIAP.
-#-----------------------------------------------------------------------------------------------------------------------------#
-#●	Comparar les tendències de les taxes de mortalitat i de ràtio entre els diferents països.
-#-----------------------------------------------------------------------------------------------------------------------------#
-#●	Avaluar les tendències del temps en condicions renals cardiometabòliques. 
-#-----------------------------------------------------------------------------------------------------------------------------#
-
-# 20060101  la captura més recent del SIDIAP (20181231)
-#[1.1.2006---31.12.2018] 
-
-
-# data.index [] 
-#[La data del primer diagnòstic de DM2 passarà a ser la data d’índex]: [[DINDEX]]
-
-
-
-
-
-# 0. Inicialització de parametres  -----------------------------
-
-# N test mostra a seleccionar  (Nmostra=Inf)
-
-# Nmostra=Inf  # Seria tota la mostra
-Nmostra=Inf
-
-# fitxer conductor cataleg 
-fitxer_conductor_cataleg<-"Spain_codes.xls"
-
-# fitxer conductor variables
-fitxer_conductor_variables<-"variables_precav.xls"
-
-
-# write.xlsx(CATALEG,file="cataleg.xlsx")
-CATALEG<-readxl::read_excel(fitxer_conductor_cataleg,col_types = "text")
-
-
-
-
-
-
-# Funcions lectura de fitxers
-LLEGIR.PACIENTS<<-function(n=Nmostra) {
-  readRDS("dades/sidiap_precav" %>% here::here("ECV_CAT_entregable_pacients_20190517_101801.rds")) %>% as_tibble() %>% head(n)}
-
-LLEGIR.PROBLEMES<<-function(n=Nmostra) {
-  readRDS("dades/sidiap_precav" %>% here::here("ECV_CAT_entregable_problemes_20181123_172533.rds"))%>% as_tibble() %>% head(n)}
-
-LLEGIR.CMBDH<<-function(n=Nmostra) {
-  readRDS("dades/sidiap_precav" %>% here::here("ECV_CAT_entregable_cmbd_dx_20181123_172533.rds"))%>% as_tibble() %>% head(n)}
-
-LLEGIR.padris<<-function(n=Nmostra) {
-  readRDS("dades/sidiap_precav" %>% here::here("ECV_CAT_entregable_cmbd_dx_padris_20181123_172533.rds"))%>% as_tibble() %>% head(n)}
-
-LLEGIR.PROC<<-function(n=Nmostra) {
-  readRDS("dades/sidiap_precav" %>% here::here("ECV_CAT_entregable_cmbd_px_padris_20181123_172533.rds"))%>% as_tibble() %>% head(n)}
-
-LLEGIR.TABAC<<-function(n=Nmostra) {
-  readRDS("dades/sidiap_precav" %>% here::here("ECV_CAT_entregable_tabaquisme_20181123_172533.rds"))%>% as_tibble() %>% head(n) }
-
-# Llegit pacients i problemes de salut
-library(dplyr)
-
-#  Llegir PACIENTS, I PROBLEMES DE SALUT
-PACIENTS<-Inf %>% LLEGIR.PACIENTS()
-PROBLEMES<-Nmostra %>% LLEGIR.PROBLEMES()
-
-
-
-# Criteris d'Inclusió 1  (Any naixament)
-PACIENTS<-PACIENTS %>% 
-  filter (dnaix<19720101)     # Excluye Nacidos a partir del 1972
-
-# Seleccionar tots els pacients que han estat DM durant periode
-
-# 1. Extreure T2DM (exposed) Agrego problemes amb límit data máxima (31/12/2016) 
-
-#### Fusiono agregador (+agr) 
-dadesDM_exposats<-PROBLEMES %>% 
-  agregar_problemes_agr(bd.dindex="20161231",agregador ="exposed",dt.agregadors=CATALEG,finestra.dies=c(-Inf,0),prefix="",camp_agregador="exposed") %>%  # agrego problemes de salut
-  select(idp,dtevent="exposed",codindex=cod)
-
-dades_exclos<-PROBLEMES %>% 
-  agregar_problemes_agr(bd.dindex="20161231",agregador ="exclude",dt.agregadors=CATALEG,finestra.dies=c(-Inf,0),prefix="",camp_agregador="exclude") %>%  # agrego problemes de salut
-  select(idp,dtevent="exclude",codindex=cod)
-
-# filtro dadesDM_exposats (Elimino dades excloses)
-dadesDM_exposats<-dadesDM_exposats %>% anti_join(dades_exclos,by="idp")
-
-
-# 2.	From this cohort (T2C), remove patients with any codes in sheet “prevalent” or “cancer” appearing before the index date; this is the exposed cohort (EC).
-bd_dtindex<-dadesDM_exposats %>% select(idp,dataindex=dtevent) %>% mutate(dataindex=as.Date(dataindex,origin="1970-01-01"))
-historic_problemes<-PROBLEMES %>% mutate(dat=as.Date(as.character(dat),format="%Y%m%d")) %>% select(idp,cod,dat)
-
-dades_exclos2<-historic_problemes %>% 
-  agregar_problemes_agr(bd.dindex=bd_dtindex,agregador ="prevalent",dt.agregadors=CATALEG,finestra.dies=c(-Inf,0),prefix="",camp_agregador="prevalent") 
-
-
-
-#[]
-
-dadesDM_exposats<-dadesDM_exposats %>% anti_join(dades_exclos2,by="idp")
-
-# 3.	From the entire database (ED), remove patients with any codes in sheet “non-exposed pool” before the end of the study (31/12/2018), to get the candidate non-exposed patients (CNE).
-
-## Eliminar de població (PACIENTS) dades_exclos
-
-PACIENTS<-PACIENTS %>% anti_join(dades_exclos,by="idp")
-
-
-# 4.	Exact matching the exposed cohort (EC) to the candidate non-exposed patients (CNE) with a ratio 1:10 (EC:CNE) 
-# by year of birth (+/-1year), sex, and practice, without replacement (each candidate non-exposed patient can be only matched once). 
-# This is the matched cohort (MC), and the index date is the same as the matched exposed patient.
-# Juntar casos a PACIENTS
-PACIENTS<-PACIENTS %>% left_join(dadesDM_exposats,by="idp") %>% mutate(grup=ifelse(is.na(dtevent),0,1))
-
-
-# Preparar matching i setriskmatching #
-dt_matching<-PACIENTS %>% select(idp,idup,dnaix,sexe,grup,dtevent,sortida)
-
-#   5.2.1 Generar data de sortida (Data event / Data de censura)     -----------------
-## dtindex_case 
-dt_matching<-dt_matching %>% mutate(dtindex_case=ifelse(grup==1, as.Date(as.character(dtevent),format="%Y%m%d"),NA)) 
-
-## dtindex_control
-dt_matching<-dt_matching %>% mutate (dtindex_control=as.Date(as.character(sortida),format="%Y%m%d")%>% as.numeric())
-
-## Generar any de naixament i grups cada 10 
-dt_matching<-dt_matching %>% mutate (
-  any_naix=lubridate::year(lubridate::ymd(dnaix))) 
-
-
-#### Parametres d'aparellament
-llistaPS=c("sexe","any_naix","idup")
-num_controls<-5
-llavor<-125
-set.seed(llavor)
-
-# 5.4.1. Aplicar algoritme   -----------
-dades_match<-heaven::riskSetMatch(ptid="idp"                                # Unique patient identifier
-                                  ,event="grup"                # 0=Control, 1=case
-                                  ,terms=llistaPS   # terms c("n1","n2",...) - list of vairables to match by
-                                  ,dat=dt_matching             # dataset with all variables
-                                  ,Ncontrols=num_controls       # number of controls to provide
-                                  ,oldevent="oldevent"          # To distinguish cases used as controls
-                                  ,caseid="caseid"              # variable to group cases and controls (case-ptid)
-                                  ,reuseCases=F                 # T og F or NULL - can a case be a control prior to being a case?
-                                  ,reuseControls=F              # T or F or NULL - can controls be reused?
-                                  ,caseIndex="dtindex_case"       # Integer or date, date where controls must be prior
-                                  ,controlIndex="dtindex_control" # controlIndex - Index date for controls
-                                  ,NoIndex=FALSE                # If T ignore index
-                                  ,cores=1                      # Number of cores to use, default 1
-                                  ,dateterms=NULL               # character list of date variables
-)
-
-# Report matchreport -------------
-heaven::matchReport(dades_match, id="idp",case="grup",caseid="caseid")
-
-# Número de controls per conjunt a risk  ------------
-dades_match[,numControls:=.N,by=caseid]
-dades_match<- dades_match %>% mutate(numControls=numControls-1)
-
-library("tagteam")
-
-
-
-
-
-
-
-
-
-
-#--------------------------------#
-#db <-read_dta("db.dta")
-#nrow(db)
-#--------------------------------#
-
+# LEXIS 
 
 ######all-cause mortality in DM####
 db1 <-Lexis(entry = list(period  = yearin,
@@ -672,209 +425,6 @@ acm_DM       <- cbind(nd,p1, out="acm")
 
 
 
-#####cardio-renal-mortality in DM#####
-db1 <-Lexis(entry = list(period  = yearin,
-                         age  = agein),
-            exit = list(period  = outm),
-            exit.status = crm,
-            id = patid,
-            data = subset(db, DM == 1))
-
-dbs1  <-splitMulti(db1, age = seq(35,100,1), period= seq(1998,2018,1))
-
-a.kn <- with(subset(dbs1, lex.Xst==1), quantile(age+lex.dur,(1:5-0.5)/5))
-p.kn <- with(subset(dbs1, lex.Xst==1), quantile(period+lex.dur,(1:5-0.5)/5))
-
-r1 <- glm((lex.Xst==1)~Ns(age, knots = a.kn)*Ns(period, knots = p.kn)*gender,
-          family = poisson,
-          offset = log(lex.dur),
-          data   = dbs1)
-
-age          <- c(35:100)
-period       <- seq(1998,2018,0.1)
-gender       <- c(1:2)
-nd           <- expand.grid(age, period, gender)
-colnames(nd) <- c("age","period","gender")
-nd           <- cbind(nd, lex.dur=1000)
-p1           <- ci.pred(r1, newdata = nd, Exp = FALSE)
-colnames(p1) <- c("es_d", "lb_d", "ub_d")
-crm_DM       <- cbind(nd,p1, out="crm")
-
-res_DM <-rbind(acm_DM,crm_DM)
-res_DM <-cbind(res_DM, rateD=exp(res_DM$es_d), rateD_lb=exp(res_DM$lb_d), rateD_ub=exp(res_DM$ub_d))
-write.dta(res_DM, file="res_DM.dta")
-
-
-
-# 0. Inicialització de parametres  -----------------------------
-
-# N test mostra a seleccionar  (Nmostra=Inf)
-
-# Nmostra=Inf  # Seria tota la mostra
-Nmostra=Inf
-
-# fitxer conductor cataleg 
-fitxer_conductor_cataleg<-"Spain_codes.xls"
-
-# fitxer conductor variables
-fitxer_conductor_variables<-"variables_precav.xls"
-
-
-# write.xlsx(CATALEG,file="cataleg.xlsx")
-CATALEG<-readxl::read_excel(fitxer_conductor_cataleg,col_types = "text")
-
-
-
-
-
-
-# Funcions lectura de fitxers
-LLEGIR.PACIENTS<<-function(n=Nmostra) {
-  readRDS("dades/sidiap_precav" %>% here::here("ECV_CAT_entregable_pacients_20190517_101801.rds")) %>% as_tibble() %>% head(n)}
-
-LLEGIR.PROBLEMES<<-function(n=Nmostra) {
-  readRDS("dades/sidiap_precav" %>% here::here("ECV_CAT_entregable_problemes_20181123_172533.rds"))%>% as_tibble() %>% head(n)}
-
-LLEGIR.CMBDH<<-function(n=Nmostra) {
-  readRDS("dades/sidiap_precav" %>% here::here("ECV_CAT_entregable_cmbd_dx_20181123_172533.rds"))%>% as_tibble() %>% head(n)}
-
-LLEGIR.padris<<-function(n=Nmostra) {
-  readRDS("dades/sidiap_precav" %>% here::here("ECV_CAT_entregable_cmbd_dx_padris_20181123_172533.rds"))%>% as_tibble() %>% head(n)}
-
-LLEGIR.PROC<<-function(n=Nmostra) {
-  readRDS("dades/sidiap_precav" %>% here::here("ECV_CAT_entregable_cmbd_px_padris_20181123_172533.rds"))%>% as_tibble() %>% head(n)}
-
-LLEGIR.TABAC<<-function(n=Nmostra) {
-  readRDS("dades/sidiap_precav" %>% here::here("ECV_CAT_entregable_tabaquisme_20181123_172533.rds"))%>% as_tibble() %>% head(n) }
-
-# Llegit pacients i problemes de salut
-library(dplyr)
-
-#  Llegir PACIENTS, I PROBLEMES DE SALUT
-PACIENTS<-Inf %>% LLEGIR.PACIENTS()
-PROBLEMES<-Nmostra %>% LLEGIR.PROBLEMES()
-
-# Criteris d'Inclusió 1  (Any naixament)
-PACIENTS<-PACIENTS %>% 
-  filter (dnaix<19720101)     # Excluye Nacidos a partir del 1972
-
-# Seleccionar tots els pacients que han estat DM durant periode
-
-# 1. Extreure T2DM (exposed) Agrego problemes amb límit data máxima (31/12/2016) 
-
-#### Fusiono agregador (+agr) 
-dadesDM_exposats<-PROBLEMES %>% 
-  agregar_problemes_agr(bd.dindex="20161231",agregador ="exposed",dt.agregadors=CATALEG,finestra.dies=c(-Inf,0),prefix="",camp_agregador="exposed") %>%  # agrego problemes de salut
-  select(idp,dtevent="exposed",codindex=cod)
-
-dades_exclos<-PROBLEMES %>% 
-  agregar_problemes_agr(bd.dindex="20161231",agregador ="exclude",dt.agregadors=CATALEG,finestra.dies=c(-Inf,0),prefix="",camp_agregador="exclude") %>%  # agrego problemes de salut
-  select(idp,dtevent="exclude",codindex=cod)
-
-# filtro dadesDM_exposats (Elimino dades excloses)
-dadesDM_exposats<-dadesDM_exposats %>% anti_join(dades_exclos,by="idp")
-
-
-# 2.	From this cohort (T2C), remove patients with any codes in sheet “prevalent” or “cancer” appearing before the index date; this is the exposed cohort (EC).
-bd_dtindex<-dadesDM_exposats %>% select(idp,dataindex=dtevent) %>% mutate(dataindex=as.Date(dataindex,origin="1970-01-01"))
-historic_problemes<-PROBLEMES %>% mutate(dat=as.Date(as.character(dat),format="%Y%m%d")) %>% select(idp,cod,dat)
-
-dades_exclos2<-historic_problemes %>% 
-  agregar_problemes_agr(bd.dindex=bd_dtindex,agregador ="prevalent",dt.agregadors=CATALEG,finestra.dies=c(-Inf,0),prefix="",camp_agregador="prevalent") 
-
-dadesDM_exposats<-dadesDM_exposats %>% anti_join(dades_exclos2,by="idp")
-
-# 3.	From the entire database (ED), remove patients with any codes in sheet “non-exposed pool” before the end of the study (31/12/2018), to get the candidate non-exposed patients (CNE).
-
-## Eliminar de població (PACIENTS) dades_exclos
-
-PACIENTS<-PACIENTS %>% anti_join(dades_exclos,by="idp")
-
-
-# 4.	Exact matching the exposed cohort (EC) to the candidate non-exposed patients (CNE) with a ratio 1:10 (EC:CNE) 
-# by year of birth (+/-1year), sex, and practice, without replacement (each candidate non-exposed patient can be only matched once). 
-# This is the matched cohort (MC), and the index date is the same as the matched exposed patient.
-# Juntar casos a PACIENTS
-PACIENTS<-PACIENTS %>% left_join(dadesDM_exposats,by="idp") %>% mutate(grup=ifelse(is.na(dtevent),0,1))
-
-
-# Preparar matching i setriskmatching #
-dt_matching<-PACIENTS %>% select(idp,idup,dnaix,sexe,grup,dtevent,sortida)
-
-#   5.2.1 Generar data de sortida (Data event / Data de censura)     -----------------
-## dtindex_case 
-dt_matching<-dt_matching %>% mutate(dtindex_case=ifelse(grup==1, as.Date(as.character(dtevent),format="%Y%m%d"),NA)) 
-
-## dtindex_control
-dt_matching<-dt_matching %>% mutate (dtindex_control=as.Date(as.character(sortida),format="%Y%m%d")%>% as.numeric())
-
-## Generar any de naixament i grups cada 10 
-dt_matching<-dt_matching %>% mutate (
-  any_naix=lubridate::year(lubridate::ymd(dnaix))) 
-
-
-#### Parametres d'aparellament
-llistaPS=c("sexe","any_naix","idup")
-num_controls<-5
-llavor<-125
-set.seed(llavor)
-
-# 5.4.1. Aplicar algoritme   -----------
-dades_match<-heaven::riskSetMatch(ptid="idp"                                # Unique patient identifier
-                                  ,event="grup"                # 0=Control, 1=case
-                                  ,terms=llistaPS   # terms c("n1","n2",...) - list of vairables to match by
-                                  ,dat=dt_matching             # dataset with all variables
-                                  ,Ncontrols=num_controls       # number of controls to provide
-                                  ,oldevent="oldevent"          # To distinguish cases used as controls
-                                  ,caseid="caseid"              # variable to group cases and controls (case-ptid)
-                                  ,reuseCases=F                 # T og F or NULL - can a case be a control prior to being a case?
-                                  ,reuseControls=F              # T or F or NULL - can controls be reused?
-                                  ,caseIndex="dtindex_case"       # Integer or date, date where controls must be prior
-                                  ,controlIndex="dtindex_control" # controlIndex - Index date for controls
-                                  ,NoIndex=FALSE                # If T ignore index
-                                  ,cores=1                      # Number of cores to use, default 1
-                                  ,dateterms=NULL               # character list of date variables
-)
-
-# Report matchreport -------------
-heaven::matchReport(dades_match, id="idp",case="grup",caseid="caseid")
-
-# Número de controls per conjunt a risk  ------------
-dades_match[,numControls:=.N,by=caseid]
-dades_match<- dades_match %>% mutate(numControls=numControls-1)
-
-
-# 
-bdades_index<-dades_match %>% 
-  select(idp,dataindex=dtindex_case)%>% 
-  mutate (dataindex=as.Date(dataindex,origin = "1970-01-01")) %>%
-  as_tibble()
-dades_match<-dades_match %>% rename(dtindex=dtindex_case) %>% mutate (dtindex=as.Date(dtindex,origin = "1970-01-01"))
-
-dades_match<-dades_match %>% as_tibble()
-
-
-gc()
-# Verificació de Matching aprox -----------------------
-table(dades_match$numControls,dades_match$grup) 
-descrTable(formula_vector(llistaPS,y="grup"),data=dades_match)
-# extreure_OR("event~sexe+any_naix",dades=dades_match,conditional = T,str
-
-# any_dg i filtrar per any
-dades_match<-dades_match %>% mutate(yearindex=lubridate::year(dtindex)) %>% select(-c(idup,dnaix,sexe,sortida)) %>% 
-  filter(yearindex>=2006)
-
-# filtrar per Pacients 
-PACIENTS_MATCH<-dades_match %>% left_join(select(PACIENTS,-c(grup,dtevent)), by="idp")
-
-table(PACIENTS_MATCH$yearindex,PACIENTS_MATCH$grup)
-descrTable(formula_vector(llistaPS,y="grup"),data=dades_match)
-
-# Filtrar per edat=35-100 anys en data index
-library(lubridate)
-PACIENTS_MATCH<-PACIENTS_MATCH %>% 
-  mutate(edat = year(as.period(interval(start = ymd(dnaix), end = dtindex))))
-PACIENTS_MATCH<-PACIENTS_MATCH %>% filter(edat>=35 & edat<=100)
 
 
 
