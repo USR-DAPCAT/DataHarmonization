@@ -1,3 +1,10 @@
+#----------#
+#[31.12.2019]
+
+
+############
+#30.12.2019#
+#27.12.2019#
 #24.12.2019#
 #20.12.2019#
 ############
@@ -148,6 +155,24 @@ LLEGIR.variables_socioeconomiques<-readRDS("dades/SIDIAP/test" %>% here::here("t
 variable.names(LLEGIR.variables_socioeconomiques)
 #[1] "idp"       "qmedea"    "ruralitat"
 
+#----------------------------------------------#  
+#xi        [Catàleg]
+LLEGIR.variables_Cataleg<-readRDS("dades/SIDIAP/test" %>% here::here("DAPCRMM_entregable_cataleg_20190930_093320.rds")) %>% as_tibble()
+variable.names(LLEGIR.variables_Cataleg)
+#[1]  "domini" "cod"    "des"    "agr"   
+#----------------------------------------------#  
+
+table(LLEGIR.variables_Cataleg$agr)
+#----------------------------------------------#  
+#       ALFAGLUC   ALT_GLUC   BIGUANIDAS    CAC     CANCER     CKDEPI       cLDL  COMB_GLUC 
+#1          6         18          4          1        520          1          1         38 
+#----------------------------------------------#  
+#cT        CVD       DPP4    GLICADA   GLINIDES       GLP1        IMC  INSULINAS         KD 
+#1        576         12          1          4         22          1         66        210 
+#----------------------------------------------#  
+#MET      SGLT2      SULFO      TIAZO 
+#62         14         28          6 
+#----------------------------------------------#  
                                                   #####################
                                                   #Cohort define steps#
                                                   #####################
@@ -312,9 +337,18 @@ dt_agregada_agr<-agregar_problemes(select(dt_diagnostics_global,idp,cod,dat),
                                    dt.agregadors=select(dt_cataleg,cod,agr))
 
 
+#---------------------------------------------------------------------------------------------#
+# si un dels elements del grup [caseid] és prevalent o càncer, tot el [caseid] anirà a FORA!!! 
 # Filtrar per exclusions (Eliminar prevalents i cancer)
-dt_index_match<-dt_index_match %>% left_join(select(dt_agregada_agr,-dtindex),by="idp") %>% 
-  filter(is.na(DG.prevalent) & is.na(DG.cancer))
+#---------------------------------------------------------------------------------------------#
+
+
+dt_index_match <-dt_index_match %>% 
+  left_join(select(dt_agregada_agr,-dtindex),by="idp") %>%
+  mutate(can_prev=ifelse(!is.na(DG.prevalent) | !is.na(DG.cancer),0,1 ))%>%
+  group_by(caseid)%>%mutate(sel=min(can_prev)) %>% ungroup() %>%
+  filter(sel==1) %>% select(-sel)
+
 
 
 # Seleccionar com a molt 5 No exposats ---------
@@ -340,11 +374,17 @@ descrTable(grup~dnaix+sexe,data=dt_matching)
 
 # Agregar resta d'historics  -----------------
 
-# LLEGIR.farmacs_facturat
-# LLEGIR.farmacs_prescrits
-# LLEGIR.variables_analitiques
-# LLEGIR.variables_cliniques
-# LLEGIR.tabaquisme
+
+#i    LLEGIR.variables_analitiques
+#ii   LLEGIR.variables_cliniques
+#iii  LLEGIR.tabaquisme
+#iv   LLEGIR.farmacs_prescrits
+#v    LLEGIR.farmacs_facturat
+
+
+
+
+
 
 # Agregar variables --------------
 dt_variables<-LLEGIR.variables_analitiques %>% bind_rows(LLEGIR.variables_cliniques) %>% 
@@ -352,23 +392,92 @@ dt_variables<-LLEGIR.variables_analitiques %>% bind_rows(LLEGIR.variables_cliniq
 dt_temp<-dt_index_match %>% transmute(idp,dtindex=lubridate::as_date(dtindex))
 dtagr_variables<-agregar_analitiques(dt=dt_variables,bd.dindex=dt_temp,finestra.dies = c(-365,0))
 
+
+
+
+
 # Agregar tabac --------------
 LLEGIR.tabaquisme<-LLEGIR.tabaquisme %>% transmute(idp,cod="tabac",dat,val)
 dtagr_tabac<-agregar_analitiques(dt=LLEGIR.tabaquisme,bd.dindex=dt_temp,finestra.dies = c(-Inf,0))
 
 
-# Prescripcions / facturació pendent de CODIS / AGREGADORS 
+# ----------------------------------------------------------#
+# Prescripcions / Facturació pendent de CODIS / AGREGADORS 
+# ----------------------------------------------------------#
+
+# Prescripcion de CODIS / AGREGADORS 
 LLEGIR.farmacs_prescrits<-LLEGIR.farmacs_prescrits %>% transmute(idp,cod,dat,dbaixa)
 
-# dtagr_prescrip<-agregar_prescripcions(dt=LLEGIR.farmacs_prescrits,bd.dindex=dt_temp,dt.agregadors=select(dt_cataleg,cod,agr),prefix="FP.",finestra.dies=c(-45,+45),
-#                       camp_agregador="agr",agregar_data=F)
-# 
+dtagr_prescrip<-agregar_prescripcions(
+  dt=LLEGIR.farmacs_prescrits,
+  bd.dindex=dt_temp,
+  dt.agregadors=select(dt_cataleg,cod,agr),
+  prefix="FP.",
+  finestra.dies=c(-45,+45),
+  camp_agregador="agr",
+  agregar_data=F)
+
+
+
+
+# v    LLEGIR.farmacs_facturat
+
+#dt=PRESCRIPCIONS,
+#finestra.dies=c(-365,0),
+#dt.agregadors=CATALEG,
+#bd.dindex="20161231",
+#prefix="FD.",
+#camp_agregador="agr", 
+#agregar_data=F
+
+# Facturació pendent de CODIS / AGREGADORS 
+LLEGIR.farmacs_facturat<-LLEGIR.farmacs_facturat %>% transmute(idp,cod,dat,env)
+
+dtagr_facturat<-agregar_facturacio(
+  dt=LLEGIR.farmacs_facturat,
+  finestra.dies=c(-365,0),
+  dt.agregadors=select(dt_cataleg,cod,agr),
+  prefix="FF.",
+  camp_agregador="agr",
+  agregar_data=F)
+
+  
+
+#i    LLEGIR.variables_analitiques
+#ii   LLEGIR.variables_cliniques
+#iii  LLEGIR.tabaquisme
+#iv   LLEGIR.farmacs_prescrits
+#v    LLEGIR.farmacs_facturat
+
+
+#dt_variables             :#i    LLEGIR.variables_analitiques+#ii   LLEGIR.variables_cliniques
+#LLEGIR.tabaquisme        :#iii  LLEGIR.tabaquisme
+#LLEGIR.farmacs_prescrits :#iv   LLEGIR.farmacs_prescrits
+#LLEGIR.farmacs_facturat  :#v    LLEGIR.farmacs_facturat
+
+#i,ii                            dtagr_variables
+#iii                             dtagr_tabac
+#iv                              dtagr_prescrip
+#v                               dtagr_facturat
+
+dt_index_match 
+LLEGIR.poblacio
+dtagr_variables  <-dtagr_variables   %>%select(-dtindex )
+dtagr_tabac      <-dtagr_tabac       %>%select(-dtindex )
+dtagr_prescrip   <-dtagr_prescrip    %>%select(-dtindex )
+dtagr_facturat   <-dtagr_facturat    %>%select(-dtindex )
+
 
 
 # Unió de totes les agregacions ----------------
 
-dt_total<-dt_index_match %>% left_join(select(LLEGIR.poblacio,idp,sortida,situacio))
-
+dt_total<-dt_index_match %>% 
+  left_join(select(LLEGIR.poblacio,idp,sortida,situacio))%>% 
+    left_join(dtagr_variables,by="idp")%>%
+      left_join(dtagr_prescrip,by="idp")%>%
+        left_join(dtagr_facturat ,by="idp")
+  
+  
 
 
 # PREPARACIÓ ------------------
@@ -384,6 +493,25 @@ dt_total$temps_FU
 
 # FILTRE C.INCLUSIÓ   --------------- 
 
+variable.names(dt_total)
+
+
+#                       variable.names(dt_total)
+#                     ---------------------------           #
+#     [1] "idp"           "iddap"         "caseid"        "grup"          "dnaix"        
+#     [6] "sexe"          "dtindex"       "numControls"   "DG.cancer"     "DG.DM2"       
+#     [11] "DG.exclude"    "DG.outcome"    "DG.prevalent"  "can_prev"      "sortida"      
+#     [16] "situacio"      "CAC.valor"     "CKDEPI.valor"  "cLDL.valor"    "cT.valor"     
+#     [21] "GLICADA.valor" "IMC.valor"     "CAC.dies"      "CKDEPI.dies"   "cLDL.dies"    
+#     [26] "cT.dies"       "GLICADA.dies"  "IMC.dies"      "FP.ALFAGLUC"   "FP.ALT_GLUC"  
+#     [31] "FP.BIGUANIDAS" "FP.COMB_GLUC"  "FP.DPP4"       "FP.GLINIDES"   "FP.GLP1"      
+#     [36] "FP.INSULINAS"  "FP.SULFO"      "FF.ALFAGLUC"   "FF.ALT_GLUC"   "FF.BIGUANIDAS"
+#     [41] "FF.COMB_GLUC"  "FF.DPP4"       "FF.GLINIDES"   "FF.GLP1"       "FF.INSULINAS" 
+#     [46] "FF.SGLT2"      "FF.SULFO"      "FF.TIAZO"      "any_index"     "agein"        
+#     [51] "exitus"        "temps_FU"     
+#                     ---------------------------           #
+
+
 
 # ANALISIS  --------------
 
@@ -393,7 +521,25 @@ fit<- survfit(Surv(temps_FU, exitus) ~ grup, data = dt_total)
 survminer::ggsurvplot(fit)
 
 
+library("LexisPlotR")
+#mirar LEXIS!!!
+
 # LEXIS 
+
+#https://rpubs.com/aniuxa/socdem1
+
+library(LexisPlotR)
+lg <- lexis.grid(year.start = 1980, year.end = 1985, age.start = 0, age.end = 5)
+# Load sample data
+path <- system.file("extdata", "Deaths_lexis_sample.txt", package = "LexisPlotR")
+deaths.triangles <- prepare.hmd(path)
+lexis.hmd(lg = lg, hmd.data = deaths.triangles, column = "Total")
+
+### Plot data not explicitly present in HMD data
+deaths.triangles$RatioMale <- deaths.triangles$Male / deaths.triangles$Total
+lexis.hmd(lg, deaths.triangles, "RatioMale")
+
+
 
 ######all-cause mortality in DM####
 db1 <-Lexis(entry = list(period  = yearin,
