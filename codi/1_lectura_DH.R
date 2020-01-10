@@ -1,3 +1,4 @@
+#[10.01.2020]
 #----------#
 #[31.12.2019]
 
@@ -540,37 +541,173 @@ deaths.triangles$RatioMale <- deaths.triangles$Male / deaths.triangles$Total
 lexis.hmd(lg, deaths.triangles, "RatioMale")
 
 
+library(Epi)
+
 
 ######all-cause mortality in DM####
-db1 <-Lexis(entry = list(period  = yearin,
-                         age     = agein),
-            exit  = list(period  = outm),
-            exit.status = acm,
-            id    = patid,
-            data  = subset(db, DM == 1))
-
-dbs1 <- splitMulti(db1, age = seq(35,100,1), period= seq(1998,2018,1))
-
-a.kn <- with(subset(dbs1, lex.Xst==1), quantile(age+lex.dur,(1:5-0.5)/5))
-p.kn <- with(subset(dbs1, lex.Xst==1), quantile(period+lex.dur,(1:5-0.5)/5))
-
-r1 <- glm((lex.Xst==1)~Ns(age, knots = a.kn)*Ns(period, knots = p.kn)*gender,
-          family = poisson,
-          offset = log(lex.dur),
-          data   = dbs1)
-
-age          <- c(35:100)
-period       <- seq(1998,2018,0.1)
-gender       <- c(1:2)
-nd           <- expand.grid(age, period, gender)
-colnames(nd) <- c("age","period","gender")
-nd           <- cbind(nd, lex.dur=1000)
-p1           <- ci.pred(r1, newdata = nd, Exp = FALSE)
-colnames(p1) <- c("es_d", "lb_d", "ub_d")
-acm_DM       <- cbind(nd,p1, out="acm")
-
-
+#db1 <-Lexis(entry = list(period  = yearin,
+#                         age     = agein),
+#            exit  = list(period  = outm),
+#            exit.status = acm,
+#            id    = patid,
+#            data  = subset(db, DM == 1))
+#
+#dbs1 <- splitMulti(db1, age = seq(35,100,1), period= seq(1998,2018,1))
+#
+#a.kn <- with(subset(dbs1, lex.Xst==1), quantile(age+lex.dur,(1:5-0.5)/5))
+#p.kn <- with(subset(dbs1, lex.Xst==1), quantile(period+lex.dur,(1:5-0.5)/5))
+#
+#r1 <- glm((lex.Xst==1)~Ns(age, knots = a.kn)*Ns(period, knots = p.kn)*gender,
+#          family = poisson,
+#          offset = log(lex.dur),
+#          data   = dbs1)
+#
+#age          <- c(35:100)
+#period       <- seq(1998,2018,0.1)
+#gender       <- c(1:2)
+#nd           <- expand.grid(age, period, gender)
+#colnames(nd) <- c("age","period","gender")
+#nd           <- cbind(nd, lex.dur=1000)
+#p1           <- ci.pred(r1, newdata = nd, Exp = FALSE)
+#colnames(p1) <- c("es_d", "lb_d", "ub_d")
+#acm_DM       <- cbind(nd,p1, out="acm")
 
 
 
+
+
+
+#--------------------------------------------------------------------------------------#
+# Exemple 2
+#--------------------------------------------------------------------------------------#
+
+# NOT RUN {
+# A small bogus cohort
+xcoh <- structure( list( id = c("A", "B", "C"),
+                         birth = c("14/07/1952", "01/04/1954", "10/06/1987"),
+                         entry = c("04/08/1965", "08/09/1972", "23/12/1991"),
+                         exit = c("27/06/1997", "23/05/1995", "24/07/1998"),
+                         fail = c(1, 0, 1) ),
+                   .Names = c("id", "birth", "entry", "exit", "fail"),
+                   row.names = c("1", "2", "3"),
+                   class = "data.frame" )
+
+# Convert the character dates into numerical variables (fractional years)
+xcoh <- cal.yr( xcoh, format="%d/%m/%Y", wh=2:4 )
+# See how it looks
+xcoh
+str( xcoh )
+
+# Define a Lexis object with timescales calendar time and age
+Lcoh <- Lexis( entry = list( per=entry ),
+               exit = list( per=exit,
+                            age=exit-birth ),
+               exit.status = fail,
+               data = xcoh )
+
+
+#xcoh
+
+
+
+
+# Using character states may have undesired effects:
+xcoh$Fail <- c("Dead","Well","Dead")
+xcoh$Fail
+
+Lexis( entry = list( per=entry ),
+       exit = list( per=exit, age=exit-birth ),
+       exit.status = Fail,
+       data = xcoh )
+
+
+
+# ...unless you order the levels correctly
+( xcoh$Fail <- factor( xcoh$Fail, levels=c("Well","Dead") ) )
+
+Lexis( entry = list( per=entry ),
+       exit = list( per=exit, age=exit-birth ),
+       exit.status = Fail,
+       data = xcoh )
+# }
+
+
+
+Lexis.diagram()
+plot(Lexis( entry = list( per=entry ),
+            exit = list( per=exit, age=exit-birth ),
+            exit.status = Fail,
+            data = xcoh ))
+
+
+
+
+#covertim la nosta base de dades amb:[]-->
+
+
+xcoh
+
+variable.names(dt_total)
+#exemple      la nostra base de dades.
+
+#id     -->                idp 
+#birth  -->                dnaix
+#entry  -->                dtindex
+#exit   -->                sortida
+#fail   -->                exitus
+
+#dt_total$idp
+#dt_total$dnaix
+#dt_total$dtindex
+#dt_total$sortida
+#dt_total$exitus
+
+
+#dt_total$exit
+#dt_total$entry
+
+#dt_total$date 
+
+library(tidyr)
+#--> aqui!!
+
+#dt_total<-dt_total%>%mutate(birth =ymd(dnaix))
+#dt_total<-dt_total%>%mutate(entry =dmy(dtindex))
+#dt_total<-dt_total%>%mutate(exit =ymd(sortida))
+#dt_total<-dt_total%>%mutate(fail =exitus)
+
+dt_total<-dt_total%>%mutate(birth =dnaix)
+dt_total<-dt_total%>%mutate(entry =dtindex)
+dt_total<-dt_total%>%mutate(exit =sortida)
+dt_total<-dt_total%>%mutate(fail =exitus)
+
+dt_total2<-dt_total%>%select(idp,birth,entry,exit,fail)
+
+
+
+#xcoh <- structure( list( id = c("A", "B", "C"),
+#                         birth = c("14/07/1952", "01/04/1954", "10/06/1987"),
+#                         entry = c("04/08/1965", "08/09/1972", "23/12/1991"),
+#                         exit = c("27/06/1997", "23/05/1995", "24/07/1998"),
+#                         fail = c(1, 0, 1) ),
+#                   .Names = c("id", "birth", "entry", "exit", "fail"),
+#                   row.names = c("1", "2", "3"),
+#                   class = "data.frame" )
+
+# Convert the character dates into numerical variables (fractional years)
+
+xcoh2 <- cal.yr( xcoh, format="%d/%m/%Y", wh=2:4 )
+# See how it looks
+
+xcoh2<-dt_total2
+
+xcoh2<-data.frame(xcoh2)
+str( xcoh2 )
+
+# Define a Lexis object with timescales calendar time and age
+Lcoh2 <- Lexis( entry = list( per=entry ),
+               exit = list( per=exit,
+                            age=exit-birth ),
+               exit.status = fail,
+               data = xcoh2 )
 
