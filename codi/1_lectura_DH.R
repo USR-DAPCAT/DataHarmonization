@@ -1,8 +1,9 @@
+#[13.01.2020]
+
 #[10.01.2020]
 #----------#
+#[13.01.2020]
 #[31.12.2019]
-
-
 ############
 #30.12.2019#
 #27.12.2019#
@@ -249,7 +250,7 @@ dt_diagnostics<-dt_diagnostics %>% left_join(dt_cataleg,by="cod") %>% filter(exp
 
 #-----#
 DINDEX<-dt_diagnostics%>% group_by(idp)%>%summarise(data_index=min(dat,na.rm = TRUE))%>%ungroup()
-DINDEX
+#DINDEX
 ##############################################################################################################################
 #-----------------------------------------------------------------------------------------------------------------------#
 #[ Crearé una base de dades dels exposat( TOTS ELS DELS DINDEX!!), amb ANY DE NAIXAMENT+SEXE]
@@ -273,6 +274,7 @@ dt_matching<-mutate(C_EXPOSATS,grup=1) %>% bind_rows(mutate(C_NO_EXPOSATS,grup=0
 
 # Preparar matching i setriskmatching #
 dt_matching<-dt_matching %>% transmute(idp,dnaix,sexe,grup,dtevent=data_index,sortida) %>%left_join(LLEGIR.variables_geo_sanitaries,by="idp")
+dt_matching
 
 #   5.2.1 Generar data de sortida (Data event / Data de censura)     -----------------
 ## dtindex_case 
@@ -490,12 +492,13 @@ dt_total<-dt_total %>% mutate(agein=(as_date(dtindex)-ymd(dnaix))/365.25)
 dt_total<-dt_total %>% mutate(exitus=if_else(situacio=="D",1,0))
 dt_total<-dt_total %>% mutate(temps_FU=ymd(sortida)-as_date(dtindex))
 
-dt_total$temps_FU
+
+#dt_total$temps_FU
 
 # FILTRE C.INCLUSIÓ   --------------- 
 
-variable.names(dt_total)
 
+variable.names(dt_total)
 
 #                       variable.names(dt_total)
 #                     ---------------------------           #
@@ -512,36 +515,91 @@ variable.names(dt_total)
 #     [51] "exitus"        "temps_FU"     
 #                     ---------------------------           #
 
+#dt_total$temps_FU
+#dt_total$exitus
+#dt_total$grup
 
 
 # ANALISIS  --------------
 
 # Survival 
-
 fit<- survfit(Surv(temps_FU, exitus) ~ grup, data = dt_total)
-survminer::ggsurvplot(fit)
+library("survminer")
+
+survminer::ggsurvplot(fit,data = dt_total)
+###################################################################################
 
 
-library("LexisPlotR")
+
+
+
+
+
 #mirar LEXIS!!!
+#::: preparció LEXIS:[]
+
+
+###################################################################################
+dt_total2<-dt_total %>%mutate(dtindex=as_date(dtindex))
+dt_total2<-dt_total2 %>%mutate(dnaix=as.Date(as.character(dnaix),format = "%Y%m%d"))
+dt_total2<-dt_total2 %>%mutate(sortida=as.Date(as.character(sortida),format = "%Y%m%d"))
+###################################################################################
+dt_total2<-dt_total2%>%select(idp,dtindex,dnaix,sortida,exitus)
+###################################################################################
+dt_total2<-dt_total2%>%mutate(birth =dnaix)
+dt_total2<-dt_total2%>%mutate(entry =dtindex)
+dt_total2<-dt_total2%>%mutate(exit =sortida)
+dt_total2<-dt_total2%>%mutate(fail =exitus)
+###################################################################################
+dt_total2<-dt_total2%>%select(idp,birth,entry,exit,fail)
+###################################################################################
+#dt_total$dtindex
+#dt_total$dnaix
+#dt_total$sortida
+dt_total2<-structure( dt_total2,class = "data.frame")
+dt_total2 <- cal.yr(dt_total2, format="%y-%m-%d", wh=2:4 )
+###################################################################################
+
+
+#####################################################################
+# Define a Lexis object with timescales calendar time and age
+LEXIS_dt_total2_b<- Lexis( 
+               entry        =     list(per=entry),
+               exit         =     list(per=exit,age=exit-birth ),
+               exit.status  =     fail,
+               data         =     dt_total2 )
+
+LEXIS_dt_total2_b
+
+#####################################################################
+#Lexis.diagram()
+plot(Lexis( entry = list( per=entry ),
+            exit = list( per=exit, age=exit-birth ),
+            exit.status = fail,
+            data = dt_total2))
+#####################################################################
+
+
+
+
 
 # LEXIS 
-
 #https://rpubs.com/aniuxa/socdem1
-
-library(LexisPlotR)
-lg <- lexis.grid(year.start = 1980, year.end = 1985, age.start = 0, age.end = 5)
+#library(LexisPlotR)
+#lg <- lexis.grid(year.start = 1980, year.end = 1985, age.start = 0, age.end = 5)
 # Load sample data
-path <- system.file("extdata", "Deaths_lexis_sample.txt", package = "LexisPlotR")
-deaths.triangles <- prepare.hmd(path)
-lexis.hmd(lg = lg, hmd.data = deaths.triangles, column = "Total")
+#path <- system.file("extdata", "Deaths_lexis_sample.txt", package = "LexisPlotR")
+#deaths.triangles <- prepare.hmd(path)
+#lexis.hmd(lg = lg, hmd.data = deaths.triangles, column = "Total")
 
 ### Plot data not explicitly present in HMD data
-deaths.triangles$RatioMale <- deaths.triangles$Male / deaths.triangles$Total
-lexis.hmd(lg, deaths.triangles, "RatioMale")
-
+#deaths.triangles$RatioMale <- deaths.triangles$Male / deaths.triangles$Total
+#lexis.hmd(lg, deaths.triangles, "RatioMale")
+#####################################################################################
+#library("LexisPlotR")
 
 library(Epi)
+#####################################################################################
 
 
 ######all-cause mortality in DM####
@@ -574,9 +632,6 @@ library(Epi)
 
 
 
-
-
-
 #--------------------------------------------------------------------------------------#
 # Exemple 2
 #--------------------------------------------------------------------------------------#
@@ -591,123 +646,49 @@ xcoh <- structure( list( id = c("A", "B", "C"),
                    .Names = c("id", "birth", "entry", "exit", "fail"),
                    row.names = c("1", "2", "3"),
                    class = "data.frame" )
-
+#####################################################################
+xcoh$id
+xcoh$birth 
+xcoh$entry
+xcoh$exit
+xcoh$fail
+#####################################################################
 # Convert the character dates into numerical variables (fractional years)
 xcoh <- cal.yr( xcoh, format="%d/%m/%Y", wh=2:4 )
 # See how it looks
-xcoh
-str( xcoh )
-
+#xcoh
+#str( xcoh )
+xcoh$id
+xcoh$birth 
+xcoh$entry
+xcoh$exit
+xcoh$fail
+#####################################################################
 # Define a Lexis object with timescales calendar time and age
-Lcoh <- Lexis( entry = list( per=entry ),
+Lcoh <- Lexis( entry = list(per=entry ),
                exit = list( per=exit,
                             age=exit-birth ),
                exit.status = fail,
                data = xcoh )
-
-
 #xcoh
-
-
-
-
 # Using character states may have undesired effects:
-xcoh$Fail <- c("Dead","Well","Dead")
-xcoh$Fail
-
-Lexis( entry = list( per=entry ),
-       exit = list( per=exit, age=exit-birth ),
-       exit.status = Fail,
-       data = xcoh )
-
-
-
-# ...unless you order the levels correctly
-( xcoh$Fail <- factor( xcoh$Fail, levels=c("Well","Dead") ) )
-
-Lexis( entry = list( per=entry ),
-       exit = list( per=exit, age=exit-birth ),
-       exit.status = Fail,
-       data = xcoh )
-# }
-
-
-
-Lexis.diagram()
+#xcoh$Fail <- c("Dead","Well","Dead")
+#xcoh$Fail
+#Lexis( entry = list( per=entry ),
+#       exit = list( per=exit, age=exit-birth ),
+#       exit.status = Fail,
+#       data = xcoh )
+#Lexis.diagram()
 plot(Lexis( entry = list( per=entry ),
             exit = list( per=exit, age=exit-birth ),
-            exit.status = Fail,
+            exit.status = fail,
             data = xcoh ))
+#####################################################################
 
 
 
 
-#covertim la nosta base de dades amb:[]-->
-
-
-xcoh
-
-variable.names(dt_total)
-#exemple      la nostra base de dades.
-
-#id     -->                idp 
-#birth  -->                dnaix
-#entry  -->                dtindex
-#exit   -->                sortida
-#fail   -->                exitus
-
-#dt_total$idp
-#dt_total$dnaix
-#dt_total$dtindex
-#dt_total$sortida
-#dt_total$exitus
-
-
-#dt_total$exit
-#dt_total$entry
-
-#dt_total$date 
-
-library(tidyr)
-#--> aqui!!
-
-#dt_total<-dt_total%>%mutate(birth =ymd(dnaix))
-#dt_total<-dt_total%>%mutate(entry =dmy(dtindex))
-#dt_total<-dt_total%>%mutate(exit =ymd(sortida))
-#dt_total<-dt_total%>%mutate(fail =exitus)
-
-dt_total<-dt_total%>%mutate(birth =dnaix)
-dt_total<-dt_total%>%mutate(entry =dtindex)
-dt_total<-dt_total%>%mutate(exit =sortida)
-dt_total<-dt_total%>%mutate(fail =exitus)
-
-dt_total2<-dt_total%>%select(idp,birth,entry,exit,fail)
 
 
 
-#xcoh <- structure( list( id = c("A", "B", "C"),
-#                         birth = c("14/07/1952", "01/04/1954", "10/06/1987"),
-#                         entry = c("04/08/1965", "08/09/1972", "23/12/1991"),
-#                         exit = c("27/06/1997", "23/05/1995", "24/07/1998"),
-#                         fail = c(1, 0, 1) ),
-#                   .Names = c("id", "birth", "entry", "exit", "fail"),
-#                   row.names = c("1", "2", "3"),
-#                   class = "data.frame" )
-
-# Convert the character dates into numerical variables (fractional years)
-
-xcoh2 <- cal.yr( xcoh, format="%d/%m/%Y", wh=2:4 )
-# See how it looks
-
-xcoh2<-dt_total2
-
-xcoh2<-data.frame(xcoh2)
-str( xcoh2 )
-
-# Define a Lexis object with timescales calendar time and age
-Lcoh2 <- Lexis( entry = list( per=entry ),
-               exit = list( per=exit,
-                            age=exit-birth ),
-               exit.status = fail,
-               data = xcoh2 )
 
