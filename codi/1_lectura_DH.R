@@ -1,17 +1,18 @@
+#-----------#
+#[14.01.2020]
 #[13.01.2020]
-
 #[10.01.2020]
-#----------#
+#-----------#
 #[13.01.2020]
 #[31.12.2019]
-############
+#-----------#
 #30.12.2019#
 #27.12.2019#
 #24.12.2019#
 #20.12.2019#
-############
+#-----------#
 #19.12.2019#
-############
+#-----------#
 
 
 # Lectura de fitxers --------------------
@@ -86,6 +87,9 @@ memory.limit()
 
 #
 # Directori Font     ==============================  
+
+library("LexisPlotR")
+library(Epi)
 
 #--------------------------------------------------------------------------#
 link_source<-paste0("https://github.com/jrealgatius/Stat_codis/blob/master/funcions_propies.R","?raw=T")
@@ -522,6 +526,9 @@ variable.names(dt_total)
 
 # ANALISIS  --------------
 
+#https://rstudio-pubs-static.s3.amazonaws.com/369387_b8a63ee7e039483e896cb91f442bc72f.html
+
+
 # Survival 
 fit<- survfit(Surv(temps_FU, exitus) ~ grup, data = dt_total)
 library("survminer")
@@ -534,9 +541,13 @@ survminer::ggsurvplot(fit,data = dt_total)
 
 
 
+#Part descriptiva  inicial!!!
 
 #mirar LEXIS!!!
 #::: preparció LEXIS:[]
+
+
+
 
 
 ###################################################################################
@@ -544,14 +555,17 @@ dt_total2<-dt_total %>%mutate(dtindex=as_date(dtindex))
 dt_total2<-dt_total2 %>%mutate(dnaix=as.Date(as.character(dnaix),format = "%Y%m%d"))
 dt_total2<-dt_total2 %>%mutate(sortida=as.Date(as.character(sortida),format = "%Y%m%d"))
 ###################################################################################
-dt_total2<-dt_total2%>%select(idp,dtindex,dnaix,sortida,exitus)
+dt_total2<-dt_total2%>%select(idp,dtindex,dnaix,sortida,exitus,grup)
 ###################################################################################
 dt_total2<-dt_total2%>%mutate(birth =dnaix)
 dt_total2<-dt_total2%>%mutate(entry =dtindex)
 dt_total2<-dt_total2%>%mutate(exit =sortida)
 dt_total2<-dt_total2%>%mutate(fail =exitus)
 ###################################################################################
-dt_total2<-dt_total2%>%select(idp,birth,entry,exit,fail)
+dt_total2<-dt_total2%>%select(idp,birth,entry,exit,fail,grup)
+###################################################################################
+
+
 ###################################################################################
 #dt_total$dtindex
 #dt_total$dnaix
@@ -559,18 +573,47 @@ dt_total2<-dt_total2%>%select(idp,birth,entry,exit,fail)
 dt_total2<-structure( dt_total2,class = "data.frame")
 dt_total2 <- cal.yr(dt_total2, format="%y-%m-%d", wh=2:4 )
 ###################################################################################
+###################################################################################
+dt_total2_grup0<-dt_total2 %>% filter(grup==0)
+dt_total2_grup1<-dt_total2 %>% filter(grup==1)
+###################################################################################
+#Com funciona!:
+#####################################################################
+dt_total2_10cases<-dt_total2[1:10,]
+dt_total2_10cases_grup0<-dt_total2_grup0[1:150,]
+dt_total2_10cases_grup1<-dt_total2_grup1[1:150,]
+#####################################################################
+dt_total2_10cases
+dt_total2_10cases_grup0
+dt_total2_10cases_grup1
+#####################################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                                #############
+                                                #L  E X I S #
+                                                #############
+
 
 
 #####################################################################
 # Define a Lexis object with timescales calendar time and age
 LEXIS_dt_total2_b<- Lexis( 
-               entry        =     list(per=entry),
-               exit         =     list(per=exit,age=exit-birth ),
-               exit.status  =     fail,
-               data         =     dt_total2 )
-
+  entry        =     list(per=entry),
+  exit         =     list(per=exit,age=exit-birth ),
+  exit.status  =     fail,
+  data         =     dt_total2)
 LEXIS_dt_total2_b
-
 #####################################################################
 #Lexis.diagram()
 plot(Lexis( entry = list( per=entry ),
@@ -578,58 +621,207 @@ plot(Lexis( entry = list( per=entry ),
             exit.status = fail,
             data = dt_total2))
 #####################################################################
+#####################################################################
+plot(LEXIS_dt_total2_b, grid=0:20*5, col="black", xaxs="i", yaxs="i",xlim=c(1980,2021), ylim=c(30,100), lwd=1, las=1 )
+points(LEXIS_dt_total2_b, pch=c(NA,16)[LEXIS_dt_total2_b$fail+1] )
 
 
 
 
 
-# LEXIS 
+#grup0
+#####################################################################
+# Define a Lexis object with timescales calendar time and age
+LEXIS_dt_total2_b_grup0<- Lexis( 
+  entry        =     list(per=entry),
+  exit         =     list(per=exit,age=exit-birth ),
+  exit.status  =     fail,
+  data         =    dt_total2_grup0 )
+LEXIS_dt_total2_b_grup0
+#####################################################################
+#Lexis.diagram()
+plot(Lexis( entry = list( per=entry ),
+            exit = list( per=exit, age=exit-birth ),
+            exit.status = fail,
+            data = dt_total2_grup0))
+#####################################################################
+plot(LEXIS_dt_total2_b_grup0, grid=0:20*5, col="black", xaxs="i", yaxs="i",xlim=c(1980,2021), ylim=c(30,100), lwd=1, las=1 )
+points(LEXIS_dt_total2_b_grup0, pch=c(NA,16)[LEXIS_dt_total2_b_grup0$fail+1] )
+
+
+
+#grup1
+#####################################################################
+# Define a Lexis object with timescales calendar time and age
+LEXIS_dt_total2_b_grup1<- Lexis( 
+  entry        =     list(per=entry),
+  exit         =     list(per=exit,age=exit-birth ),
+  exit.status  =     fail,
+  data         =     dt_total2_grup1 )
+LEXIS_dt_total2_b_grup1
+#####################################################################
+#Lexis.diagram()
+plot(Lexis( entry = list( per=entry ),
+            exit = list( per=exit, age=exit-birth ),
+            exit.status = fail,
+            data = dt_total2_grup1))
+#####################################################################
+plot(LEXIS_dt_total2_b_grup1, grid=0:20*5, col="black", xaxs="i", yaxs="i",xlim=c(1980,2021), ylim=c(30,100), lwd=1, las=1 )
+points(LEXIS_dt_total2_b_grup1, pch=c(NA,16)[LEXIS_dt_total2_b_grup1$fail+1] )
+
+
+
+
+#####################################################################
+#grup0_10 cases  [grup==0]
+#####################################################################
+# Define a Lexis object with timescales calendar time and age
+LEXIS_dt_total2_b_grup0_10cases<- Lexis( 
+  entry        =     list(per=entry),
+  exit         =     list(per=exit,age=exit-birth ),
+  exit.status  =     fail,
+  data         =    dt_total2_10cases_grup0 )
+
+LEXIS_dt_total2_b_grup0_10cases
+#####################################################################
+#Lexis.diagram()
+plot(Lexis( entry = list( per=entry ),
+            exit = list( per=exit, age=exit-birth ),
+            exit.status = fail,
+            data = dt_total2_10cases_grup0))
+#####################################################################
+plot(LEXIS_dt_total2_b_grup0_10cases, grid=0:20*5, col="black", xaxs="i", yaxs="i",xlim=c(1980,2021), ylim=c(30,100), lwd=1, las=1 )
+points(LEXIS_dt_total2_b_grup0_10cases, pch=c(NA,16)[LEXIS_dt_total2_b_grup0_10cases$fail+1] )
+
+
+
+#####################################################################
+#grup1_10 cases [grup==1]
+#####################################################################
+# Define a Lexis object with timescales calendar time and age
+LEXIS_dt_total2_b_grup1_10cases<- Lexis( 
+  entry        =     list(per=entry),
+  exit         =     list(per=exit,age=exit-birth ),
+  exit.status  =     fail,
+  data         =     dt_total2_10cases_grup1 )
+
+LEXIS_dt_total2_b_grup1_10cases
+#####################################################################
+#Lexis.diagram()
+plot(Lexis( entry = list( per=entry ),
+            exit = list( per=exit, age=exit-birth ),
+            exit.status = fail,
+            data = dt_total2_10cases_grup1))
+#####################################################################
+plot(LEXIS_dt_total2_b_grup1_10cases, grid=0:20*5, col="black", xaxs="i", yaxs="i",xlim=c(1980,2021), ylim=c(30,100), lwd=1, las=1 )
+points(LEXIS_dt_total2_b_grup1_10cases, pch=c(NA,16)[LEXIS_dt_total2_b_grup1_10cases$fail+1] )
+
+
+
+                  #--------------------------------------------#
+                  # M O D E L     P O I S S O N   G L M        #
+                  #--------------------------------------------#
+
+##########################
+dbs1 <- popEpi::splitMulti(LEXIS_dt_total2_b, age = seq(35,100,1), per= seq(1998,2018,1))
+dbs1
+a.kn <- with(subset(dbs1, lex.Xst==1), quantile(age+lex.dur,(1:5-0.5)/5))
+p.kn <- with(subset(dbs1, lex.Xst==1), quantile(per+lex.dur,(1:5-0.5)/5))
+##########################
+
+
+# 
+dbs1<-dbs1 %>% left_join(select(dt_total,idp,sexe)) %>% mutate(gender=if_else(sexe=="H",1,0))
+
+
+
+r1 <- glm((lex.Xst==1)~Ns(age, knots = a.kn)*Ns(per, knots = p.kn)*gender,
+          family = poisson,
+          offset = log(lex.dur),
+          data   = dbs1)
+
+summary(r1)
+
+# Genera una matriu amb dades i fa les prediccions segons el model ajustat
+age          <- c(35:100)
+period       <- seq(1998,2018,0.1)
+gender       <- c(0:1)
+nd           <- expand.grid(age, period, gender)
+colnames(nd) <- c("age","per","gender")
+nd           <- cbind(nd, lex.dur=1000)
+p1           <- ci.pred(r1, newdata = nd, Exp = FALSE)
+colnames(p1) <- c("es_d", "lb_d", "ub_d")
+acm_DM       <- cbind(nd,p1, out="acm")
+
+res_DM_TOTAL <-cbind(acm_DM, rateD=exp(acm_DM$es_d), rateD_lb=exp(acm_DM$lb_d), rateD_ub=exp(acm_DM$ub_d))
+
+
+
+
+                  #-----------------------------------------------------#
+                  # M O D E L     P O I S S O N   G L M:      DIABETIS  #
+                  #-----------------------------------------------------#
+
+#[DIABETIS: Causes de Mortalitat]  :  LEXIS_dt_total2_b_grup1
+
+
+##########################
+dbs1 <- popEpi::splitMulti( LEXIS_dt_total2_b_grup1, age = seq(35,100,1), per= seq(1998,2018,1))
+dbs1
+a.kn <- with(subset(dbs1, lex.Xst==1), quantile(age+lex.dur,(1:5-0.5)/5))
+p.kn <- with(subset(dbs1, lex.Xst==1), quantile(per+lex.dur,(1:5-0.5)/5))
+##########################
+
+
+# 
+dbs1<-dbs1 %>% left_join(select(dt_total,idp,sexe)) %>% mutate(gender=if_else(sexe=="H",1,0))
+
+
+
+r1 <- glm((lex.Xst==1)~Ns(age, knots = a.kn)*Ns(per, knots = p.kn)*gender,
+          family = poisson,
+          offset = log(lex.dur),
+          data   = dbs1)
+
+summary(r1)
+
+# Genera una matriu amb dades i fa les prediccions segons el model ajustat
+age          <- c(35:100)
+period       <- seq(1998,2018,0.1)
+gender       <- c(0:1)
+nd           <- expand.grid(age, period, gender)
+colnames(nd) <- c("age","per","gender")
+nd           <- cbind(nd, lex.dur=1000)
+p1           <- ci.pred(r1, newdata = nd, Exp = FALSE)
+colnames(p1) <- c("es_d", "lb_d", "ub_d")
+acm_DM       <- cbind(nd,p1, out="acm")
+
+res_DM_DIBAETIS <-cbind(acm_DM, rateD=exp(acm_DM$es_d), rateD_lb=exp(acm_DM$lb_d), rateD_ub=exp(acm_DM$ub_d))
+
+#################
+res_DM_DIBAETIS
+################
+
+library(xlsx)
+#--------------------------------------------------------#
+write.xlsx(res_DM_DIBAETIS, file="MORATLITY_DIBAETIS.xlsx")
+#--------------------------------------------------------#
+
+
+#             EXEMPLE:[]
+
+
+
+
+
+
+
+
+                                            #########
+                                            # LEXIS #
+                                            #########
+
 #https://rpubs.com/aniuxa/socdem1
-#library(LexisPlotR)
-#lg <- lexis.grid(year.start = 1980, year.end = 1985, age.start = 0, age.end = 5)
-# Load sample data
-#path <- system.file("extdata", "Deaths_lexis_sample.txt", package = "LexisPlotR")
-#deaths.triangles <- prepare.hmd(path)
-#lexis.hmd(lg = lg, hmd.data = deaths.triangles, column = "Total")
-
-### Plot data not explicitly present in HMD data
-#deaths.triangles$RatioMale <- deaths.triangles$Male / deaths.triangles$Total
-#lexis.hmd(lg, deaths.triangles, "RatioMale")
-#####################################################################################
-#library("LexisPlotR")
-
-library(Epi)
-#####################################################################################
-
-
-######all-cause mortality in DM####
-#db1 <-Lexis(entry = list(period  = yearin,
-#                         age     = agein),
-#            exit  = list(period  = outm),
-#            exit.status = acm,
-#            id    = patid,
-#            data  = subset(db, DM == 1))
-#
-#dbs1 <- splitMulti(db1, age = seq(35,100,1), period= seq(1998,2018,1))
-#
-#a.kn <- with(subset(dbs1, lex.Xst==1), quantile(age+lex.dur,(1:5-0.5)/5))
-#p.kn <- with(subset(dbs1, lex.Xst==1), quantile(period+lex.dur,(1:5-0.5)/5))
-#
-#r1 <- glm((lex.Xst==1)~Ns(age, knots = a.kn)*Ns(period, knots = p.kn)*gender,
-#          family = poisson,
-#          offset = log(lex.dur),
-#          data   = dbs1)
-#
-#age          <- c(35:100)
-#period       <- seq(1998,2018,0.1)
-#gender       <- c(1:2)
-#nd           <- expand.grid(age, period, gender)
-#colnames(nd) <- c("age","period","gender")
-#nd           <- cbind(nd, lex.dur=1000)
-#p1           <- ci.pred(r1, newdata = nd, Exp = FALSE)
-#colnames(p1) <- c("es_d", "lb_d", "ub_d")
-#acm_DM       <- cbind(nd,p1, out="acm")
-
 
 
 #--------------------------------------------------------------------------------------#
@@ -638,38 +830,41 @@ library(Epi)
 
 # NOT RUN {
 # A small bogus cohort
-xcoh <- structure( list( id = c("A", "B", "C"),
-                         birth = c("14/07/1952", "01/04/1954", "10/06/1987"),
-                         entry = c("04/08/1965", "08/09/1972", "23/12/1991"),
-                         exit = c("27/06/1997", "23/05/1995", "24/07/1998"),
-                         fail = c(1, 0, 1) ),
-                   .Names = c("id", "birth", "entry", "exit", "fail"),
-                   row.names = c("1", "2", "3"),
-                   class = "data.frame" )
+#xcoh <- structure( list( id = c("A", "B", "C"),
+#                         birth = c("14/07/1952", "01/04/1954", "10/06/1987"),
+#                         entry = c("04/08/1965", "08/09/1972", "23/12/1991"),
+#                         exit = c("27/06/1997", "23/05/1995", "24/07/1998"),
+#                         fail = c(1, 0, 1) ),
+#                   .Names = c("id", "birth", "entry", "exit", "fail"),
+#                   row.names = c("1", "2", "3"),
+#                   class = "data.frame" )
 #####################################################################
-xcoh$id
-xcoh$birth 
-xcoh$entry
-xcoh$exit
-xcoh$fail
+#xcoh$id
+#xcoh$birth 
+#xcoh$entry
+#xcoh$exit
+#xcoh$fail
 #####################################################################
 # Convert the character dates into numerical variables (fractional years)
-xcoh <- cal.yr( xcoh, format="%d/%m/%Y", wh=2:4 )
+#xcoh <- cal.yr( xcoh, format="%d/%m/%Y", wh=2:4 )
 # See how it looks
 #xcoh
 #str( xcoh )
-xcoh$id
-xcoh$birth 
-xcoh$entry
-xcoh$exit
-xcoh$fail
+
+#xcoh$id
+#xcoh$birth 
+#xcoh$entry
+#xcoh$exit
+#xcoh$fail
+
 #####################################################################
 # Define a Lexis object with timescales calendar time and age
-Lcoh <- Lexis( entry = list(per=entry ),
-               exit = list( per=exit,
-                            age=exit-birth ),
-               exit.status = fail,
-               data = xcoh )
+#Lcoh <- Lexis( entry = list(per=entry ),
+#               exit = list( per=exit,
+#                            age=exit-birth ),
+#               exit.status = fail,
+#               data = xcoh )
+
 #xcoh
 # Using character states may have undesired effects:
 #xcoh$Fail <- c("Dead","Well","Dead")
@@ -679,14 +874,16 @@ Lcoh <- Lexis( entry = list(per=entry ),
 #       exit.status = Fail,
 #       data = xcoh )
 #Lexis.diagram()
-plot(Lexis( entry = list( per=entry ),
-            exit = list( per=exit, age=exit-birth ),
-            exit.status = fail,
-            data = xcoh ))
+
+#plot(Lexis( entry = list( per=entry ),
+#            exit = list( per=exit, age=exit-birth ),
+#            exit.status = fail,
+#            data = xcoh ))
+
 #####################################################################
 
 
-
+#https://www.dataquest.io/blog/tutorial-poisson-regression-in-r/
 
 
 

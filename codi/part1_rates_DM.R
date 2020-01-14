@@ -1,12 +1,14 @@
-
-
-
+##############
+#[14.01.2020]#
+##############
+#
 library(Epi)
 library(haven)
 library(dplyr)
 library(foreign)
 library(broom)
 library(popEpi)
+#
 setwd("R:/LRWE_Proj26/sl617/dataset/analysis") 
 db <-read_dta("db.dta")
 nrow(db)
