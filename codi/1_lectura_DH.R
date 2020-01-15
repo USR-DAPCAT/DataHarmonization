@@ -1,4 +1,5 @@
 #-----------#
+#[15.01.2020]
 #[14.01.2020]
 #[13.01.2020]
 #[10.01.2020]
@@ -412,9 +413,12 @@ dtagr_tabac<-agregar_analitiques(dt=LLEGIR.tabaquisme,bd.dindex=dt_temp,finestra
 # Prescripcions / Facturació pendent de CODIS / AGREGADORS 
 # ----------------------------------------------------------#
 
+
+# ----------------------------------------------------------#
+#iv   LLEGIR.farmacs_prescrits
 # Prescripcion de CODIS / AGREGADORS 
 LLEGIR.farmacs_prescrits<-LLEGIR.farmacs_prescrits %>% transmute(idp,cod,dat,dbaixa)
-
+#
 dtagr_prescrip<-agregar_prescripcions(
   dt=LLEGIR.farmacs_prescrits,
   bd.dindex=dt_temp,
@@ -423,23 +427,33 @@ dtagr_prescrip<-agregar_prescripcions(
   finestra.dies=c(-45,+45),
   camp_agregador="agr",
   agregar_data=F)
+#FP.ALFAGLUC 
+#FP.ALT_GLUC
+#FP.BIGUANIDAS
+#FP.COMB_GLUC
+#FP.DPP4       
+#FP.GLINIDES  
+#FP.GLP1       
+#FP.INSULINAS
+#FP.SULFO     
+dtagr_prescrip<-dtagr_prescrip%>%mutate(FP.ALFAGLUC=case_when(FP.ALFAGLUC>=1 ~ 1,TRUE~0))
+dtagr_prescrip<-dtagr_prescrip%>%mutate(FP.ALT_GLUC=case_when(FP.ALT_GLUC>=1 ~ 1,TRUE~0))
+dtagr_prescrip<-dtagr_prescrip%>%mutate(FP.BIGUANIDAS=case_when(FP.BIGUANIDAS>=1 ~ 1,TRUE~0))
+dtagr_prescrip<-dtagr_prescrip%>%mutate(FP.COMB_GLUC=case_when(FP.COMB_GLUC>=1 ~ 1,TRUE~0))
+dtagr_prescrip<-dtagr_prescrip%>%mutate(FP.DPP4 =case_when(FP.DPP4 >=1 ~ 1,TRUE~0))
+dtagr_prescrip<-dtagr_prescrip%>%mutate(FP.GLINIDES=case_when(FP.GLINIDES>=1 ~ 1,TRUE~0))
+dtagr_prescrip<-dtagr_prescrip%>%mutate(FP.GLP1=case_when(FP.GLP1>=1 ~ 1,TRUE~0))
+dtagr_prescrip<-dtagr_prescrip%>%mutate(FP.INSULINAS=case_when(FP.INSULINAS>=1 ~ 1,TRUE~0))
+dtagr_prescrip<-dtagr_prescrip%>%mutate(FP.SULFO=case_when(FP.SULFO  >=1 ~ 1,TRUE~0))
+# ----------------------------------------------------------#
 
 
 
-
+# ----------------------------------------------------------#
 # v    LLEGIR.farmacs_facturat
-
-#dt=PRESCRIPCIONS,
-#finestra.dies=c(-365,0),
-#dt.agregadors=CATALEG,
-#bd.dindex="20161231",
-#prefix="FD.",
-#camp_agregador="agr", 
-#agregar_data=F
-
 # Facturació pendent de CODIS / AGREGADORS 
 LLEGIR.farmacs_facturat<-LLEGIR.farmacs_facturat %>% transmute(idp,cod,dat,env)
-
+#
 dtagr_facturat<-agregar_facturacio(
   dt=LLEGIR.farmacs_facturat,
   finestra.dies=c(-365,0),
@@ -447,6 +461,31 @@ dtagr_facturat<-agregar_facturacio(
   prefix="FF.",
   camp_agregador="agr",
   agregar_data=F)
+#FF.ALFAGLUC 
+#FF.ALT_GLUC 
+#FF.BIGUANIDAS
+#FF.COMB_GLUC
+#FF.DPP4      
+#FF.GLINIDES  
+#FF.GLP1   
+#FF.INSULINAS 
+#FF.SGLT2     
+#FF.SULFO    
+#FF.TIAZO 
+dtagr_facturat<-dtagr_facturat%>%mutate(FF.ALFAGLUC=case_when(FF.ALFAGLUC>=1 ~ 1,TRUE~0))
+dtagr_facturat<-dtagr_facturat%>%mutate(FF.ALT_GLUC =case_when(FF.ALT_GLUC >=1 ~ 1,TRUE~0))
+dtagr_facturat<-dtagr_facturat%>%mutate(FF.BIGUANIDAS=case_when(FF.BIGUANIDAS>=1 ~ 1,TRUE~0))
+dtagr_facturat<-dtagr_facturat%>%mutate(FF.COMB_GLUC=case_when(FF.COMB_GLUC>=1 ~ 1,TRUE~0))
+dtagr_facturat<-dtagr_facturat%>%mutate(FF.DPP4  =case_when(FF.DPP4  >=1 ~ 1,TRUE~0))
+dtagr_facturat<-dtagr_facturat%>%mutate(FF.GLINIDES=case_when(FF.GLINIDES>=1 ~ 1,TRUE~0))
+dtagr_facturat<-dtagr_facturat%>%mutate(FF.GLP1 =case_when(FF.GLP1 >=1 ~ 1,TRUE~0))
+dtagr_facturat<-dtagr_facturat%>%mutate(FF.INSULINAS =case_when(FF.INSULINAS>=1 ~ 1,TRUE~0))
+dtagr_facturat<-dtagr_facturat%>%mutate(FF.SGLT2  =case_when(FF.SGLT2 >=1 ~ 1,TRUE~0))
+dtagr_facturat<-dtagr_facturat%>%mutate(FF.SULFO  =case_when(FF.SULFO  >=1 ~ 1,TRUE~0))
+dtagr_facturat<-dtagr_facturat%>%mutate(FF.TIAZO  =case_when(FF.TIAZO  >=1 ~ 1,TRUE~0))
+# ----------------------------------------------------------#
+
+
 
   
 
@@ -481,8 +520,9 @@ dtagr_facturat   <-dtagr_facturat    %>%select(-dtindex )
 dt_total<-dt_index_match %>% 
   left_join(select(LLEGIR.poblacio,idp,sortida,situacio))%>% 
     left_join(dtagr_variables,by="idp")%>%
-      left_join(dtagr_prescrip,by="idp")%>%
-        left_join(dtagr_facturat ,by="idp")
+      left_join(dtagr_tabac,by="idp")%>%
+        left_join(dtagr_prescrip,by="idp")%>%
+          left_join(dtagr_facturat ,by="idp")
   
   
 
@@ -495,6 +535,10 @@ dt_total<-dt_total %>% mutate(any_index=lubridate::year(lubridate::as_date(dtind
 dt_total<-dt_total %>% mutate(agein=(as_date(dtindex)-ymd(dnaix))/365.25)
 dt_total<-dt_total %>% mutate(exitus=if_else(situacio=="D",1,0))
 dt_total<-dt_total %>% mutate(temps_FU=ymd(sortida)-as_date(dtindex))
+
+
+
+dt_total
 
 
 #dt_total$temps_FU
@@ -535,20 +579,126 @@ library("survminer")
 
 survminer::ggsurvplot(fit,data = dt_total)
 ###################################################################################
-
-
-
-
-
-
 #Part descriptiva  inicial!!!
-
 #mirar LEXIS!!!
 #::: preparció LEXIS:[]
+#variable.names(dt_total)
+#--------------------------------------#
+# "idp"           
+# "iddap"         
+# "caseid"        
+# "grup"          
+# "dnaix"         
+# "sexe"         
+# "dtindex"       
+# "numControls"   
+# "DG.cancer"     
+# "DG.DM2"        
+# "DG.exclude"    
+# "DG.outcome"   
+# "DG.prevalent"  
+# "can_prev"      
+# "sortida"       
+# "situacio"      
+# "CAC.valor"     
+# "CKDEPI.valor" 
+# "cLDL.valor"    
+# "cT.valor"      
+# "GLICADA.valor" 
+# "IMC.valor"     
+# "CAC.dies"      
+# "CKDEPI.dies"  
+# "cLDL.dies"     
+# "cT.dies"       
+# "GLICADA.dies"  
+# "IMC.dies"      
+# "FP.ALFAGLUC"   
+# "FP.ALT_GLUC"  
+# "FP.BIGUANIDAS" 
+# "FP.COMB_GLUC"  
+# "FP.DPP4"       
+# "FP.GLINIDES"   
+# "FP.GLP1"       
+# "FP.INSULINAS" 
+# "FP.SULFO"      
+# "FF.ALFAGLUC"   
+# "FF.ALT_GLUC"   
+# "FF.BIGUANIDAS" 
+# "FF.COMB_GLUC"  
+# "FF.DPP4"      
+# "FF.GLINIDES"   
+# "FF.GLP1"       
+# "FF.INSULINAS"  
+# "FF.SGLT2"      
+# "FF.SULFO"      
+# "FF.TIAZO"     
+# "any_index"     
+# "agein"         
+# "exitus"        
+# "temps_FU"     
+#--------------------------------------#
+summary(dt_total)
+#--------------------------------------#
+
+#Prova!
+#--------------------------------------#
+dt_total$iddap
+dt_total$caseid  
+dt_total$grup
+dt_total$sexe
+dt_total$numControls
+dt_total$DG.cancer     
+dt_total$DG.DM2        
+dt_total$DG.exclude    
+dt_total$DG.outcome   
+dt_total$DG.prevalent  
+dt_total$can_prev      
+dt_total$sortida
+dt_total$dnaix
+dt_total$situacio
+#--------------------------------------#
+dt_total$CAC.valor     
+dt_total$CKDEPI.valor 
+dt_total$cLDL.valor    
+dt_total$cT.valor      
+dt_total$GLICADA.valor 
+dt_total$IMC.valor     
+dt_total$CAC.dies      
+dt_total$CKDEPI.dies  
+dt_total$cLDL.dies
+dt_total$cT.dies       
+dt_total$GLICADA.dies  
+#--------------------------------------#
+dt_total$FP.ALFAGLUC 
+dt_total$FP.ALT_GLUC
+dt_total$FP.BIGUANIDAS
+dt_total$FP.COMB_GLUC
+dt_total$FP.DPP4       
+dt_total$FP.GLINIDES  
+dt_total$FP.GLP1       
+dt_total$FP.INSULINAS
+dt_total$FP.SULFO     
+#--------------------------------------#
+dt_total$FF.ALFAGLUC 
+dt_total$FF.ALT_GLUC 
+dt_total$FF.BIGUANIDAS
+dt_total$FF.COMB_GLUC
+dt_total$FF.DPP4      
+dt_total$FF.GLINIDES  
+dt_total$FF.GLP1   
+dt_total$FF.INSULINAS 
+dt_total$FF.SGLT2     
+dt_total$FF.SULFO    
+dt_total$FF.TIAZO 
+#--------------------------------------#
+
+dt_total$exitus        
 
 
 
 
+
+#preparació LEXIS:
 
 ###################################################################################
 dt_total2<-dt_total %>%mutate(dtindex=as_date(dtindex))
@@ -718,6 +868,9 @@ points(LEXIS_dt_total2_b_grup1_10cases, pch=c(NA,16)[LEXIS_dt_total2_b_grup1_10c
 
 
 
+
+
+
                   #--------------------------------------------#
                   # M O D E L     P O I S S O N   G L M        #
                   #--------------------------------------------#
@@ -787,7 +940,7 @@ summary(r1)
 
 # Genera una matriu amb dades i fa les prediccions segons el model ajustat
 age          <- c(35:100)
-period       <- seq(1998,2018,0.1)
+period       <- seq(1998,2018,1)
 gender       <- c(0:1)
 nd           <- expand.grid(age, period, gender)
 colnames(nd) <- c("age","per","gender")
@@ -886,6 +1039,50 @@ write.xlsx(res_DM_DIBAETIS, file="MORATLITY_DIBAETIS.xlsx")
 #https://www.dataquest.io/blog/tutorial-poisson-regression-in-r/
 
 
+
+
+
+
+
+
+
+
+
+#--------------------------------------#
+# D E S C R I P C I Ó :
+#--------------------------------------#
+
+
+#------------------------------------------------------------------#
+conductor_variables<-"conductor_DataHarmonization.xls"
+#------------------------------------------------------------------#
+
+
+
+
+
+#------------------------------------------------------------------#
+dt_total<-convertir_dates(d=dt_total,taulavariables=conductor_variables)
+dt_total<-etiquetar_valors(dt=dt_total,variables_factors=conductor_variables,fulla="etiquetes",camp_etiqueta="etiqueta2")
+dt_total<-etiquetar(d=dt_total,taulavariables=conductor_variables)
+#------------------------------------------------------------------#
+
+
+#names(LAB_ETIQ_PEU_CAT)
+#***********************************************************************#
+#taula00 Criteris Inclusio
+
+#i
+#***********************************************************************#
+formula_taula00<-formula_compare("taula00",y="grup",taulavariables = conductor_variables)
+T00<-descrTable(formula_taula00,method = 1,data=dt_total,max.xlev = 100, show.p.overall=FALSE)
+#***********************************************************************#
+T00
+#***********************************************************************#
+
+
+
+save(T00,file="DataHarmonization.Rdata")
 
 
 
