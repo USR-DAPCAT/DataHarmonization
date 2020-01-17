@@ -1,27 +1,23 @@
 #-----------#
+#[17.01.2020]
+#[16.01.2020]
 #[15.01.2020]
 #[14.01.2020]
 #[13.01.2020]
 #[10.01.2020]
-#-----------#
 #[13.01.2020]
 #[31.12.2019]
+#[30.12.2019]
+#[27.12.2019]
+#[24.12.2019]
+#[20.12.2019]
+#[19.12.2019]
+#[17.12.2019]
 #-----------#
-#30.12.2019#
-#27.12.2019#
-#24.12.2019#
-#20.12.2019#
-#-----------#
-#19.12.2019#
-#-----------#
-
 
 # Lectura de fitxers --------------------
 
 
-#--------------------------------#
-##17.12.2019
-#--------------------------------#
 
 
 #install.packages("remotes")
@@ -234,9 +230,15 @@ table(LLEGIR.variables_Cataleg$agr)
 #     La cohort d'estudi final és la combinació de la cohorte exposada (EC) i la cohort final no exposada (FNE)
 #     --------------------------------------------------------------------------------------------------------
 
+#----------------------------------------------#
+#i        [cmbdh_diagnostics]               mult
+#LLEGIR.cmbdh_diagnostics_padris.
+#----------------------------------------------#
+#ii       [dianostics]                      mult
+#LLEGIR.diagnostics 
+#----------------------------------------------#
 
-
-##############################################################################################################################
+##################################################################################################
 # Generar data index -----------
 dt_diagnostics<-LLEGIR.cmbdh_diagnostics_padris %>% 
   transmute(idp,cod=as.character(cod),dat,agr) %>% 
@@ -245,33 +247,69 @@ dt_diagnostics<-LLEGIR.cmbdh_diagnostics_padris %>%
 dt_diagnostics_global<-LLEGIR.cmbdh_diagnostics_padris %>% 
   transmute(idp,cod=as.character(cod),dat,agr) %>% 
   bind_rows(select(LLEGIR.diagnostics,idp,cod,dat,agr))
-
-
-#data minima[]#
+##################################################################################################
 dt_cataleg<-read_excel("Spain_codes.xls") %>% select(cod,agr,exposed)
+######################################
 
+
+
+
+
+
+
+######################################
+#
+#i)  FILTRE_1 : exposed=="exposed"
 dt_diagnostics<-dt_diagnostics %>% left_join(dt_cataleg,by="cod") %>% filter(exposed=="exposed") 
+#
+#ii) FILTRE_2 : Filtrem la base de dades 2004-2018 *[S'HA DE CANVIAR A 2006-2018, quan tinguem tota la base de dades!, així convergirà]
+dt_diagnostics<-dt_diagnostics%>% filter(dat>=20040101  & dat<=20181231)
+#
+######################################
 
 
+#busquem la DATA ÍNDEX!:[]
+
+#data minima[data Índex!!!]#
 #-----#
 DINDEX<-dt_diagnostics%>% group_by(idp)%>%summarise(data_index=min(dat,na.rm = TRUE))%>%ungroup()
 #DINDEX
+
+
+
+
+
 ##############################################################################################################################
 #-----------------------------------------------------------------------------------------------------------------------#
 #[ Crearé una base de dades dels exposat( TOTS ELS DELS DINDEX!!), amb ANY DE NAIXAMENT+SEXE]
 #[[població]] 
 # C_EXPOSATS<-DINDEX%>%left_join(LLEGIR.poblacio,by="idp")%>%mutate(Edat=as.numeric(lubridate::ymd(data_index)-lubridate::ymd(dnaix))/365.25 )
 C_EXPOSATS<-DINDEX%>%left_join(LLEGIR.poblacio,by="idp")
-C_EXPOSATS<-C_EXPOSATS%>%filter(entrada<=20181231) #Excluits entrada després de (31/12/2018)
+#C_EXPOSATS<-C_EXPOSATS%>%filter(entrada<=20181231) #Excluits entrada després de (31/12/2018)
 variable.names(C_EXPOSATS)
+
+
+
+
+
 #[1] "idp"        "data_index" "sexe"       "dnaix"      "entrada"    "sortida"    "situacio"   "Edat"  
 #-----------------------------------------------------------------------------------------------------------------------#
 #[ Crearé una altre base de dades , que seran els No exposats,tots menys els exposats!!]
 C_NO_EXPOSATS<-LLEGIR.poblacio %>% anti_join(C_EXPOSATS,by="idp")
-C_NO_EXPOSATS<-C_NO_EXPOSATS%>%filter(entrada<=20181231) #Excluits entrada després de (31/12/2018)
+#C_NO_EXPOSATS<-C_NO_EXPOSATS%>%filter(entrada<=20181231) #Excluits entrada després de (31/12/2018)
 variable.names(C_NO_EXPOSATS)
 #[1]  "idp"      "sexe"     "dnaix"    "entrada"  "sortida"  "situacio"
 #-----------------------------------------------------------------------------------------------------------------------#
+
+
+
+
+
+#iii) FILTRE_3 : Els  EXPOSATS a DIABETIS TIPUS2 amb DIAiNDEX que tinguin <35 anys l'any 1/1/2006, quedaran FORA!, per tant hagin nascut l'any <=1971.
+C_EXPOSATS<-C_EXPOSATS%>%filter(dnaix<=19710101)
+
+
+
 
 # Fusionar base de dades en dues : 
 
@@ -345,11 +383,8 @@ dt_agregada_agr<-agregar_problemes(select(dt_diagnostics_global,idp,cod,dat),
                                    dt.agregadors=select(dt_cataleg,cod,agr))
 
 
-#---------------------------------------------------------------------------------------------#
-# si un dels elements del grup [caseid] és prevalent o càncer, tot el [caseid] anirà a FORA!!! 
-# Filtrar per exclusions (Eliminar prevalents i cancer)
-#---------------------------------------------------------------------------------------------#
-
+#iV) FILTRE_4:  Si un dels elements del grup [caseid] és prevalent o càncer, tot el [caseid] anirà a FORA!!!
+#                Filtrar per exclusions (Eliminar prevalents i cancer)
 
 dt_index_match <-dt_index_match %>% 
   left_join(select(dt_agregada_agr,-dtindex),by="idp") %>%
@@ -531,10 +566,6 @@ dt_total<-dt_index_match %>%
 
 library(lubridate)
 
-dt_total<-dt_total %>% mutate(any_index=lubridate::year(lubridate::as_date(dtindex)))
-dt_total<-dt_total %>% mutate(agein=(as_date(dtindex)-ymd(dnaix))/365.25)
-dt_total<-dt_total %>% mutate(exitus=if_else(situacio=="D",1,0))
-dt_total<-dt_total %>% mutate(temps_FU=ymd(sortida)-as_date(dtindex))
 
 
 
@@ -568,16 +599,48 @@ variable.names(dt_total)
 #dt_total$grup
 
 
+dt_total$dtindex
+
+
 # ANALISIS  --------------
 
 #https://rstudio-pubs-static.s3.amazonaws.com/369387_b8a63ee7e039483e896cb91f442bc72f.html
 
 
-# Survival 
-fit<- survfit(Surv(temps_FU, exitus) ~ grup, data = dt_total)
-library("survminer")
 
-survminer::ggsurvplot(fit,data = dt_total)
+#This is a retrospective cohort study. 
+#All people diagnosed with diabetes 
+#between 01/01/2006 and the latest specific capture 31/12/2018
+#entrada>=20060101  & entrada<=20181231
+
+dt_total2<-dt_total%>%mutate(dtindex=as_date(dtindex))
+
+
+
+dt_total2<-dt_total2 %>% mutate(any_index=lubridate::year(lubridate::as_date(dtindex)))
+dt_total2<-dt_total2 %>% mutate(agein=(as_date(dtindex)-ymd(dnaix))/365.25)
+dt_total2<-dt_total2 %>% mutate(exitus=if_else(situacio=="D",1,0))
+dt_total2<-dt_total2 %>% mutate(temps_FU=ymd(sortida)-as_date(dtindex))
+
+
+dt_total2$any_index
+dt_total2$agein
+dt_total2$exitus
+dt_total2$temps_FU
+dt_total2$exitus
+
+summary(fit)
+
+
+
+###################################################################################
+# Survival 
+
+fit<- survfit(Surv(temps_FU, exitus) ~ grup, data = dt_total2)
+library("survminer")
+survminer::ggsurvplot(fit,data = dt_total2)
+figura1<-survminer::ggsurvplot(fit,data = dt_total2)
+#
 ###################################################################################
 #Part descriptiva  inicial!!!
 #mirar LEXIS!!!
@@ -637,63 +700,62 @@ survminer::ggsurvplot(fit,data = dt_total)
 # "exitus"        
 # "temps_FU"     
 #--------------------------------------#
-summary(dt_total)
+#summary(dt_total2)
 #--------------------------------------#
 
 #Prova!
 #--------------------------------------#
-dt_total$iddap
-dt_total$caseid  
-dt_total$grup
-dt_total$sexe
-dt_total$numControls
-dt_total$DG.cancer     
-dt_total$DG.DM2        
-dt_total$DG.exclude    
-dt_total$DG.outcome   
-dt_total$DG.prevalent  
-dt_total$can_prev      
-dt_total$sortida
-dt_total$dnaix
-dt_total$situacio
+#dt_total$iddap
+#dt_total$caseid  
+#dt_total$grup
+#dt_total$sexe
+#dt_total$numControls
+#dt_total$DG.cancer     
+#dt_total$DG.DM2        
+#dt_total$DG.exclude    
+#dt_total$DG.outcome   
+#dt_total$DG.prevalent  
+#dt_total$can_prev      
+#dt_total$sortida
+#dt_total$dnaix
+#dt_total$situacio
 #--------------------------------------#
-dt_total$CAC.valor     
-dt_total$CKDEPI.valor 
-dt_total$cLDL.valor    
-dt_total$cT.valor      
-dt_total$GLICADA.valor 
-dt_total$IMC.valor     
-dt_total$CAC.dies      
-dt_total$CKDEPI.dies  
-dt_total$cLDL.dies
-dt_total$cT.dies       
-dt_total$GLICADA.dies  
+#dt_total$CAC.valor     
+#dt_total$CKDEPI.valor 
+#dt_total$cLDL.valor    
+#dt_total$cT.valor      
+#dt_total$GLICADA.valor 
+#dt_total$IMC.valor     
+#dt_total$CAC.dies      
+#dt_total$CKDEPI.dies  
+#dt_total$cLDL.dies
+#dt_total$cT.dies       
+#dt_total$GLICADA.dies  
 #--------------------------------------#
-dt_total$FP.ALFAGLUC 
-dt_total$FP.ALT_GLUC
-dt_total$FP.BIGUANIDAS
-dt_total$FP.COMB_GLUC
-dt_total$FP.DPP4       
-dt_total$FP.GLINIDES  
-dt_total$FP.GLP1       
-dt_total$FP.INSULINAS
-dt_total$FP.SULFO     
+#dt_total$FP.ALFAGLUC 
+#dt_total$FP.ALT_GLUC
+#dt_total$FP.BIGUANIDAS
+#dt_total$FP.COMB_GLUC
+#dt_total$FP.DPP4       
+#dt_total$FP.GLINIDES  
+#dt_total$FP.GLP1       
+#dt_total$FP.INSULINAS
+#dt_total$FP.SULFO     
 #--------------------------------------#
-dt_total$FF.ALFAGLUC 
-dt_total$FF.ALT_GLUC 
-dt_total$FF.BIGUANIDAS
-dt_total$FF.COMB_GLUC
-dt_total$FF.DPP4      
-dt_total$FF.GLINIDES  
-dt_total$FF.GLP1   
-dt_total$FF.INSULINAS 
-dt_total$FF.SGLT2     
-dt_total$FF.SULFO    
-dt_total$FF.TIAZO 
+#dt_total$FF.ALFAGLUC 
+#dt_total$FF.ALT_GLUC 
+#dt_total$FF.BIGUANIDAS
+#dt_total$FF.COMB_GLUC
+#dt_total$FF.DPP4      
+#dt_total$FF.GLINIDES  
+#dt_total$FF.GLP1   
+#dt_total$FF.INSULINAS 
+#dt_total$FF.SGLT2     
+#dt_total$FF.SULFO    
+#dt_total$FF.TIAZO 
 #--------------------------------------#
-
-dt_total$exitus        
-
+#dt_total$exitus        
+#--------------------------------------#
 
 
 
@@ -701,8 +763,8 @@ dt_total$exitus
 #preparació LEXIS:
 
 ###################################################################################
-dt_total2<-dt_total %>%mutate(dtindex=as_date(dtindex))
-dt_total2<-dt_total2 %>%mutate(dnaix=as.Date(as.character(dnaix),format = "%Y%m%d"))
+dt_total2<-dt_total2 %>%mutate(dtindex=as_date(dtindex))
+dt_total2<-dt_total2 %>%mutate(dnaix=as.Date(as.character(dnaix),    format="%Y%m%d"))
 dt_total2<-dt_total2 %>%mutate(sortida=as.Date(as.character(sortida),format = "%Y%m%d"))
 ###################################################################################
 dt_total2<-dt_total2%>%select(idp,dtindex,dnaix,sortida,exitus,grup)
@@ -714,6 +776,9 @@ dt_total2<-dt_total2%>%mutate(fail =exitus)
 ###################################################################################
 dt_total2<-dt_total2%>%select(idp,birth,entry,exit,fail,grup)
 ###################################################################################
+
+
+
 
 
 ###################################################################################
@@ -729,7 +794,7 @@ dt_total2_grup1<-dt_total2 %>% filter(grup==1)
 ###################################################################################
 #Com funciona!:
 #####################################################################
-dt_total2_10cases<-dt_total2[1:10,]
+dt_total2_10cases<-dt_total2[1:150,]
 dt_total2_10cases_grup0<-dt_total2_grup0[1:150,]
 dt_total2_10cases_grup1<-dt_total2_grup1[1:150,]
 #####################################################################
@@ -771,36 +836,15 @@ plot(Lexis( entry = list( per=entry ),
             exit.status = fail,
             data = dt_total2))
 #####################################################################
-#####################################################################
-plot(LEXIS_dt_total2_b, grid=0:20*5, col="black", xaxs="i", yaxs="i",xlim=c(1980,2021), ylim=c(30,100), lwd=1, las=1 )
+#[S'HA DE CANVIAR A 2006-2018, quan tinguem tota la base de dades!, així convergirà]
+plot(LEXIS_dt_total2_b, grid=0:20*5, col="black", xaxs="i", yaxs="i",xlim=c(2004,2021), ylim=c(30,100), lwd=1, las=1 )
 points(LEXIS_dt_total2_b, pch=c(NA,16)[LEXIS_dt_total2_b$fail+1] )
 
 
 
 
 
-#grup0
-#####################################################################
-# Define a Lexis object with timescales calendar time and age
-LEXIS_dt_total2_b_grup0<- Lexis( 
-  entry        =     list(per=entry),
-  exit         =     list(per=exit,age=exit-birth ),
-  exit.status  =     fail,
-  data         =    dt_total2_grup0 )
-LEXIS_dt_total2_b_grup0
-#####################################################################
-#Lexis.diagram()
-plot(Lexis( entry = list( per=entry ),
-            exit = list( per=exit, age=exit-birth ),
-            exit.status = fail,
-            data = dt_total2_grup0))
-#####################################################################
-plot(LEXIS_dt_total2_b_grup0, grid=0:20*5, col="black", xaxs="i", yaxs="i",xlim=c(1980,2021), ylim=c(30,100), lwd=1, las=1 )
-points(LEXIS_dt_total2_b_grup0, pch=c(NA,16)[LEXIS_dt_total2_b_grup0$fail+1] )
-
-
-
-#grup1
+#grup1 (DIABETIS)
 #####################################################################
 # Define a Lexis object with timescales calendar time and age
 LEXIS_dt_total2_b_grup1<- Lexis( 
@@ -816,14 +860,39 @@ plot(Lexis( entry = list( per=entry ),
             exit.status = fail,
             data = dt_total2_grup1))
 #####################################################################
-plot(LEXIS_dt_total2_b_grup1, grid=0:20*5, col="black", xaxs="i", yaxs="i",xlim=c(1980,2021), ylim=c(30,100), lwd=1, las=1 )
+#[S'HA DE CANVIAR A 2006-2018, quan tinguem tota la base de dades!, així convergirà]
+plot(LEXIS_dt_total2_b_grup1, grid=0:20*5, col="black", xaxs="i", yaxs="i",xlim=c(2004,2021), ylim=c(30,100), lwd=1, las=1 )
 points(LEXIS_dt_total2_b_grup1, pch=c(NA,16)[LEXIS_dt_total2_b_grup1$fail+1] )
 
 
 
 
+
+
+#grup0 (NO DIABTEIS)
 #####################################################################
-#grup0_10 cases  [grup==0]
+# Define a Lexis object with timescales calendar time and age
+LEXIS_dt_total2_b_grup0<- Lexis( 
+  entry        =     list(per=entry),
+  exit         =     list(per=exit,age=exit-birth ),
+  exit.status  =     fail,
+  data         =    dt_total2_grup0 )
+LEXIS_dt_total2_b_grup0
+#####################################################################
+#Lexis.diagram()
+plot(Lexis( entry = list( per=entry ),
+            exit = list( per=exit, age=exit-birth ),
+            exit.status = fail,
+            data = dt_total2_grup0))
+#####################################################################
+#[S'HA DE CANVIAR A 2006-2018, quan tinguem tota la base de dades!, així convergirà]
+plot(LEXIS_dt_total2_b_grup0, grid=0:20*5, col="black", xaxs="i", yaxs="i",xlim=c(2004,2021), ylim=c(30,100), lwd=1, las=1 )
+points(LEXIS_dt_total2_b_grup0, pch=c(NA,16)[LEXIS_dt_total2_b_grup0$fail+1] )
+
+
+
+#####################################################################
+#grup0_10 cases  [grup==0] (NO DIABETIS)
 #####################################################################
 # Define a Lexis object with timescales calendar time and age
 LEXIS_dt_total2_b_grup0_10cases<- Lexis( 
@@ -840,13 +909,14 @@ plot(Lexis( entry = list( per=entry ),
             exit.status = fail,
             data = dt_total2_10cases_grup0))
 #####################################################################
-plot(LEXIS_dt_total2_b_grup0_10cases, grid=0:20*5, col="black", xaxs="i", yaxs="i",xlim=c(1980,2021), ylim=c(30,100), lwd=1, las=1 )
+#[S'HA DE CANVIAR A 2006-2018, quan tinguem tota la base de dades!, així convergirà]
+plot(LEXIS_dt_total2_b_grup0_10cases, grid=0:20*5, col="black", xaxs="i", yaxs="i",xlim=c(2004,2021), ylim=c(30,100), lwd=1, las=1 )
 points(LEXIS_dt_total2_b_grup0_10cases, pch=c(NA,16)[LEXIS_dt_total2_b_grup0_10cases$fail+1] )
 
 
 
 #####################################################################
-#grup1_10 cases [grup==1]
+#grup1_10 cases [grup==1] (DIABETIS)
 #####################################################################
 # Define a Lexis object with timescales calendar time and age
 LEXIS_dt_total2_b_grup1_10cases<- Lexis( 
@@ -863,7 +933,8 @@ plot(Lexis( entry = list( per=entry ),
             exit.status = fail,
             data = dt_total2_10cases_grup1))
 #####################################################################
-plot(LEXIS_dt_total2_b_grup1_10cases, grid=0:20*5, col="black", xaxs="i", yaxs="i",xlim=c(1980,2021), ylim=c(30,100), lwd=1, las=1 )
+#[S'HA DE CANVIAR A 2006-2018, quan tinguem tota la base de dades!, així convergirà]
+plot(LEXIS_dt_total2_b_grup1_10cases, grid=0:20*5, col="black", xaxs="i", yaxs="i",xlim=c(2004,2021), ylim=c(30,100), lwd=1, las=1 )
 points(LEXIS_dt_total2_b_grup1_10cases, pch=c(NA,16)[LEXIS_dt_total2_b_grup1_10cases$fail+1] )
 
 
@@ -871,42 +942,46 @@ points(LEXIS_dt_total2_b_grup1_10cases, pch=c(NA,16)[LEXIS_dt_total2_b_grup1_10c
 
 
 
-                  #--------------------------------------------#
-                  # M O D E L     P O I S S O N   G L M        #
-                  #--------------------------------------------#
+                  #--------------------------------------------------#
+                  # M O D E L     P O I S S O N   G L M   GLOBAL     #
+                  #--------------------------------------------------#
 
 ##########################
-dbs1 <- popEpi::splitMulti(LEXIS_dt_total2_b, age = seq(35,100,1), per= seq(1998,2018,1))
-dbs1
-a.kn <- with(subset(dbs1, lex.Xst==1), quantile(age+lex.dur,(1:5-0.5)/5))
-p.kn <- with(subset(dbs1, lex.Xst==1), quantile(per+lex.dur,(1:5-0.5)/5))
+#dbs1 <- popEpi::splitMulti(LEXIS_dt_total2_b, age = seq(35,100,1), per= seq(1998,2018,1))
+#dbs1
+#a.kn <- with(subset(dbs1, lex.Xst==1), quantile(age+lex.dur,(1:5-0.5)/5))
+#p.kn <- with(subset(dbs1, lex.Xst==1), quantile(per+lex.dur,(1:5-0.5)/5))
 ##########################
-
-
 # 
-dbs1<-dbs1 %>% left_join(select(dt_total,idp,sexe)) %>% mutate(gender=if_else(sexe=="H",1,0))
-
-
-
-r1 <- glm((lex.Xst==1)~Ns(age, knots = a.kn)*Ns(per, knots = p.kn)*gender,
-          family = poisson,
-          offset = log(lex.dur),
-          data   = dbs1)
-
-summary(r1)
-
+#dbs1<-dbs1 %>% left_join(select(dt_total,idp,sexe)) %>% mutate(gender=if_else(sexe=="H",1,0))
+#r1 <- glm((lex.Xst==1)~Ns(age, knots = a.kn)*Ns(per, knots = p.kn)*gender,
+#          family = poisson,
+#          offset = log(lex.dur),
+#          data   = dbs1)
+#summary(r1)
 # Genera una matriu amb dades i fa les prediccions segons el model ajustat
-age          <- c(35:100)
-period       <- seq(1998,2018,0.1)
-gender       <- c(0:1)
-nd           <- expand.grid(age, period, gender)
-colnames(nd) <- c("age","per","gender")
-nd           <- cbind(nd, lex.dur=1000)
-p1           <- ci.pred(r1, newdata = nd, Exp = FALSE)
-colnames(p1) <- c("es_d", "lb_d", "ub_d")
-acm_DM       <- cbind(nd,p1, out="acm")
+#age          <- c(35:100)
+#period       <- seq(1998,2018,0.1)
+#gender       <- c(0:1)
+#nd           <- expand.grid(age, period, gender)
+#colnames(nd) <- c("age","per","gender")
+#nd           <- cbind(nd, lex.dur=1000)
+#p1           <- ci.pred(r1, newdata = nd, Exp = FALSE)
+#colnames(p1) <- c("es_d", "lb_d", "ub_d")
+#acm_DM       <- cbind(nd,p1, out="acm")
+#res_DM_TOTAL <-cbind(acm_DM, rateD=exp(acm_DM$es_d), rateD_lb=exp(acm_DM$lb_d), rateD_ub=exp(acm_DM$ub_d))
+#--------------------------------------------------#
 
-res_DM_TOTAL <-cbind(acm_DM, rateD=exp(acm_DM$es_d), rateD_lb=exp(acm_DM$lb_d), rateD_ub=exp(acm_DM$ub_d))
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -914,33 +989,36 @@ res_DM_TOTAL <-cbind(acm_DM, rateD=exp(acm_DM$es_d), rateD_lb=exp(acm_DM$lb_d), 
                   #-----------------------------------------------------#
                   # M O D E L     P O I S S O N   G L M:      DIABETIS  #
                   #-----------------------------------------------------#
-
+#--------------------------------------------------------#
 #[DIABETIS: Causes de Mortalitat]  :  LEXIS_dt_total2_b_grup1
-
-
+#[S'HA DE CANVIAR A 2006-2018, quan tinguem tota la base de dades!, així convergirà]
+#--------------------------------------------------------#
+  
 ##########################
-dbs1 <- popEpi::splitMulti( LEXIS_dt_total2_b_grup1, age = seq(35,100,1), per= seq(1998,2018,1))
+dbs1 <- popEpi::splitMulti( LEXIS_dt_total2_b_grup1, age = seq(35,100,1), per= seq(2004,2018,1))
 dbs1
 a.kn <- with(subset(dbs1, lex.Xst==1), quantile(age+lex.dur,(1:5-0.5)/5))
 p.kn <- with(subset(dbs1, lex.Xst==1), quantile(per+lex.dur,(1:5-0.5)/5))
 ##########################
-
-
-# 
+#--------------------------------------------------------# 
 dbs1<-dbs1 %>% left_join(select(dt_total,idp,sexe)) %>% mutate(gender=if_else(sexe=="H",1,0))
+#--------------------------------------------------------#
 
-
+#dbs1$lex.dur
 
 r1 <- glm((lex.Xst==1)~Ns(age, knots = a.kn)*Ns(per, knots = p.kn)*gender,
-          family = poisson,
+          family = poisson(),
           offset = log(lex.dur),
           data   = dbs1)
+#--------------------------------------------------------#
+dbs1$lex.Xst
+#--------------------------------------------------------#
 
+#--------------------------------------------------------#
 summary(r1)
-
 # Genera una matriu amb dades i fa les prediccions segons el model ajustat
 age          <- c(35:100)
-period       <- seq(1998,2018,1)
+period       <- seq(2004,2018,1)
 gender       <- c(0:1)
 nd           <- expand.grid(age, period, gender)
 colnames(nd) <- c("age","per","gender")
@@ -948,17 +1026,79 @@ nd           <- cbind(nd, lex.dur=1000)
 p1           <- ci.pred(r1, newdata = nd, Exp = FALSE)
 colnames(p1) <- c("es_d", "lb_d", "ub_d")
 acm_DM       <- cbind(nd,p1, out="acm")
-
+#--------------------------------------------------------#
 res_DM_DIBAETIS <-cbind(acm_DM, rateD=exp(acm_DM$es_d), rateD_lb=exp(acm_DM$lb_d), rateD_ub=exp(acm_DM$ub_d))
-
 #################
 res_DM_DIBAETIS
 ################
-
+figura3<-summary(r1)
 library(xlsx)
 #--------------------------------------------------------#
 write.xlsx(res_DM_DIBAETIS, file="MORATLITY_DIBAETIS.xlsx")
 #--------------------------------------------------------#
+
+
+
+
+
+
+                #-----------------------------------------------------#
+                # M O D E L     P O I S S O N   G L M: NO   DIABETIS  #
+                #-----------------------------------------------------#
+#--------------------------------------------------------#
+#[DIABETIS: Causes de Mortalitat]  :  LEXIS_dt_total2_b_grup0
+#[S'HA DE CANVIAR A 2006-2018, quan tinguem tota la base de dades!, així convergirà]
+#--------------------------------------------------------#
+
+##########################
+dbs1 <- popEpi::splitMulti( LEXIS_dt_total2_b_grup0, age = seq(35,100,1), per= seq(2004,2018,1))
+dbs1
+a.kn <- with(subset(dbs1, lex.Xst==1), quantile(age+lex.dur,(1:5-0.5)/5))
+p.kn <- with(subset(dbs1, lex.Xst==1), quantile(per+lex.dur,(1:5-0.5)/5))
+##########################
+#--------------------------------------------------------# 
+dbs1<-dbs1 %>% left_join(select(dt_total,idp,sexe)) %>% mutate(gender=if_else(sexe=="H",1,0))
+#--------------------------------------------------------#
+r2 <- glm((lex.Xst==1)~Ns(age, knots = a.kn)*Ns(per, knots = p.kn)*gender,
+          family = poisson,
+          offset = log(lex.dur),
+          data   = dbs1)
+#--------------------------------------------------------#
+summary(r2)
+figura4<-summary(r2)
+#--------------------------------------------------------#
+# Genera una matriu amb dades i fa les prediccions segons el model ajustat
+age          <- c(35:100)
+period       <- seq(2004,2018,1)
+gender       <- c(0:1)
+nd           <- expand.grid(age, period, gender)
+colnames(nd) <- c("age","per","gender")
+nd           <- cbind(nd, lex.dur=1000)
+p1           <- ci.pred(r2, newdata = nd, Exp = FALSE)
+colnames(p1) <- c("es_d", "lb_d", "ub_d")
+acm_DM       <- cbind(nd,p1, out="acm")
+#--------------------------------------------------------#
+res_DM_NO_DIBAETIS <-cbind(acm_DM, rateD=exp(acm_DM$es_d), rateD_lb=exp(acm_DM$lb_d), rateD_ub=exp(acm_DM$ub_d))
+#################
+res_DM_NO_DIBAETIS
+################
+library(xlsx)
+#--------------------------------------------------------#
+write.xlsx(res_DM_NO_DIBAETIS, file="MORATLITY_NO_DIBAETIS.xlsx")
+#--------------------------------------------------------#
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 #             EXEMPLE:[]
@@ -1053,36 +1193,42 @@ write.xlsx(res_DM_DIBAETIS, file="MORATLITY_DIBAETIS.xlsx")
 #--------------------------------------#
 
 
+#canviar
+
+
+
 #------------------------------------------------------------------#
 conductor_variables<-"conductor_DataHarmonization.xls"
 #------------------------------------------------------------------#
-
-
+#Les dates s'han de passar com a caràcter!!!  #
+#Preparació de la base de dades pel Conductor:[]
+dt_total3<-dt_total
+dt_total3<-dt_total3%>%mutate(dnaix=as.character(dnaix))
+dt_total3<-dt_total3%>%mutate(dtindex=as_date(dtindex))
+dt_total3<-dt_total3 %>% mutate(agein=(as_date(dtindex)-ymd(dnaix))/365.25)
+dt_total3<-dt_total3 %>% mutate(exitus=if_else(situacio=="D",1,0))
+dt_total3
 
 
 
 #------------------------------------------------------------------#
-dt_total<-convertir_dates(d=dt_total,taulavariables=conductor_variables)
-dt_total<-etiquetar_valors(dt=dt_total,variables_factors=conductor_variables,fulla="etiquetes",camp_etiqueta="etiqueta2")
-dt_total<-etiquetar(d=dt_total,taulavariables=conductor_variables)
+dt_total3<-convertir_dates(d=dt_total3,taulavariables=conductor_variables)
+dt_total3<-etiquetar_valors(dt=dt_total3,variables_factors=conductor_variables,fulla="etiquetes",camp_etiqueta="etiqueta2")
+dt_total3<-etiquetar(d=dt_total3,taulavariables=conductor_variables)
 #------------------------------------------------------------------#
-
-
-#names(LAB_ETIQ_PEU_CAT)
-#***********************************************************************#
-#taula00 Criteris Inclusio
 
 #i
 #***********************************************************************#
 formula_taula00<-formula_compare("taula00",y="grup",taulavariables = conductor_variables)
-T00<-descrTable(formula_taula00,method = 1,data=dt_total,max.xlev = 100, show.p.overall=FALSE)
+
+T00<-descrTable(formula_taula00,method = 1,data=dt_total3,max.xlev = 100, show.p.overall=FALSE)
 #***********************************************************************#
 T00
 #***********************************************************************#
 
 
 
-save(T00,file="DataHarmonization.Rdata")
+save(T00,figura1,figura3,figura4,file="DataHarmonization.Rdata")
 
 
 
