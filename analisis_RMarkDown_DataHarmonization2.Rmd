@@ -1,6 +1,6 @@
 ---
-title: "Análisis Descriptivo. Mortalidad en personas Diabéticas Tipo 2 en comparación en Poblacion Control"
-author: "Jordi Real & Ramó Puig"
+title: "Análisis Descriptivo. Mortalidad en personas Diabéticas Tipo 2 en comparación en Población Control"
+author: "Jordi Real & Rai Puig"
 website: "https://github.com/USR-DAPCAT/"
 
 date: "`r format(Sys.time(), '%d %B, %Y')`"
@@ -55,9 +55,9 @@ output:
 
 ## 2. Objectivos Secundarios
 
-- Análisis de las tendencias en mortalidad cardiovascular a lo largo del tiempo  de todas las causas entre el 01.01.2004 y la   captura más reciente del SIDIAP (31.12.2018) en personas con reciente diabetes tipo 2 y en comparación con 1 población control sin diabetes.
+- Análisis de las tendencias en mortalidad cardiovascular a lo largo del tiempo entre el 01.01.2004 y la   captura más reciente del SIDIAP (31.12.2018) en personas con reciente diabetes tipo 2 y en comparación con 1 población control sin diabetes.
 
-- Análisis de las diferncias y las proporciones de las tasas  en mortalidad  cardiovascular  a lo largo del tiempo  de todas las causas entre el 01.01.2004 y la   captura más reciente del SIDIAP (31.12.2018) en personas con reciente diabetes tipo 2 y en comparación con 1 población control sin diabetes.
+- Análisis de las diferncias y las proporciones de las tasas  en mortalidad  cardiovascular  a lo largo del tiempo  entre el 01.01.2004 y la   captura más reciente del SIDIAP (31.12.2018) en personas con reciente diabetes tipo 2 y en comparación con 1 población control sin diabetes.
 
 - Comparar las tendencias de las tasas de mortalidad y de ratio entre los diferentes países.
 
@@ -90,15 +90,15 @@ output:
 
 ## 5. Análisis Estadístico
 
-* Se describe el perfil demográfico y clínico del Grupo Caso(Diabético) incluidos, empreando los estadísticos más adecuados en cada caso en función del tipo de variable. 
+* Se describe el perfil demográfico y clínico del Grupo Caso(Diabético) incluidos, empreando los estadísticos más adecuados en cada caso, en función del tipo de variable. 
 
-* Se describe el perfil demográfico y clínico del Grupo Control incluidos.  empreando los estadísticos más adecuados en cada caso en función del tipo de variable.
+* Se describe el perfil demográfico y clínico del Grupo Control incluidos.  empreando los estadísticos más adecuados en cada caso, en función del tipo de variable.
 
 * Generamos una curva de supervivencia, con el método Kaplan-Meier para ara el Grupo Caso(Diabético) y Grupo Control.(figura1)
 
 * Aplicamos un Diagrama de Lexis para el Grupo Caso(Diabético) y Grupo Control.(figura2)
 
-* Modelo lineal generalizado para ajustar una regresión de Poisson de la Tasas de  todo tipo de Mortalidad ,para el Grupo Caso(Diabético) y Grupo Control. (figura3)
+* Modelo lineal generalizado para ajustar una regresión de Poisson de la Tasas de  todo tipo de Mortalidad ,para el Grupo Caso(Diabético) y Grupo Control.(figura3)
 
 
 
@@ -140,12 +140,12 @@ devtools::source_url(link_source)
 ####  Llegir dades    #####
 load("DataHarmonization.Rdata")
 #Taula1
-export2md(T00,caption="**perfil demográfico y clínico del Grupo Caso(Diabético) Y Grupo Control**")
+export2md(T00,caption="**Perfil demográfico y clínico del Grupo Caso(Diabético) y Grupo Control**")
 ```
 
 ```{r, message=FALSE, warning=FALSE, include=T, echo=FALSE,size="huge"}
 
-'curva de supervivencia, con el método Kaplan-Meier para ara el Grupo Caso(Diabético) y Grupo Control.(figura1)'
+'Curva de supervivencia, con el método Kaplan-Meier para ara el Grupo Caso(Diabético) y Grupo Control(figura1)'
 figura1
 
 ```
@@ -162,10 +162,12 @@ figura1
 
 ```{r, message=FALSE, warning=FALSE, include=T, echo=FALSE,size="huge"}
 
-'Modelo lineal generalizado para ajustar una regresión de Poisson de la Tasas de  todo tipo de Mortalidad ,para el Grupo Caso(Diabético).(figura3)'
+'Modelo lineal generalizado para ajustar un modelo de regresión de Poisson de la Tasas de  todo tipo de Mortalidad ,para el Grupo Caso(Diabético).(figura3)'
+
 figura3
 
-'Modelo lineal generalizado para ajustar una regresión de Poisson de la Tasas de  todo tipo de Mortalidad ,para e Grupo Control.(figura4)'
+'Modelo lineal generalizado para ajustar un modelo de regresión de Poisson de la Tasas de  todo tipo de Mortalidad ,para e Grupo Control(figura4)'
+
 figura4
 
 ```
