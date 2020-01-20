@@ -1,4 +1,5 @@
 #-----------#
+#[20.01.2020]
 #[17.01.2020]
 #[16.01.2020]
 #[15.01.2020]
@@ -295,14 +296,14 @@ variable.names(C_EXPOSATS)
 #[1] "idp"        "data_index" "sexe"       "dnaix"      "entrada"    "sortida"    "situacio"   "Edat"  
 #-----------------------------------------------------------------------------------------------------------------------#
 #[ Crearé una altre base de dades , que seran els No exposats,tots menys els exposats!!]
-C_NO_EXPOSATS<-LLEGIR.poblacio %>% anti_join(C_EXPOSATS,by="idp")
-#C_NO_EXPOSATS<-C_NO_EXPOSATS%>%filter(entrada<=20181231) #Excluits entrada després de (31/12/2018)
+#[#Excluits entrada:abans(01/01/2004) i  després de (31/12/2018)]
+C_NO_EXPOSATS<-LLEGIR.poblacio%>%filter(entrada>=20040101  & entrada<=20181231)%>%anti_join(C_EXPOSATS,by="idp")
+C_NO_EXPOSATS<-C_NO_EXPOSATS 
 variable.names(C_NO_EXPOSATS)
 #[1]  "idp"      "sexe"     "dnaix"    "entrada"  "sortida"  "situacio"
 #-----------------------------------------------------------------------------------------------------------------------#
-
-
-
+#min(LLEGIR.poblacio$entrada)-->[01.01.2006]
+#max(LLEGIR.poblacio$entrada)-->[19.12.2018]
 
 
 #iii) FILTRE_3 : Els  EXPOSATS a DIABETIS TIPUS2 amb DIAiNDEX que tinguin <35 anys l'any 1/1/2006, quedaran FORA!, per tant hagin nascut l'any <=1971.
@@ -423,7 +424,7 @@ descrTable(grup~dnaix+sexe,data=dt_matching)
 #iii  LLEGIR.tabaquisme
 #iv   LLEGIR.farmacs_prescrits
 #v    LLEGIR.farmacs_facturat
-
+#vi   LLEGIR.variables_socioeconomiques
 
 
 
@@ -548,6 +549,8 @@ dtagr_tabac      <-dtagr_tabac       %>%select(-dtindex )
 dtagr_prescrip   <-dtagr_prescrip    %>%select(-dtindex )
 dtagr_facturat   <-dtagr_facturat    %>%select(-dtindex )
 
+#     [LLEGIR.variables_socioeconomiques]
+dt_sociodemo<-LLEGIR.variables_socioeconomiques
 
 
 # Unió de totes les agregacions ----------------
@@ -557,9 +560,34 @@ dt_total<-dt_index_match %>%
     left_join(dtagr_variables,by="idp")%>%
       left_join(dtagr_tabac,by="idp")%>%
         left_join(dtagr_prescrip,by="idp")%>%
-          left_join(dtagr_facturat ,by="idp")
+          left_join(dtagr_facturat ,by="idp")%>%
+                left_join(dt_sociodemo ,by="idp")
   
   
+dt_total2<-dt_total%>%mutate(dtindex=as_date(dtindex))
+
+dt_total2<-dt_total2 %>% mutate(any_index=lubridate::year(lubridate::as_date(dtindex)))
+dt_total2<-dt_total2 %>% mutate(agein=(as_date(dtindex)-ymd(dnaix))/365.25)
+dt_total2<-dt_total2 %>% mutate(exitus=if_else(situacio=="D",1,0))
+dt_total2<-dt_total2 %>% mutate(temps_FU=ymd(sortida)-as_date(dtindex))
+
+
+variable.names(dt_total2)
+
+
+#[1] "idp"           "iddap"         "caseid"        "grup"          "dnaix"         "sexe"         
+#[7] "dtindex"       "numControls"   "DG.cancer"     "DG.DM2"        "DG.exclude"    "DG.outcome"   
+#[13] "DG.prevalent"  "can_prev"      "sortida"       "situacio"      "CAC.valor"     "CKDEPI.valor" 
+#[19] "cLDL.valor"    "cT.valor"      "GLICADA.valor" "IMC.valor"     "CAC.dies"      "CKDEPI.dies"  
+#[25] "cLDL.dies"     "cT.dies"       "GLICADA.dies"  "IMC.dies"      "tabac.valor"   "tabac.dies"   
+#[31] "FP.ALFAGLUC"   "FP.ALT_GLUC"   "FP.BIGUANIDAS" "FP.COMB_GLUC"  "FP.DPP4"       "FP.GLINIDES"  
+#[37] "FP.GLP1"       "FP.INSULINAS"  "FP.SULFO"      "FF.ALFAGLUC"   "FF.ALT_GLUC"   "FF.BIGUANIDAS"
+#[43] "FF.COMB_GLUC"  "FF.DPP4"       "FF.GLINIDES"   "FF.GLP1"       "FF.INSULINAS"  "FF.SGLT2"     
+#[49] "FF.SULFO"      "FF.TIAZO"      "qmedea"        "ruralitat"     "any_index"     "agein"        
+#[55] "exitus"        "temps_FU"     
+
+#dt_total2$qmedea
+#dt_total2$ruralitat
 
 
 # PREPARACIÓ ------------------
@@ -569,37 +597,12 @@ library(lubridate)
 
 
 
-dt_total
+#dt_total
 
 
 #dt_total$temps_FU
 
 # FILTRE C.INCLUSIÓ   --------------- 
-
-
-variable.names(dt_total)
-
-#                       variable.names(dt_total)
-#                     ---------------------------           #
-#     [1] "idp"           "iddap"         "caseid"        "grup"          "dnaix"        
-#     [6] "sexe"          "dtindex"       "numControls"   "DG.cancer"     "DG.DM2"       
-#     [11] "DG.exclude"    "DG.outcome"    "DG.prevalent"  "can_prev"      "sortida"      
-#     [16] "situacio"      "CAC.valor"     "CKDEPI.valor"  "cLDL.valor"    "cT.valor"     
-#     [21] "GLICADA.valor" "IMC.valor"     "CAC.dies"      "CKDEPI.dies"   "cLDL.dies"    
-#     [26] "cT.dies"       "GLICADA.dies"  "IMC.dies"      "FP.ALFAGLUC"   "FP.ALT_GLUC"  
-#     [31] "FP.BIGUANIDAS" "FP.COMB_GLUC"  "FP.DPP4"       "FP.GLINIDES"   "FP.GLP1"      
-#     [36] "FP.INSULINAS"  "FP.SULFO"      "FF.ALFAGLUC"   "FF.ALT_GLUC"   "FF.BIGUANIDAS"
-#     [41] "FF.COMB_GLUC"  "FF.DPP4"       "FF.GLINIDES"   "FF.GLP1"       "FF.INSULINAS" 
-#     [46] "FF.SGLT2"      "FF.SULFO"      "FF.TIAZO"      "any_index"     "agein"        
-#     [51] "exitus"        "temps_FU"     
-#                     ---------------------------           #
-
-#dt_total$temps_FU
-#dt_total$exitus
-#dt_total$grup
-
-
-dt_total$dtindex
 
 
 # ANALISIS  --------------
@@ -613,23 +616,6 @@ dt_total$dtindex
 #between 01/01/2006 and the latest specific capture 31/12/2018
 #entrada>=20060101  & entrada<=20181231
 
-dt_total2<-dt_total%>%mutate(dtindex=as_date(dtindex))
-
-
-
-dt_total2<-dt_total2 %>% mutate(any_index=lubridate::year(lubridate::as_date(dtindex)))
-dt_total2<-dt_total2 %>% mutate(agein=(as_date(dtindex)-ymd(dnaix))/365.25)
-dt_total2<-dt_total2 %>% mutate(exitus=if_else(situacio=="D",1,0))
-dt_total2<-dt_total2 %>% mutate(temps_FU=ymd(sortida)-as_date(dtindex))
-
-
-dt_total2$any_index
-dt_total2$agein
-dt_total2$exitus
-dt_total2$temps_FU
-dt_total2$exitus
-
-summary(fit)
 
 
 
@@ -767,14 +753,17 @@ dt_total2<-dt_total2 %>%mutate(dtindex=as_date(dtindex))
 dt_total2<-dt_total2 %>%mutate(dnaix=as.Date(as.character(dnaix),    format="%Y%m%d"))
 dt_total2<-dt_total2 %>%mutate(sortida=as.Date(as.character(sortida),format = "%Y%m%d"))
 ###################################################################################
-dt_total2<-dt_total2%>%select(idp,dtindex,dnaix,sortida,exitus,grup)
+
+
+
+dt_total3<-dt_total2%>%select(idp,dtindex,dnaix,sortida,exitus,grup)
 ###################################################################################
-dt_total2<-dt_total2%>%mutate(birth =dnaix)
-dt_total2<-dt_total2%>%mutate(entry =dtindex)
-dt_total2<-dt_total2%>%mutate(exit =sortida)
-dt_total2<-dt_total2%>%mutate(fail =exitus)
+dt_total3<-dt_total3%>%mutate(birth =dnaix)
+dt_total3<-dt_total3%>%mutate(entry =dtindex)
+dt_total3<-dt_total3%>%mutate(exit =sortida)
+dt_total3<-dt_total3%>%mutate(fail =exitus)
 ###################################################################################
-dt_total2<-dt_total2%>%select(idp,birth,entry,exit,fail,grup)
+dt_total3<-dt_total3%>%select(idp,birth,entry,exit,fail,grup)
 ###################################################################################
 
 
@@ -785,22 +774,22 @@ dt_total2<-dt_total2%>%select(idp,birth,entry,exit,fail,grup)
 #dt_total$dtindex
 #dt_total$dnaix
 #dt_total$sortida
-dt_total2<-structure( dt_total2,class = "data.frame")
-dt_total2 <- cal.yr(dt_total2, format="%y-%m-%d", wh=2:4 )
+dt_total3<-structure( dt_total3,class = "data.frame")
+dt_total3 <- cal.yr(dt_total3, format="%y-%m-%d", wh=2:4 )
 ###################################################################################
 ###################################################################################
-dt_total2_grup0<-dt_total2 %>% filter(grup==0)
-dt_total2_grup1<-dt_total2 %>% filter(grup==1)
+dt_total3_grup0<-dt_total3 %>% filter(grup==0)
+dt_total3_grup1<-dt_total3 %>% filter(grup==1)
 ###################################################################################
 #Com funciona!:
 #####################################################################
-dt_total2_10cases<-dt_total2[1:150,]
-dt_total2_10cases_grup0<-dt_total2_grup0[1:150,]
-dt_total2_10cases_grup1<-dt_total2_grup1[1:150,]
+dt_total3_10cases<-dt_total3[1:150,]
+dt_total3_10cases_grup0<-dt_total3_grup0[1:150,]
+dt_total3_10cases_grup1<-dt_total3_grup1[1:150,]
 #####################################################################
-dt_total2_10cases
-dt_total2_10cases_grup0
-dt_total2_10cases_grup1
+dt_total3_10cases
+dt_total3_10cases_grup0
+dt_total3_10cases_grup1
 #####################################################################
 
 
@@ -823,23 +812,23 @@ dt_total2_10cases_grup1
 
 #####################################################################
 # Define a Lexis object with timescales calendar time and age
-LEXIS_dt_total2_b<- Lexis( 
-  entry        =     list(per=entry),
-  exit         =     list(per=exit,age=exit-birth ),
-  exit.status  =     fail,
-  data         =     dt_total2)
-LEXIS_dt_total2_b
+#LEXIS_dt_total3_b<- Lexis( 
+#  entry        =     list(per=entry),
+#  exit         =     list(per=exit,age=exit-birth ),
+#  exit.status  =     fail,
+#  data         =     dt_total3)
+#LEXIS_dt_total3_b
 #####################################################################
 #Lexis.diagram()
-plot(Lexis( entry = list( per=entry ),
-            exit = list( per=exit, age=exit-birth ),
-            exit.status = fail,
-            data = dt_total2))
+#plot(Lexis( entry = list( per=entry ),
+#            exit = list( per=exit, age=exit-birth ),
+#            exit.status = fail,
+#            data = dt_total3))
 #####################################################################
 #[S'HA DE CANVIAR A 2006-2018, quan tinguem tota la base de dades!, així convergirà]
-plot(LEXIS_dt_total2_b, grid=0:20*5, col="black", xaxs="i", yaxs="i",xlim=c(2004,2021), ylim=c(30,100), lwd=1, las=1 )
-points(LEXIS_dt_total2_b, pch=c(NA,16)[LEXIS_dt_total2_b$fail+1] )
-
+#plot(LEXIS_dt_total3_b, grid=0:20*5, col="black", xaxs="i", yaxs="i",xlim=c(2004,2021), ylim=c(30,100), lwd=1, las=1 )
+#points(LEXIS_dt_total3_b, pch=c(NA,16)[LEXIS_dt_total3_b$fail+1] )
+########################################################################
 
 
 
@@ -847,47 +836,50 @@ points(LEXIS_dt_total2_b, pch=c(NA,16)[LEXIS_dt_total2_b$fail+1] )
 #grup1 (DIABETIS)
 #####################################################################
 # Define a Lexis object with timescales calendar time and age
-LEXIS_dt_total2_b_grup1<- Lexis( 
+LEXIS_dt_total3_b_grup1<- Lexis( 
   entry        =     list(per=entry),
   exit         =     list(per=exit,age=exit-birth ),
   exit.status  =     fail,
-  data         =     dt_total2_grup1 )
-LEXIS_dt_total2_b_grup1
+  data         =     dt_total3_grup1 )
+LEXIS_dt_total3_b_grup1
 #####################################################################
 #Lexis.diagram()
 plot(Lexis( entry = list( per=entry ),
             exit = list( per=exit, age=exit-birth ),
             exit.status = fail,
-            data = dt_total2_grup1))
+            data = dt_total3_grup1))
 #####################################################################
 #[S'HA DE CANVIAR A 2006-2018, quan tinguem tota la base de dades!, així convergirà]
-plot(LEXIS_dt_total2_b_grup1, grid=0:20*5, col="black", xaxs="i", yaxs="i",xlim=c(2004,2021), ylim=c(30,100), lwd=1, las=1 )
-points(LEXIS_dt_total2_b_grup1, pch=c(NA,16)[LEXIS_dt_total2_b_grup1$fail+1] )
+plot(LEXIS_dt_total3_b_grup1, grid=0:20*5, col="black", xaxs="i", yaxs="i",xlim=c(2004,2021), ylim=c(30,100), lwd=1, las=1 )
+points(LEXIS_dt_total3_b_grup1, pch=c(NA,16)[LEXIS_dt_total3_b_grup1$fail+1] )
 
 
-
+#figura2a.png
 
 
 
 #grup0 (NO DIABTEIS)
 #####################################################################
 # Define a Lexis object with timescales calendar time and age
-LEXIS_dt_total2_b_grup0<- Lexis( 
+LEXIS_dt_total3_b_grup0<- Lexis( 
   entry        =     list(per=entry),
   exit         =     list(per=exit,age=exit-birth ),
   exit.status  =     fail,
-  data         =    dt_total2_grup0 )
-LEXIS_dt_total2_b_grup0
+  data         =    dt_total3_grup0 )
+LEXIS_dt_total3_b_grup0
 #####################################################################
 #Lexis.diagram()
 plot(Lexis( entry = list( per=entry ),
             exit = list( per=exit, age=exit-birth ),
             exit.status = fail,
-            data = dt_total2_grup0))
+            data = dt_total3_grup0))
 #####################################################################
 #[S'HA DE CANVIAR A 2006-2018, quan tinguem tota la base de dades!, així convergirà]
-plot(LEXIS_dt_total2_b_grup0, grid=0:20*5, col="black", xaxs="i", yaxs="i",xlim=c(2004,2021), ylim=c(30,100), lwd=1, las=1 )
-points(LEXIS_dt_total2_b_grup0, pch=c(NA,16)[LEXIS_dt_total2_b_grup0$fail+1] )
+plot(LEXIS_dt_total3_b_grup0, grid=0:20*5, col="black", xaxs="i", yaxs="i",xlim=c(2004,2021), ylim=c(30,100), lwd=1, las=1 )
+points(LEXIS_dt_total3_b_grup0, pch=c(NA,16)[LEXIS_dt_total3_b_grup0$fail+1] )
+
+
+#figura2b.png
 
 
 
@@ -895,47 +887,45 @@ points(LEXIS_dt_total2_b_grup0, pch=c(NA,16)[LEXIS_dt_total2_b_grup0$fail+1] )
 #grup0_10 cases  [grup==0] (NO DIABETIS)
 #####################################################################
 # Define a Lexis object with timescales calendar time and age
-LEXIS_dt_total2_b_grup0_10cases<- Lexis( 
-  entry        =     list(per=entry),
-  exit         =     list(per=exit,age=exit-birth ),
-  exit.status  =     fail,
-  data         =    dt_total2_10cases_grup0 )
-
-LEXIS_dt_total2_b_grup0_10cases
+#LEXIS_dt_total3_b_grup0_10cases<- Lexis( 
+#  entry        =     list(per=entry),
+#  exit         =     list(per=exit,age=exit-birth ),
+#  exit.status  =     fail,
+#  data         =    dt_total3_10cases_grup0 )
+#
+#LEXIS_dt_total3_b_grup0_10cases
 #####################################################################
 #Lexis.diagram()
-plot(Lexis( entry = list( per=entry ),
-            exit = list( per=exit, age=exit-birth ),
-            exit.status = fail,
-            data = dt_total2_10cases_grup0))
+#plot(Lexis( entry = list( per=entry ),
+#            exit = list( per=exit, age=exit-birth ),
+#            exit.status = fail,
+#            data = dt_total3_10cases_grup0))
 #####################################################################
 #[S'HA DE CANVIAR A 2006-2018, quan tinguem tota la base de dades!, així convergirà]
-plot(LEXIS_dt_total2_b_grup0_10cases, grid=0:20*5, col="black", xaxs="i", yaxs="i",xlim=c(2004,2021), ylim=c(30,100), lwd=1, las=1 )
-points(LEXIS_dt_total2_b_grup0_10cases, pch=c(NA,16)[LEXIS_dt_total2_b_grup0_10cases$fail+1] )
-
-
-
+#plot(LEXIS_dt_total3_b_grup0_10cases, grid=0:20*5, col="black", xaxs="i", yaxs="i",xlim=c(2004,2021), ylim=c(30,100), lwd=1, las=1 )
+#points(LEXIS_dt_total3_b_grup0_10cases, pch=c(NA,16)[LEXIS_dt_total3_b_grup0_10cases$fail+1] )
+#####################################################################
 #####################################################################
 #grup1_10 cases [grup==1] (DIABETIS)
 #####################################################################
 # Define a Lexis object with timescales calendar time and age
-LEXIS_dt_total2_b_grup1_10cases<- Lexis( 
-  entry        =     list(per=entry),
-  exit         =     list(per=exit,age=exit-birth ),
-  exit.status  =     fail,
-  data         =     dt_total2_10cases_grup1 )
-
-LEXIS_dt_total2_b_grup1_10cases
+#LEXIS_dt_total3_b_grup1_10cases<- Lexis( 
+#  entry        =     list(per=entry),
+#  exit         =     list(per=exit,age=exit-birth ),
+#  exit.status  =     fail,
+#  data         =     dt_total3_10cases_grup1 )
+#
+#LEXIS_dt_total3_b_grup1_10cases
 #####################################################################
 #Lexis.diagram()
-plot(Lexis( entry = list( per=entry ),
-            exit = list( per=exit, age=exit-birth ),
-            exit.status = fail,
-            data = dt_total2_10cases_grup1))
+#plot(Lexis( entry = list( per=entry ),
+#            exit = list( per=exit, age=exit-birth ),
+#            exit.status = fail,
+#            data = dt_total3_10cases_grup1))
 #####################################################################
 #[S'HA DE CANVIAR A 2006-2018, quan tinguem tota la base de dades!, així convergirà]
-plot(LEXIS_dt_total2_b_grup1_10cases, grid=0:20*5, col="black", xaxs="i", yaxs="i",xlim=c(2004,2021), ylim=c(30,100), lwd=1, las=1 )
-points(LEXIS_dt_total2_b_grup1_10cases, pch=c(NA,16)[LEXIS_dt_total2_b_grup1_10cases$fail+1] )
+#plot(LEXIS_dt_total3_b_grup1_10cases, grid=0:20*5, col="black", xaxs="i", yaxs="i",xlim=c(2004,2021), ylim=c(30,100), lwd=1, las=1 )
+#points(LEXIS_dt_total3_b_grup1_10cases, pch=c(NA,16)[LEXIS_dt_total3_b_grup1_10cases$fail+1] )
 
 
 
@@ -995,7 +985,7 @@ points(LEXIS_dt_total2_b_grup1_10cases, pch=c(NA,16)[LEXIS_dt_total2_b_grup1_10c
 #--------------------------------------------------------#
   
 ##########################
-dbs1 <- popEpi::splitMulti( LEXIS_dt_total2_b_grup1, age = seq(35,100,1), per= seq(2004,2018,1))
+dbs1 <- popEpi::splitMulti( LEXIS_dt_total3_b_grup1, age = seq(35,100,1), per= seq(2004,2018,1))
 dbs1
 a.kn <- with(subset(dbs1, lex.Xst==1), quantile(age+lex.dur,(1:5-0.5)/5))
 p.kn <- with(subset(dbs1, lex.Xst==1), quantile(per+lex.dur,(1:5-0.5)/5))
@@ -1038,7 +1028,9 @@ write.xlsx(res_DM_DIBAETIS, file="MORATLITY_DIBAETIS.xlsx")
 #--------------------------------------------------------#
 
 
-
+# Journal of Statistical Software
+# January 2011, Volume 38, Issue 6. http://www.jstatsoft.org/
+#sing Lexis Objects for Multi-State Models in R
 
 
 
@@ -1051,7 +1043,7 @@ write.xlsx(res_DM_DIBAETIS, file="MORATLITY_DIBAETIS.xlsx")
 #--------------------------------------------------------#
 
 ##########################
-dbs1 <- popEpi::splitMulti( LEXIS_dt_total2_b_grup0, age = seq(35,100,1), per= seq(2004,2018,1))
+dbs1 <- popEpi::splitMulti( LEXIS_dt_total3_b_grup0, age = seq(35,100,1), per= seq(2004,2018,1))
 dbs1
 a.kn <- with(subset(dbs1, lex.Xst==1), quantile(age+lex.dur,(1:5-0.5)/5))
 p.kn <- with(subset(dbs1, lex.Xst==1), quantile(per+lex.dur,(1:5-0.5)/5))
@@ -1195,33 +1187,27 @@ write.xlsx(res_DM_NO_DIBAETIS, file="MORATLITY_NO_DIBAETIS.xlsx")
 
 #canviar
 
-
-
 #------------------------------------------------------------------#
 conductor_variables<-"conductor_DataHarmonization.xls"
 #------------------------------------------------------------------#
-#Les dates s'han de passar com a caràcter!!!  #
-#Preparació de la base de dades pel Conductor:[]
-dt_total3<-dt_total
-dt_total3<-dt_total3%>%mutate(dnaix=as.character(dnaix))
-dt_total3<-dt_total3%>%mutate(dtindex=as_date(dtindex))
-dt_total3<-dt_total3 %>% mutate(agein=(as_date(dtindex)-ymd(dnaix))/365.25)
-dt_total3<-dt_total3 %>% mutate(exitus=if_else(situacio=="D",1,0))
-dt_total3
+
+
 
 
 
 #------------------------------------------------------------------#
-dt_total3<-convertir_dates(d=dt_total3,taulavariables=conductor_variables)
-dt_total3<-etiquetar_valors(dt=dt_total3,variables_factors=conductor_variables,fulla="etiquetes",camp_etiqueta="etiqueta2")
-dt_total3<-etiquetar(d=dt_total3,taulavariables=conductor_variables)
+dt_total4<-convertir_dates(d=dt_total2,taulavariables=conductor_variables)
+dt_total4<-etiquetar_valors(dt=dt_total4,variables_factors=conductor_variables,fulla="etiquetes",camp_etiqueta="etiqueta2")
+dt_total4<-etiquetar(d=dt_total4,taulavariables=conductor_variables)
 #------------------------------------------------------------------#
+
+variable.names(dt_total2)
 
 #i
 #***********************************************************************#
 formula_taula00<-formula_compare("taula00",y="grup",taulavariables = conductor_variables)
 
-T00<-descrTable(formula_taula00,method = 1,data=dt_total3,max.xlev = 100, show.p.overall=FALSE)
+T00<-descrTable(formula_taula00,method = 1,data=dt_total4,max.xlev = 100, show.p.overall=FALSE)
 #***********************************************************************#
 T00
 #***********************************************************************#
