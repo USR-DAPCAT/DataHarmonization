@@ -1,4 +1,5 @@
 #-----------#
+#[21.01.2020]
 #[20.01.2020]
 #[17.01.2020]
 #[16.01.2020]
@@ -166,7 +167,7 @@ variable.names(LLEGIR.variables_Cataleg)
 #[1]  "domini" "cod"    "des"    "agr"   
 #----------------------------------------------#  
 
-table(LLEGIR.variables_Cataleg$agr)
+#table(LLEGIR.variables_Cataleg$agr)
 #----------------------------------------------#  
 #       ALFAGLUC   ALT_GLUC   BIGUANIDAS    CAC     CANCER     CKDEPI       cLDL  COMB_GLUC 
 #1          6         18          4          1        520          1          1         38 
@@ -756,14 +757,14 @@ dt_total2<-dt_total2 %>%mutate(sortida=as.Date(as.character(sortida),format = "%
 
 
 
-dt_total3<-dt_total2%>%select(idp,dtindex,dnaix,sortida,exitus,grup)
+dt_total3<-dt_total2%>%select(idp,dtindex,dnaix,sortida,exitus,grup,caseid)
 ###################################################################################
 dt_total3<-dt_total3%>%mutate(birth =dnaix)
 dt_total3<-dt_total3%>%mutate(entry =dtindex)
 dt_total3<-dt_total3%>%mutate(exit =sortida)
 dt_total3<-dt_total3%>%mutate(fail =exitus)
 ###################################################################################
-dt_total3<-dt_total3%>%select(idp,birth,entry,exit,fail,grup)
+dt_total3<-dt_total3%>%select(idp,birth,entry,exit,fail,grup,caseid)
 ###################################################################################
 
 
@@ -812,12 +813,13 @@ dt_total3_10cases_grup1
 
 #####################################################################
 # Define a Lexis object with timescales calendar time and age
-#LEXIS_dt_total3_b<- Lexis( 
-#  entry        =     list(per=entry),
-#  exit         =     list(per=exit,age=exit-birth ),
-#  exit.status  =     fail,
-#  data         =     dt_total3)
-#LEXIS_dt_total3_b
+LEXIS_dt_total3_b<- Lexis( 
+  entry        =     list(per=entry),
+  exit         =     list(per=exit,age=exit-birth ),
+  exit.status  =     fail,
+  data         =     dt_total3)
+
+LEXIS_dt_total3_b
 #####################################################################
 #Lexis.diagram()
 #plot(Lexis( entry = list( per=entry ),
@@ -1019,13 +1021,14 @@ acm_DM       <- cbind(nd,p1, out="acm")
 #--------------------------------------------------------#
 res_DM_DIBAETIS <-cbind(acm_DM, rateD=exp(acm_DM$es_d), rateD_lb=exp(acm_DM$lb_d), rateD_ub=exp(acm_DM$ub_d))
 #################
-res_DM_DIBAETIS
+#res_DM_DIBAETIS
 ################
 figura3<-summary(r1)
 library(xlsx)
 #--------------------------------------------------------#
 write.xlsx(res_DM_DIBAETIS, file="MORATLITY_DIBAETIS.xlsx")
 #--------------------------------------------------------#
+
 
 
 # Journal of Statistical Software
@@ -1041,6 +1044,8 @@ write.xlsx(res_DM_DIBAETIS, file="MORATLITY_DIBAETIS.xlsx")
 #[DIABETIS: Causes de Mortalitat]  :  LEXIS_dt_total2_b_grup0
 #[S'HA DE CANVIAR A 2006-2018, quan tinguem tota la base de dades!, així convergirà]
 #--------------------------------------------------------#
+
+
 
 ##########################
 dbs1 <- popEpi::splitMulti( LEXIS_dt_total3_b_grup0, age = seq(35,100,1), per= seq(2004,2018,1))
@@ -1072,7 +1077,7 @@ acm_DM       <- cbind(nd,p1, out="acm")
 #--------------------------------------------------------#
 res_DM_NO_DIBAETIS <-cbind(acm_DM, rateD=exp(acm_DM$es_d), rateD_lb=exp(acm_DM$lb_d), rateD_ub=exp(acm_DM$ub_d))
 #################
-res_DM_NO_DIBAETIS
+#res_DM_NO_DIBAETIS
 ################
 library(xlsx)
 #--------------------------------------------------------#
@@ -1086,11 +1091,72 @@ write.xlsx(res_DM_NO_DIBAETIS, file="MORATLITY_NO_DIBAETIS.xlsx")
 
 
 
+#####
+#COX#
+#####
+##############################################################################
+#r1 <- glm((lex.Xst==1)~Ns(age, knots = a.kn)*Ns(per, knots = p.kn)*gender,
+#          family = poisson(),
+#          offset = log(lex.dur),
+#data   = dbs1)
+##############################################################################
+#LEXIS_dt_total3_b
+COX1<-LEXIS_dt_total3_b%>% left_join(select(dt_total,idp,sexe)) %>% mutate(gender=if_else(sexe=="H",1,0))
+#-----------------------------------------------#
+cox_lexis_model <- coxph(Surv(lex.dur,lex.Xst)~factor(grup)+sexe+age,data =  COX1)
+cox_lexis_model
+#-----------------------------------------------#
+cox_lexis_ratios <- cbind(HR = exp(coef(cox_lexis_model)), exp(confint(cox_lexis_model)))
+#As every other time we exponentiat the coefficients to get hazard ratios
+cox_lexis_out <- summary(cox_lexis_model)
+cox_lexis_out <- cbind(cox_lexis_ratios,cox_lexis_out$coefficients)
+#And we put everything in a nice table
+cox_lexis_out
+#-----------------------------------------------#
+km <- survfit(Surv(lex.dur,lex.Xst)~factor(grup),data =  COX1)
+
+##Fit the data
+##The initial statement Surv(lex.dur,lex.Xst)
+#says that the duration of follow-up 
+#is in lex.dur and the outcome variable in lex.Xst (as outlined above). 
+
+#We want to stratify by grup
+
+#-----------------------------------------------#
+figura5<-ggsurvplot(km,conf.int=TRUE, legend.labs=c("No Diabético", "Diabètico"),data =  LEXIS_dt_total3_b)
+#-----------------------------------------------#
 
 
 
+#-----------------------------------------------#
+cox_lexis_model2 <- coxph(Surv(lex.dur,lex.Xst)~factor(grup),data =  COX1)
+cox_lexis_model2
+#-----------------------------------------------#
+cox_lexis_ratios2 <- cbind(HR = exp(coef(cox_lexis_model2)), exp(confint(cox_lexis_model2)))
+#As every other time we exponentiat the coefficients to get hazard ratios
+cox_lexis_out2 <- summary(cox_lexis_model2)
+cox_lexis_out2 <- cbind(cox_lexis_ratios2,cox_lexis_out3$coefficients)
+#And we put everything in a nice table
+cox_lexis_out2
+#-----------------------------------------------#
 
+#-----------------------------------------------#
+cox_lexis_model3 <- coxph(Surv(lex.dur,lex.Xst)~factor(grup)+factor(caseid),data =  COX1)
+cox_lexis_model3
+#-----------------------------------------------#
+cox_lexis_ratios3 <- cbind(HR = exp(coef(cox_lexis_model3)), exp(confint(cox_lexis_model3)))
+#As every other time we exponentiat the coefficients to get hazard ratios
+cox_lexis_out3 <- summary(cox_lexis_model3)
+cox_lexis_out3 <- cbind(cox_lexis_ratios3,cox_lexis_out3$coefficients)
+#And we put everything in a nice table
+cox_lexis_out3
+#-----------------------------------------------#
 
+#-----------------------------------------------#
+cox_lexis_out
+cox_lexis_out2
+cox_lexis_out3
+#-----------------------------------------------#
 
 
 #             EXEMPLE:[]
@@ -1115,26 +1181,34 @@ write.xlsx(res_DM_NO_DIBAETIS, file="MORATLITY_NO_DIBAETIS.xlsx")
 
 # NOT RUN {
 # A small bogus cohort
-#xcoh <- structure( list( id = c("A", "B", "C"),
-#                         birth = c("14/07/1952", "01/04/1954", "10/06/1987"),
-#                         entry = c("04/08/1965", "08/09/1972", "23/12/1991"),
-#                         exit = c("27/06/1997", "23/05/1995", "24/07/1998"),
-#                         fail = c(1, 0, 1) ),
-#                   .Names = c("id", "birth", "entry", "exit", "fail"),
-#                   row.names = c("1", "2", "3"),
-#                   class = "data.frame" )
+xcoh <- structure( list( id = c("A", "B", "C"),
+                         birth = c("14/07/1952", "01/04/1954", "10/06/1987"),
+                         entry = c("04/08/1965", "08/09/1972", "23/12/1991"),
+                         exit = c("27/06/1997", "23/05/1995", "24/07/1998"),
+                         fail = c(1, 0, 1) ),
+                   .Names = c("id", "birth", "entry", "exit", "fail"),
+                   row.names = c("1", "2", "3"),
+                   class = "data.frame" )
+
+xcoh
+
 #####################################################################
-#xcoh$id
-#xcoh$birth 
-#xcoh$entry
-#xcoh$exit
-#xcoh$fail
+xcoh$id
+xcoh$birth 
+xcoh$entry
+xcoh$exit
+xcoh$fail
+
 #####################################################################
-# Convert the character dates into numerical variables (fractional years)
-#xcoh <- cal.yr( xcoh, format="%d/%m/%Y", wh=2:4 )
-# See how it looks
-#xcoh
-#str( xcoh )
+#Convert the character dates into numerical variables (fractional years)
+
+xcoh <- cal.yr( xcoh, format="%d/%m/%Y", wh=2:4 )
+
+#
+#See how it looks
+
+xcoh
+str( xcoh )
 
 #xcoh$id
 #xcoh$birth 
@@ -1144,26 +1218,27 @@ write.xlsx(res_DM_NO_DIBAETIS, file="MORATLITY_NO_DIBAETIS.xlsx")
 
 #####################################################################
 # Define a Lexis object with timescales calendar time and age
-#Lcoh <- Lexis( entry = list(per=entry ),
-#               exit = list( per=exit,
-#                            age=exit-birth ),
-#               exit.status = fail,
-#               data = xcoh )
+Lcoh <- Lexis( entry = list(per=entry ),
+               exit = list( per=exit,
+                            age=exit-birth ),
+               exit.status = fail,
+               data = xcoh )
 
-#xcoh
+xcoh
 # Using character states may have undesired effects:
-#xcoh$Fail <- c("Dead","Well","Dead")
-#xcoh$Fail
-#Lexis( entry = list( per=entry ),
-#       exit = list( per=exit, age=exit-birth ),
-#       exit.status = Fail,
-#       data = xcoh )
-#Lexis.diagram()
+xcoh$Fail <- c("Dead","Well","Dead")
+xcoh$Fail
 
-#plot(Lexis( entry = list( per=entry ),
-#            exit = list( per=exit, age=exit-birth ),
-#            exit.status = fail,
-#            data = xcoh ))
+Lexis( entry = list( per=entry ),
+       exit = list( per=exit, age=exit-birth ),
+       exit.status = Fail,
+       data = xcoh )
+Lexis.diagram()
+
+plot(Lexis( entry = list( per=entry ),
+            exit = list( per=exit, age=exit-birth ),
+            exit.status = fail,
+            data = xcoh ))
 
 #####################################################################
 
@@ -1201,7 +1276,7 @@ dt_total4<-etiquetar_valors(dt=dt_total4,variables_factors=conductor_variables,f
 dt_total4<-etiquetar(d=dt_total4,taulavariables=conductor_variables)
 #------------------------------------------------------------------#
 
-variable.names(dt_total2)
+#variable.names(dt_total2)
 
 #i
 #***********************************************************************#
@@ -1214,7 +1289,8 @@ T00
 
 
 
-save(T00,figura1,figura3,figura4,file="DataHarmonization.Rdata")
+save(T00,figura1,figura3,figura4,cox_lexis_out,cox_lexis_out2,cox_lexis_out3,file="DataHarmonization.Rdata")
 
 
+#http://www.sthda.com/english/wiki/cox-proportional-hazards-model
 

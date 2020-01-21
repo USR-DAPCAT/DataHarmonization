@@ -175,6 +175,14 @@ figura4
 
 
 
+```{r, message=FALSE, warning=FALSE, include=T, echo=FALSE,size="huge"}
+
+'Modelo de Regresión de COX de la Tasas de  todo tipo de Mortalidad ,para el Grupo Caso(Diabético).(figura3)'
+
+cox_lexis_out
+cox_lexis_out2
+cox_lexis_out3
+```
 
 
 
