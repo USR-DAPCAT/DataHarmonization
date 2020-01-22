@@ -136,12 +136,35 @@ devtools::source_url(link_source)
 
 ## 6. Resultados
 
+
+
 ```{r, message=FALSE, warning=FALSE, include=T, echo=FALSE,size="huge"}
 ####  Llegir dades    #####
 load("DataHarmonization.Rdata")
 #Taula1
 export2md(T00,caption="**Perfil demográfico y clínico del Grupo Caso(Diabético) y Grupo Control**")
 ```
+
+```{r, message=FALSE, warning=FALSE, include=T, echo=FALSE,size="huge"}
+####  Llegir dades    #####
+load("DataHarmonization.Rdata")
+#Taula0
+kable(taula_events2, digits = 2, caption="Tasa de Moratlidad por cada 10000 perosnas-año") %>% kableExtra::kable_styling()
+
+```
+
+
+```{r, message=FALSE, warning=FALSE, include=T, echo=FALSE,size="huge"}
+####  Llegir dades    #####
+load("DataHarmonization.Rdata")
+#Taula0
+kable(taula_events, digits = 2, caption="Tasa de Moratlidad por cada 10000 perosnas-año/Sexe") %>% kableExtra::kable_styling()
+
+```
+
+
+
+
 
 ```{r, message=FALSE, warning=FALSE, include=T, echo=FALSE,size="huge"}
 
@@ -180,8 +203,10 @@ figura4
 'Modelo de Regresión de COX de la Tasas de  todo tipo de Mortalidad ,para el Grupo Caso(Diabético).(figura3)'
 
 cox_lexis_out
-cox_lexis_out2
 cox_lexis_out3
+
+
+
 ```
 
 

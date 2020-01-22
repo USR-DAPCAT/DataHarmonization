@@ -1,4 +1,5 @@
 #-----------#
+#[22.01.2020]
 #[21.01.2020]
 #[20.01.2020]
 #[17.01.2020]
@@ -16,6 +17,10 @@
 #[19.12.2019]
 #[17.12.2019]
 #-----------#
+
+
+
+
 
 # Lectura de fitxers --------------------
 
@@ -89,6 +94,7 @@ memory.limit()
 
 library("LexisPlotR")
 library(Epi)
+library(lubridate)
 
 #--------------------------------------------------------------------------#
 link_source<-paste0("https://github.com/jrealgatius/Stat_codis/blob/master/funcions_propies.R","?raw=T")
@@ -258,6 +264,8 @@ dt_cataleg<-read_excel("Spain_codes.xls") %>% select(cod,agr,exposed)
 
 
 
+# FILTRE C.INCLUSIÓ   --------------- 
+
 
 ######################################
 #
@@ -313,6 +321,11 @@ C_EXPOSATS<-C_EXPOSATS%>%filter(dnaix<=19710101)
 
 
 
+# PREPARACIÓ ------------------
+
+
+
+
 # Fusionar base de dades en dues : 
 
 dt_matching<-mutate(C_EXPOSATS,grup=1) %>% bind_rows(mutate(C_NO_EXPOSATS,grup=0))
@@ -340,6 +353,17 @@ llistaPS=c("sexe","any_naix","iddap")
 num_controls<-10
 llavor<-125
 set.seed(llavor)
+
+
+
+
+
+
+
+
+
+
+
 
 # 5.4.1. Aplicar algoritme   -----------
 dades_match<-heaven::riskSetMatch(ptid="idp"                                # Unique patient identifier
@@ -591,24 +615,18 @@ variable.names(dt_total2)
 #dt_total2$ruralitat
 
 
-# PREPARACIÓ ------------------
-
-library(lubridate)
 
 
 
-
-#dt_total
-
-
-#dt_total$temps_FU
-
-# FILTRE C.INCLUSIÓ   --------------- 
 
 
 # ANALISIS  --------------
 
 #https://rstudio-pubs-static.s3.amazonaws.com/369387_b8a63ee7e039483e896cb91f442bc72f.html
+
+#-------------------------------------------------------#
+#                                   A  N A L I S I S    #
+#-------------------------------------------------------#
 
 
 
@@ -619,7 +637,117 @@ library(lubridate)
 
 
 
+#i) [[Flowchart]]
 
+
+
+#ii)
+#--------------------------------------#
+# D E S C R I P C I Ó :
+#--------------------------------------#
+
+
+#canviar
+
+#------------------------------------------------------------------#
+conductor_variables<-"conductor_DataHarmonization.xls"
+#------------------------------------------------------------------#
+
+
+
+#------------------------------------------------------------------#
+dt_total4<-dt_total2
+dt_total4$dnaix<-as.character(dt_total4$dnaix)
+#------------------------------------------------------------------#
+dt_total4<-convertir_dates(d=dt_total4,taulavariables=conductor_variables)
+dt_total4<-etiquetar_valors(dt=dt_total4,variables_factors=conductor_variables,fulla="etiquetes",camp_etiqueta="etiqueta2")
+dt_total4<-etiquetar(d=dt_total4,taulavariables=conductor_variables)
+#------------------------------------------------------------------#
+
+#variable.names(dt_total2)
+
+#i
+#***********************************************************************#
+formula_taula00<-formula_compare("taula00",y="grup",taulavariables = conductor_variables)
+
+T00<-descrTable(formula_taula00,method = 1,data=dt_total4,max.xlev = 100, show.p.overall=FALSE)
+#***********************************************************************#
+T00
+#***********************************************************************#
+
+
+
+
+
+
+#iii)
+#Tasa de incidencia o densidad de incidencia
+
+#(DI). 
+#Se calcula como el cociente entre el número de casos nuevos 
+#de una enfermedad ocurridos durante el periodo de seguimiento 
+#y la suma de todos los tiempos individuales de observación: 
+
+# 
+#dt_total2$temps_FU
+#dt_total2$exitus
+#dt_total2$grup
+# 
+
+#table(dt_total2$situacio,dt_total2$exitus)
+#dt_total2$situacio
+#dt_total2$situacio=="Difunto"
+#dt_total4$grup
+
+rescox<-coxph(Surv(temps_FU,exitus)~grup,data=dt_total2)    
+
+N=rescox$n
+EVENTS=rescox$nevent
+coef=summary(rescox)$coef[1,1]
+HR=summary(rescox)$coef[1,2]
+IC951=summary(rescox)$conf.int[1,3]
+IC952=summary(rescox)$conf.int[1,4]
+se.coef=summary(rescox)$coef[1,3]
+p=summary(rescox)$coef[1,5]
+
+
+dt_total2$temps_FU<-as.numeric(dt_total2$temps_FU)
+
+
+
+taula_events<-dt_total2 %>% group_by(grup,sexe) %>% summarise(
+  events=sum(exitus), 
+  N=n(),
+  PTdies=sum(temps_FU),
+  PTanys=(sum(temps_FU)/365.25) ,
+  taxa=(events/PTanys)*10000) %>% 
+  ungroup()
+
+
+taula_events
+conductor_variables<-"conductor_DataHarmonization.xls"
+taula_events<-etiquetar_valors(dt=taula_events,variables_factors=conductor_variables,fulla="etiquetes",camp_etiqueta="etiqueta2")
+
+#-------------------------------------------------------#
+taula_events2<-dt_total2 %>% group_by(grup) %>% summarise(
+  events=sum(exitus), 
+  N=n(),
+  PTdies=sum(temps_FU),
+  PTanys=(sum(temps_FU)/365.25) ,
+  taxa=(events/PTanys)*10000) %>% 
+  ungroup()
+#-------------------------------------------------------#
+conductor_variables<-"conductor_DataHarmonization.xls"
+taula_events2<-etiquetar_valors(dt=taula_events2,variables_factors=conductor_variables,fulla="etiquetes",camp_etiqueta="etiqueta2")
+#-------------------------------------------------------#
+taula_events2
+
+
+
+#kable(taula_events, digits = 2, caption="Tasa de Moratlidad por cada 10000 perosnas-año")
+
+
+#iv)
 ###################################################################################
 # Survival 
 
@@ -745,9 +873,9 @@ figura1<-survminer::ggsurvplot(fit,data = dt_total2)
 #--------------------------------------#
 
 
+#v)
 
-
-#preparació LEXIS:
+#Preparació LEXIS:
 
 ###################################################################################
 dt_total2<-dt_total2 %>%mutate(dtindex=as_date(dtindex))
@@ -795,16 +923,6 @@ dt_total3_10cases_grup1
 
 
 
-
-
-
-
-
-
-
-
-
-
                                                 #############
                                                 #L  E X I S #
                                                 #############
@@ -819,7 +937,7 @@ LEXIS_dt_total3_b<- Lexis(
   exit.status  =     fail,
   data         =     dt_total3)
 
-LEXIS_dt_total3_b
+#LEXIS_dt_total3_b
 #####################################################################
 #Lexis.diagram()
 #plot(Lexis( entry = list( per=entry ),
@@ -843,20 +961,27 @@ LEXIS_dt_total3_b_grup1<- Lexis(
   exit         =     list(per=exit,age=exit-birth ),
   exit.status  =     fail,
   data         =     dt_total3_grup1 )
-LEXIS_dt_total3_b_grup1
+#LEXIS_dt_total3_b_grup1
 #####################################################################
 #Lexis.diagram()
-plot(Lexis( entry = list( per=entry ),
-            exit = list( per=exit, age=exit-birth ),
-            exit.status = fail,
-            data = dt_total3_grup1))
+#plot(Lexis( entry = list( per=entry ),
+#            exit = list( per=exit, age=exit-birth ),
+#            exit.status = fail,
+#            data = dt_total3_grup1))
 #####################################################################
 #[S'HA DE CANVIAR A 2006-2018, quan tinguem tota la base de dades!, així convergirà]
 plot(LEXIS_dt_total3_b_grup1, grid=0:20*5, col="black", xaxs="i", yaxs="i",xlim=c(2004,2021), ylim=c(30,100), lwd=1, las=1 )
 points(LEXIS_dt_total3_b_grup1, pch=c(NA,16)[LEXIS_dt_total3_b_grup1$fail+1] )
 
-
 #figura2a.png
+
+
+df <- data_frame(x = 1:100, y=rnorm(100),
+                 z=sample(LETTERS[1:3], 100, replace=TRUE))
+
+# Scatterplot
+p1 <- ggplot(df, aes(x=x, y=y, color=z)) + geom_point()
+
 
 
 
@@ -868,13 +993,13 @@ LEXIS_dt_total3_b_grup0<- Lexis(
   exit         =     list(per=exit,age=exit-birth ),
   exit.status  =     fail,
   data         =    dt_total3_grup0 )
-LEXIS_dt_total3_b_grup0
+#LEXIS_dt_total3_b_grup0
 #####################################################################
 #Lexis.diagram()
-plot(Lexis( entry = list( per=entry ),
-            exit = list( per=exit, age=exit-birth ),
-            exit.status = fail,
-            data = dt_total3_grup0))
+#plot(Lexis( entry = list( per=entry ),
+#            exit = list( per=exit, age=exit-birth ),
+#            exit.status = fail,
+#            data = dt_total3_grup0))
 #####################################################################
 #[S'HA DE CANVIAR A 2006-2018, quan tinguem tota la base de dades!, així convergirà]
 plot(LEXIS_dt_total3_b_grup0, grid=0:20*5, col="black", xaxs="i", yaxs="i",xlim=c(2004,2021), ylim=c(30,100), lwd=1, las=1 )
@@ -931,6 +1056,7 @@ points(LEXIS_dt_total3_b_grup0, pch=c(NA,16)[LEXIS_dt_total3_b_grup0$fail+1] )
 
 
 
+#vi)
 
 
 
@@ -989,6 +1115,9 @@ points(LEXIS_dt_total3_b_grup0, pch=c(NA,16)[LEXIS_dt_total3_b_grup0$fail+1] )
 ##########################
 dbs1 <- popEpi::splitMulti( LEXIS_dt_total3_b_grup1, age = seq(35,100,1), per= seq(2004,2018,1))
 dbs1
+
+
+
 a.kn <- with(subset(dbs1, lex.Xst==1), quantile(age+lex.dur,(1:5-0.5)/5))
 p.kn <- with(subset(dbs1, lex.Xst==1), quantile(per+lex.dur,(1:5-0.5)/5))
 ##########################
@@ -1002,6 +1131,7 @@ r1 <- glm((lex.Xst==1)~Ns(age, knots = a.kn)*Ns(per, knots = p.kn)*gender,
           family = poisson(),
           offset = log(lex.dur),
           data   = dbs1)
+
 #--------------------------------------------------------#
 dbs1$lex.Xst
 #--------------------------------------------------------#
@@ -1033,7 +1163,7 @@ write.xlsx(res_DM_DIBAETIS, file="MORATLITY_DIBAETIS.xlsx")
 
 # Journal of Statistical Software
 # January 2011, Volume 38, Issue 6. http://www.jstatsoft.org/
-#sing Lexis Objects for Multi-State Models in R
+# sing Lexis Objects for Multi-State Models in R
 
 
 
@@ -1048,7 +1178,7 @@ write.xlsx(res_DM_DIBAETIS, file="MORATLITY_DIBAETIS.xlsx")
 
 
 ##########################
-dbs1 <- popEpi::splitMulti( LEXIS_dt_total3_b_grup0, age = seq(35,100,1), per= seq(2004,2018,1))
+dbs1 <- popEpi::splitMulti(LEXIS_dt_total3_b_grup0, age = seq(35,100,1), per= seq(2004,2018,1))
 dbs1
 a.kn <- with(subset(dbs1, lex.Xst==1), quantile(age+lex.dur,(1:5-0.5)/5))
 p.kn <- with(subset(dbs1, lex.Xst==1), quantile(per+lex.dur,(1:5-0.5)/5))
@@ -1103,7 +1233,7 @@ write.xlsx(res_DM_NO_DIBAETIS, file="MORATLITY_NO_DIBAETIS.xlsx")
 #LEXIS_dt_total3_b
 COX1<-LEXIS_dt_total3_b%>% left_join(select(dt_total,idp,sexe)) %>% mutate(gender=if_else(sexe=="H",1,0))
 #-----------------------------------------------#
-cox_lexis_model <- coxph(Surv(lex.dur,lex.Xst)~factor(grup)+sexe+age,data =  COX1)
+cox_lexis_model <- coxph(Surv(lex.dur,lex.Xst)~factor(grup)+sexe+age+ cluster(caseid),data =  COX1)
 cox_lexis_model
 #-----------------------------------------------#
 cox_lexis_ratios <- cbind(HR = exp(coef(cox_lexis_model)), exp(confint(cox_lexis_model)))
@@ -1128,6 +1258,8 @@ figura5<-ggsurvplot(km,conf.int=TRUE, legend.labs=c("No Diabético", "Diabètico
 
 
 
+
+
 #-----------------------------------------------#
 cox_lexis_model2 <- coxph(Surv(lex.dur,lex.Xst)~factor(grup),data =  COX1)
 cox_lexis_model2
@@ -1140,8 +1272,15 @@ cox_lexis_out2 <- cbind(cox_lexis_ratios2,cox_lexis_out3$coefficients)
 cox_lexis_out2
 #-----------------------------------------------#
 
+
+## model with robust SE via clustering
+#m2 <- coxph(Surv(time1, time2, mortality) ~ age + sex + transplant + cluster(ID), 
+#            data = dat)
+## summary of the model
+#summary(m2)
+
 #-----------------------------------------------#
-cox_lexis_model3 <- coxph(Surv(lex.dur,lex.Xst)~factor(grup)+factor(caseid),data =  COX1)
+cox_lexis_model3 <- coxph(Surv(lex.dur,lex.Xst)~factor(grup)+ cluster(caseid),data =  COX1)
 cox_lexis_model3
 #-----------------------------------------------#
 cox_lexis_ratios3 <- cbind(HR = exp(coef(cox_lexis_model3)), exp(confint(cox_lexis_model3)))
@@ -1181,34 +1320,31 @@ cox_lexis_out3
 
 # NOT RUN {
 # A small bogus cohort
-xcoh <- structure( list( id = c("A", "B", "C"),
-                         birth = c("14/07/1952", "01/04/1954", "10/06/1987"),
-                         entry = c("04/08/1965", "08/09/1972", "23/12/1991"),
-                         exit = c("27/06/1997", "23/05/1995", "24/07/1998"),
-                         fail = c(1, 0, 1) ),
-                   .Names = c("id", "birth", "entry", "exit", "fail"),
-                   row.names = c("1", "2", "3"),
-                   class = "data.frame" )
-
-xcoh
-
+#xcoh <- structure( list( id = c("A", "B", "C"),
+#                         birth = c("14/07/1952", "01/04/1954", "10/06/1987"),
+#                         entry = c("04/08/1965", "08/09/1972", "23/12/1991"),
+#                         exit = c("27/06/1997", "23/05/1995", "24/07/1998"),
+#                         fail = c(1, 0, 1) ),
+#                   .Names = c("id", "birth", "entry", "exit", "fail"),
+#                   row.names = c("1", "2", "3"),
+#                   class = "data.frame" )
+#
+#xcoh
 #####################################################################
-xcoh$id
-xcoh$birth 
-xcoh$entry
-xcoh$exit
-xcoh$fail
-
+#xcoh$id
+#xcoh$birth 
+#xcoh$entry
+#xcoh$exit
+#xcoh$fail
 #####################################################################
 #Convert the character dates into numerical variables (fractional years)
-
-xcoh <- cal.yr( xcoh, format="%d/%m/%Y", wh=2:4 )
+#xcoh <- cal.yr( xcoh, format="%d/%m/%Y", wh=2:4 )
 
 #
 #See how it looks
 
-xcoh
-str( xcoh )
+#xcoh
+#str( xcoh )
 
 #xcoh$id
 #xcoh$birth 
@@ -1218,28 +1354,28 @@ str( xcoh )
 
 #####################################################################
 # Define a Lexis object with timescales calendar time and age
-Lcoh <- Lexis( entry = list(per=entry ),
-               exit = list( per=exit,
-                            age=exit-birth ),
-               exit.status = fail,
-               data = xcoh )
-
-xcoh
+#Lcoh <- Lexis( entry = list(per=entry ),
+#               exit = list( per=exit,
+#                            age=exit-birth ),
+#               exit.status = fail,
+#               data = xcoh )
+#
+#xcoh
 # Using character states may have undesired effects:
-xcoh$Fail <- c("Dead","Well","Dead")
-xcoh$Fail
+#xcoh$Fail <- c("Dead","Well","Dead")
+#xcoh$Fail
+#
+#Lexis( entry = list( per=entry ),
+#       exit = list( per=exit, age=exit-birth ),
+#       exit.status = Fail,
+#       data = xcoh )
+#Lexis.diagram()
 
-Lexis( entry = list( per=entry ),
-       exit = list( per=exit, age=exit-birth ),
-       exit.status = Fail,
-       data = xcoh )
-Lexis.diagram()
-
-plot(Lexis( entry = list( per=entry ),
-            exit = list( per=exit, age=exit-birth ),
-            exit.status = fail,
-            data = xcoh ))
-
+#plot(Lexis( entry = list( per=entry ),
+#            exit = list( per=exit, age=exit-birth ),
+#            exit.status = fail,
+#            data = xcoh ))
+#
 #####################################################################
 
 
@@ -1248,49 +1384,39 @@ plot(Lexis( entry = list( per=entry ),
 
 
 
-
-
-
-
-
-
-
-#--------------------------------------#
-# D E S C R I P C I Ó :
-#--------------------------------------#
-
-
-#canviar
-
-#------------------------------------------------------------------#
-conductor_variables<-"conductor_DataHarmonization.xls"
-#------------------------------------------------------------------#
-
-
-
-
-
-#------------------------------------------------------------------#
-dt_total4<-convertir_dates(d=dt_total2,taulavariables=conductor_variables)
-dt_total4<-etiquetar_valors(dt=dt_total4,variables_factors=conductor_variables,fulla="etiquetes",camp_etiqueta="etiqueta2")
-dt_total4<-etiquetar(d=dt_total4,taulavariables=conductor_variables)
-#------------------------------------------------------------------#
-
-#variable.names(dt_total2)
-
-#i
-#***********************************************************************#
-formula_taula00<-formula_compare("taula00",y="grup",taulavariables = conductor_variables)
-
-T00<-descrTable(formula_taula00,method = 1,data=dt_total4,max.xlev = 100, show.p.overall=FALSE)
-#***********************************************************************#
-T00
-#***********************************************************************#
-
-
-
-save(T00,figura1,figura3,figura4,cox_lexis_out,cox_lexis_out2,cox_lexis_out3,file="DataHarmonization.Rdata")
+save(T00,taula_events,taula_events2,figura1,figura3,figura4,cox_lexis_out,cox_lexis_out2,cox_lexis_out3,file="DataHarmonization.Rdata")
 
 
 #http://www.sthda.com/english/wiki/cox-proportional-hazards-model
 
+
+
+
+
+
+
+
+
+
+# s'ha de fer :
+# !!! Lexis.lines 
+# !!! i FLOW-CHART!
+
+
+#T13<-diagramaFlowchart(
+#  grups=1,
+#  pob_lab1=c("Pacientes con criterio de Inclusion ","Pacientes con criterio de Inclusion y sin criterios de Exclusion  "),
+#  pob1=c(264,257),
+#  exc1=c(1,2,6),
+#  exc_lab1=c('Pacientes diagnosticados de DM1/Diabetis Gestacional/Diabetis Secundaria a medicamentos',
+#             'Pacientes con una esperanza de vida < 1 año',
+#             'Ulceras activas a inicio del estudio'),
+#  colors=c('white','grey'),
+#  forma=c('box','box'))
+
+
+#T13
+
+
+
+# !!! RR GLOBAL!
