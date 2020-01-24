@@ -1,4 +1,6 @@
 #-----------#
+#[24.01.2020]
+#[23.01.2020]
 #[22.01.2020]
 #[21.01.2020]
 #[20.01.2020]
@@ -19,7 +21,13 @@
 #-----------#
 
 
+# s'ha de fer :
 
+#-----------------
+# !!! Lexis.lines 
+# !!! RR GLOBAL!
+# splines
+#-----------------
 
 
 # Lectura de fitxers --------------------
@@ -88,14 +96,19 @@
 #memory.size(max=160685)
 memory.limit()
 #
-
+library(splines)
+library(stats)
+library(graphics)
+library("LexisPlotR")
+library(Epi)
+library(lubridate)
 #
 # Directori Font     ==============================  
 
 library("LexisPlotR")
-library(Epi)
-library(lubridate)
-
+library("Epi")
+library("lubridate")
+library("xlsx")
 #--------------------------------------------------------------------------#
 link_source<-paste0("https://github.com/jrealgatius/Stat_codis/blob/master/funcions_propies.R","?raw=T")
 devtools::source_url(link_source)
@@ -297,7 +310,8 @@ DINDEX<-dt_diagnostics%>% group_by(idp)%>%summarise(data_index=min(dat,na.rm = T
 C_EXPOSATS<-DINDEX%>%left_join(LLEGIR.poblacio,by="idp")
 #C_EXPOSATS<-C_EXPOSATS%>%filter(entrada<=20181231) #Excluits entrada després de (31/12/2018)
 variable.names(C_EXPOSATS)
-
+C_EXPOSATS_num<-length(C_EXPOSATS$idp)
+#C_EXPOSATS_num
 
 
 
@@ -313,11 +327,15 @@ variable.names(C_NO_EXPOSATS)
 #-----------------------------------------------------------------------------------------------------------------------#
 #min(LLEGIR.poblacio$entrada)-->[01.01.2006]
 #max(LLEGIR.poblacio$entrada)-->[19.12.2018]
+C_NO_EXPOSATS_num<-length(C_NO_EXPOSATS$idp)
+#C_NO_EXPOSATS_num
+
 
 
 #iii) FILTRE_3 : Els  EXPOSATS a DIABETIS TIPUS2 amb DIAiNDEX que tinguin <35 anys l'any 1/1/2006, quedaran FORA!, per tant hagin nascut l'any <=1971.
 C_EXPOSATS<-C_EXPOSATS%>%filter(dnaix<=19710101)
-
+C_EXPOSATS2_num<-length(C_EXPOSATS$idp)
+#C_EXPOSATS2_num
 
 
 
@@ -616,8 +634,9 @@ variable.names(dt_total2)
 
 
 
-
-
+dt_total2_num<-length(dt_total2$grup)
+dt_total2_num
+table(dt_total2$grup)
 
 
 # ANALISIS  --------------
@@ -645,6 +664,7 @@ variable.names(dt_total2)
 #--------------------------------------#
 # D E S C R I P C I Ó :
 #--------------------------------------#
+
 
 
 #canviar
@@ -676,7 +696,70 @@ T00
 #***********************************************************************#
 
 
+ 
 
+#***********************************************************************#
+# FLOWCHART.
+#***********************************************************************#
+
+pob=c(10000)
+pob_lab=c("Mortalidad en personas Diabéticas Tipo 2 en comparación en Población Control[MUESTRA]")
+
+
+
+  
+
+#C_EXPOSATS_num
+#C_NO_EXPOSATS_num
+
+#C_EXPOSATS2_num
+#C_NO_EXPOSATS2_num=C_NO_EXPOSATS_num
+#table(dt_total2$grup)
+C_EXPOSATS_MATCHED_num<-dt_total2%>%filter(grup==1)
+C_EXPOSATS_MATCHED_num<-length(C_EXPOSATS_MATCHED_num$idp)
+C_NO_EXPOSATS_MATCHED_num<-dt_total2%>%filter(grup==0)
+C_NO_EXPOSATS_MATCHED_num<-length(C_NO_EXPOSATS_MATCHED_num$idp)
+
+#pob1=c(838,251)
+#pob2=c(9162,550)
+#exc1=c(805)
+#exc2=c(805)
+
+pob1=c(C_EXPOSATS_num,C_EXPOSATS_MATCHED_num)
+pob2=c(C_NO_EXPOSATS_num,C_NO_EXPOSATS_MATCHED_num)
+
+pob_lab1=c("Población Diabética íncidente anterior del Matched [01/01/2004 - 31.12.2018]","Matched:[Sexo-Año de Nacimiento-Iddap] 1:5")
+pob_lab2=c("Población No Diabética íncidente anterior del Matched [01/01/2004 - 31.12.2018]","Matched:[Sexo-Año de Nacimiento-Iddap] 1:5")
+
+
+exc1=c(C_EXPOSATS2_num)
+exc_lab1=c('Edad>=35 años')
+
+exc2=c(C_NO_EXPOSATS_num)
+exc_lab2=c('Edad>=35 años')
+
+
+colors=c('grey','orange')
+forma=c('box','box')
+
+#***********************************************************************#
+flowchart<-diagramaFlowchart(
+      grups=2,
+      pob=pob,
+      pob_lab=pob_lab,
+      pob1=pob1,
+      pob_lab1=pob_lab1,
+      exc1=exc1,
+      exc_lab1=exc_lab1,
+      pob2=pob2,
+      pob_lab2=pob_lab2,
+      exc2=exc2,
+      exc_lab2=exc_lab2,
+      colors=colors,
+      forma=forma)
+#***********************************************************************#
+flowchart
+#***********************************************************************#
 
 
 
@@ -970,18 +1053,10 @@ LEXIS_dt_total3_b_grup1<- Lexis(
 #            data = dt_total3_grup1))
 #####################################################################
 #[S'HA DE CANVIAR A 2006-2018, quan tinguem tota la base de dades!, així convergirà]
-plot(LEXIS_dt_total3_b_grup1, grid=0:20*5, col="black", xaxs="i", yaxs="i",xlim=c(2004,2021), ylim=c(30,100), lwd=1, las=1 )
+plot(LEXIS_dt_total3_b_grup1, grid=0:20*5, col="black", xaxs="i", yaxs="i",xlim=c(2004,2019), ylim=c(35,100), lwd=1, las=1 )
 points(LEXIS_dt_total3_b_grup1, pch=c(NA,16)[LEXIS_dt_total3_b_grup1$fail+1] )
 
 #figura2a.png
-
-
-df <- data_frame(x = 1:100, y=rnorm(100),
-                 z=sample(LETTERS[1:3], 100, replace=TRUE))
-
-# Scatterplot
-p1 <- ggplot(df, aes(x=x, y=y, color=z)) + geom_point()
-
 
 
 
@@ -1002,7 +1077,7 @@ LEXIS_dt_total3_b_grup0<- Lexis(
 #            data = dt_total3_grup0))
 #####################################################################
 #[S'HA DE CANVIAR A 2006-2018, quan tinguem tota la base de dades!, així convergirà]
-plot(LEXIS_dt_total3_b_grup0, grid=0:20*5, col="black", xaxs="i", yaxs="i",xlim=c(2004,2021), ylim=c(30,100), lwd=1, las=1 )
+plot(LEXIS_dt_total3_b_grup0, grid=0:20*5, col="black", xaxs="i", yaxs="i",xlim=c(2004,2019), ylim=c(35,100), lwd=1, las=1 )
 points(LEXIS_dt_total3_b_grup0, pch=c(NA,16)[LEXIS_dt_total3_b_grup0$fail+1] )
 
 
@@ -1090,6 +1165,73 @@ points(LEXIS_dt_total3_b_grup0, pch=c(NA,16)[LEXIS_dt_total3_b_grup0$fail+1] )
 #res_DM_TOTAL <-cbind(acm_DM, rateD=exp(acm_DM$es_d), rateD_lb=exp(acm_DM$lb_d), rateD_ub=exp(acm_DM$ub_d))
 #--------------------------------------------------#
 
+#http://bendixcarstensen.com/SDC/EPJmort/MortT2.pdf
+
+
+
+#------------------------------------------------------------------------------------------------------------------------------#
+#Raw mortality by calendar year
+#------------------------------------------------------------------------------------------------------------------------------#
+#S1 <- splitLexis(LEXIS_dt_total3_b_grup1, time.scale="per", breaks=2004+seq(0,20,1/2) )
+#S1<-S1%>%left_join(select(dt_total,idp,sexe))%>%mutate(gender=if_else(sexe=="H",1,0))
+#summary( S1 )
+#------------------------------------------------------------------------------------------------------------------------------#
+#DY <- xtabs( cbind(D=lex.Xst!="Alive", Y=lex.dur,rate=lex.dur)~ I(floor(per*2)/2) + gender  ,data=S1 )
+#------------------------------------------------------------------------------------------------------------------------------#
+
+#DY[,,"rate"] <- DY[,,"D"]/DY[,,"Y"]
+#round( ftable( DY, row.vars=1 ), 1 )
+#------------------------------------------------------------------------------------------------------------------------------#
+#matplot( as.numeric(dimnames(DY)[[1]]), log="y", las=1,xlab="Date", ylab="Raw mortality year)",DY[,,"rate"], type="l", lty=1, lwd=3, col=c("black","yellow") )
+#abline( v=seq(2004,2018,1/4), col=gray(0.9) )
+#abline( v=seq(2004,2018,1) , col=gray(0.8) )
+#box()
+#------------------------------------------------------------------------------------------------------------------------------#
+
+
+
+
+#------------------------------------------------------------------------------------------------------------------------------#
+#Raw mortality by calendar year
+#------------------------------------------------------------------------------------------------------------------------------#
+S1 <- splitLexis(LEXIS_dt_total3_b, time.scale="per", breaks=2004+seq(0,14,1/2) )
+S1<-S1%>%left_join(select(dt_total,idp,grup))
+summary( S1 )
+#------------------------------------------------------------------------------------------------------------------------------#
+DY <- xtabs( cbind(D=lex.Xst!="Alive", Y=lex.dur,rate=lex.dur)~ I(floor(per*2)/2) + grup  ,data=S1 )
+#------------------------------------------------------------------------------------------------------------------------------#
+DY[,,"rate"] <- DY[,,"D"]/DY[,,"Y"]
+round( ftable( DY, row.vars=1 ), 1 )
+#------------------------------------------------------------------------------------------------------------------------------#
+matplot( as.numeric(dimnames(DY)[[1]]), log="y", las=1,xlab="Date", ylab="Raw mortality year",DY[,,"rate"], type="l", lty=1, lwd=3, col=c("black","blue") )
+abline( v=seq(2004,2018,1/4), col=gray(0.9) )
+abline( v=seq(2004,2018,1) , col=gray(0.8) )
+legend('bottom',legend = colnames(DY), col =c("black","blue"),lty = 1:2, lwd = 1,box.lty=1, box.lwd=0 )
+box()
+#------------------------------------------------------------------------------------------------------------------------------#
+
+
+
+#------------------------------------------------------------------------------------------------------------------------------#
+#Raw mortality by calendar year
+#------------------------------------------------------------------------------------------------------------------------------#
+S1 <- splitLexis(LEXIS_dt_total3_b, time.scale="per", breaks=2004+seq(0,14,1) )
+S1<-S1%>%left_join(select(dt_total,idp,grup))
+summary( S1 )
+#------------------------------------------------------------------------------------------------------------------------------#
+DY <- xtabs( cbind(D=lex.Xst==1, Y=lex.dur,rate=lex.dur)~ I(floor(per)/1) + grup  ,data=S1 )
+#DY <- xtabs( cbind(D=lex.Xst!="Alive", Y=lex.dur,rate=lex.dur)~ I(floor(per*2)/2) + grup  ,data=S1 )
+#------------------------------------------------------------------------------------------------------------------------------#
+DY[,,"rate"] <- DY[,,"D"]/DY[,,"Y"]*1000
+round( ftable( DY, row.vars=1 ), 1 )
+#------------------------------------------------------------------------------------------------------------------------------#
+matplot( as.numeric(dimnames(DY)[[1]]), log="y", las=1,xlab="Date", ylab="Raw mortality year",DY[,,"rate"], type="l", lty=1, lwd=3, col=c("black","blue"),xlim=c(2012,2016) )
+abline( v=seq(2006,2018,1/4), col=gray(0.9) )
+abline( v=seq(2006,2018,1) , col=gray(0.8) )
+#legend('right',legend=colnames(DY), col =c("black","blue"),lty = 1, lwd = 1,box.lty=0, box.lwd=0 )
+box()
+#------------------------------------------------------------------------------------------------------------------------------#
+#------------------------------------------------------------------------------------------------------------------------------#
 
 
 
@@ -1101,62 +1243,582 @@ points(LEXIS_dt_total3_b_grup0, pch=c(NA,16)[LEXIS_dt_total3_b_grup0$fail+1] )
 
 
 
-
-
-
-                  #-----------------------------------------------------#
-                  # M O D E L     P O I S S O N   G L M:      DIABETIS  #
-                  #-----------------------------------------------------#
+                  #-----------------------------------------------------------#
+                  # M O D E L     P O I S S O N   G L M:      DIABETIS/HOMES  #
+                  #------------------------------------------------------------#
 #--------------------------------------------------------#
 #[DIABETIS: Causes de Mortalitat]  :  LEXIS_dt_total2_b_grup1
 #[S'HA DE CANVIAR A 2006-2018, quan tinguem tota la base de dades!, així convergirà]
 #--------------------------------------------------------#
-  
+
+
 ##########################
 dbs1 <- popEpi::splitMulti( LEXIS_dt_total3_b_grup1, age = seq(35,100,1), per= seq(2004,2018,1))
-dbs1
-
-
-
+#--------------------------------------------------------#
 a.kn <- with(subset(dbs1, lex.Xst==1), quantile(age+lex.dur,(1:5-0.5)/5))
 p.kn <- with(subset(dbs1, lex.Xst==1), quantile(per+lex.dur,(1:5-0.5)/5))
-##########################
 #--------------------------------------------------------# 
-dbs1<-dbs1 %>% left_join(select(dt_total,idp,sexe)) %>% mutate(gender=if_else(sexe=="H",1,0))
+dbs1_H<-dbs1 %>% left_join(select(dt_total,idp,sexe)) %>% filter(sexe=="H")
+a.kn_H <- with(subset(dbs1_H, lex.Xst==1), quantile(age+lex.dur,(1:5-0.5)/5))
+p.kn_H <- with(subset(dbs1_H, lex.Xst==1), quantile(per+lex.dur,(1:5-0.5)/5))
+#--------------------------------------------------------# 
+dbs1_D<-dbs1 %>% left_join(select(dt_total,idp,sexe)) %>% filter(sexe=="D")
 #--------------------------------------------------------#
+a.kn_D <- with(subset(dbs1, lex.Xst==1), quantile(age+lex.dur,(1:5-0.5)/5))
+p.kn_D <- with(subset(dbs1, lex.Xst==1), quantile(per+lex.dur,(1:5-0.5)/5))
+#--------------------------------------------------------# 
+
+
+
 
 #dbs1$lex.dur
 
-r1 <- glm((lex.Xst==1)~Ns(age, knots = a.kn)*Ns(per, knots = p.kn)*gender,
-          family = poisson(),
-          offset = log(lex.dur),
-          data   = dbs1)
+dbs1_H$lex.Xst
+
+m1.diab_H <- glm( (lex.Xst==1) ~ Ns( age, knots=a.kn_H)+Ns( per, knots=p.kn_H  ),
+              offset = log( lex.dur ) ,
+              family = poisson,
+              data   = dbs1_H)
+figura3H<-summary(m1.diab_H)
+
+m1.diab_D <- glm( (lex.Xst==1) ~ Ns( age, knots=a.kn_D)+Ns( per, knots=p.kn_D ),
+                  offset = log( lex.dur ) ,
+                  family = poisson,
+                  data   = dbs1_D )
+figura3D<-summary(m1.diab_D)
+#--------------------------------------------------------#
+# Plot estimated age-mortality curve for the year 2005 and knots chosen.
+nd_2004 <- data.frame(age=35:100,per=2004,lex.dur=1000)
+nd_2005 <- data.frame(age=35:100,per=2005,lex.dur=1000)
+nd_2006 <- data.frame(age=35:100,per=2006,lex.dur=1000)
+nd_2007 <- data.frame(age=35:100,per=2007,lex.dur=1000)
+nd_2008 <- data.frame(age=35:100,per=2008,lex.dur=1000)
+nd_2009 <- data.frame(age=35:100,per=2009,lex.dur=1000)
+nd_2010 <- data.frame(age=35:100,per=2010,lex.dur=1000)
+nd_2011 <- data.frame(age=35:100,per=2011,lex.dur=1000)
+nd_2012 <- data.frame(age=35:100,per=2012,lex.dur=1000)
+nd_2013 <- data.frame(age=35:100,per=2013,lex.dur=1000)
+nd_2014 <- data.frame(age=35:100,per=2014,lex.dur=1000)
+nd_2015 <- data.frame(age=35:100,per=2015,lex.dur=1000)
+nd_2016 <- data.frame(age=35:100,per=2016,lex.dur=1000)
+nd_2017 <- data.frame(age=35:100,per=2017,lex.dur=1000)
+nd_2018 <- data.frame(age=35:100,per=2018,lex.dur=1000)
+#--------------------------------------------------------#
+
+
 
 #--------------------------------------------------------#
-dbs1$lex.Xst
+#2004 H 
+
+matplot( nd_2004$age, ci.pred(m1.diab_H, newdata=nd_2004 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Hombres Diabéticos cada  1000 Personas-año 2004", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_H, lwd=2 )
+
+#--------------------------------------------------------#
+#--------------------------------------------------------#
+#2004 D 
+matplot( nd_2004$age, ci.pred(m1.diab_D, newdata=nd_2004 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Mujeres Diabéticos cada  1000 Personas-año 2004", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_D, lwd=2 )
+#--------------------------------------------------------#
+
+
+#--------------------------------------------------------#
+#2005 H 
+matplot( nd_2005$age, ci.pred(m1.diab_H, newdata=nd_2005 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Hombres Diabéticos cada  1000 Personas-año 2005", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_H, lwd=2 )
+
+#--------------------------------------------------------#
+#--------------------------------------------------------#
+#2005 D 
+matplot( nd_2005$age, ci.pred(m1.diab_D, newdata=nd_2005 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Mujeres Diabéticos cada  1000 Personas-año 2005", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_D, lwd=2 )
+#--------------------------------------------------------#
+
+
+
+#--------------------------------------------------------#
+#2006 H 
+matplot( nd_2006$age, ci.pred(m1.diab_H, newdata=nd_2006 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Hombres Diabéticos cada  1000 Personas-año 2006", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_H, lwd=2 )
+
+#--------------------------------------------------------#
+#--------------------------------------------------------#
+#2006 D 
+matplot( nd_2006$age, ci.pred(m1.diab_D, newdata=nd_2006 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Mujeres Diabéticos cada  1000 Personas-año 2006", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_D, lwd=2 )
+#--------------------------------------------------------#
+
+
+
+#--------------------------------------------------------#
+#2007 H 
+matplot( nd_2007$age, ci.pred(m1.diab_H, newdata=nd_2007 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Hombres Diabéticos cada  1000 Personas-año 2007", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_H, lwd=2 )
+
+#--------------------------------------------------------#
+#--------------------------------------------------------#
+#2007 D 
+matplot( nd_2007$age, ci.pred(m1.diab_D, newdata=nd_2007 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Mujeres Diabéticos cada  1000 Personas-año 2007", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_D, lwd=2 )
+#--------------------------------------------------------#
+
+
+#--------------------------------------------------------#
+#2008 H 
+matplot( nd_2008$age, ci.pred(m1.diab_H, newdata=nd_2008 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Hombres Diabéticos cada  1000 Personas-año 2008", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_H, lwd=2 )
+
+#--------------------------------------------------------#
+#--------------------------------------------------------#
+#2008 D 
+matplot( nd_2008$age, ci.pred(m1.diab_D, newdata=nd_2008 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Mujeres Diabéticos cada  1000 Personas-año 2008", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_D, lwd=2 )
+#--------------------------------------------------------#
+
+
+#--------------------------------------------------------#
+#2009 H 
+matplot( nd_2009$age, ci.pred(m1.diab_H, newdata=nd_2009 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Hombres Diabéticos cada  1000 Personas-año 2009", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_H, lwd=2 )
+
+#--------------------------------------------------------#
+#--------------------------------------------------------#
+#2009 D 
+matplot( nd_2009$age, ci.pred(m1.diab_D, newdata=nd_2009 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Mujeres Diabéticos cada  1000 Personas-año 2009", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_D, lwd=2 )
+#--------------------------------------------------------#
+
+
+#--------------------------------------------------------#
+#2010 H 
+matplot( nd_2010$age, ci.pred(m1.diab_H, newdata=nd_2010 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Hombres Diabéticos cada  1000 Personas-año 2010", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_H, lwd=2 )
+
+#--------------------------------------------------------#
+#--------------------------------------------------------#
+#2010 D 
+matplot( nd_2010$age, ci.pred(m1.diab_D, newdata=nd_2010 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Mujeres Diabéticos cada  1000 Personas-año 2010", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_D, lwd=2 )
+#--------------------------------------------------------#
+
+
+
+#--------------------------------------------------------#
+#2010 H 
+matplot( nd_2010$age, ci.pred(m1.diab_H, newdata=nd_2010 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Hombres Diabéticos cada  1000 Personas-año 2010", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_H, lwd=2 )
+
+#--------------------------------------------------------#
+#--------------------------------------------------------#
+#2010 D 
+matplot( nd_2010$age, ci.pred(m1.diab_D, newdata=nd_2010 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Mujeres Diabéticos cada  1000 Personas-año 2010", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_D, lwd=2 )
 #--------------------------------------------------------#
 
 #--------------------------------------------------------#
-summary(r1)
+#2011 H 
+matplot( nd_2011$age, ci.pred(m1.diab_H, newdata=nd_2011 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Hombres Diabéticos cada  1000 Personas-año 2011", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_H, lwd=2 )
+
+#--------------------------------------------------------#
+#--------------------------------------------------------#
+#2011 D 
+matplot( nd_2010$age, ci.pred(m1.diab_D, newdata=nd_2011 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Mujeres Diabéticos cada  1000 Personas-año 2011", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_D, lwd=2 )
+#--------------------------------------------------------#
+
+#--------------------------------------------------------#
+#2012 H 
+matplot( nd_2012$age, ci.pred(m1.diab_H, newdata=nd_2012 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Hombres Diabéticos cada  1000 Personas-año 2012", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_H, lwd=2 )
+
+#--------------------------------------------------------#
+#--------------------------------------------------------#
+#2012 D 
+matplot( nd_2012$age, ci.pred(m1.diab_D, newdata=nd_2012 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Mujeres Diabéticos cada  1000 Personas-año 2012", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_D, lwd=2 )
+#--------------------------------------------------------#
+
+
+#--------------------------------------------------------#
+#2013 H 
+matplot( nd_2013$age, ci.pred(m1.diab_H, newdata=nd_2013 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Hombres Diabéticos cada  1000 Personas-año 2013", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_H, lwd=2 )
+
+#--------------------------------------------------------#
+#--------------------------------------------------------#
+#2013 D 
+matplot( nd_2013$age, ci.pred(m1.diab_D, newdata=nd_2013 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Mujeres Diabéticos cada  1000 Personas-año 2013", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_D, lwd=2 )
+#--------------------------------------------------------#
+
+#--------------------------------------------------------#
+#2014 H 
+matplot( nd_2014$age, ci.pred(m1.diab_H, newdata=nd_2014 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Hombres Diabéticos cada  1000 Personas-año 2014", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_H, lwd=2 )
+
+#--------------------------------------------------------#
+#--------------------------------------------------------#
+#2014 D 
+matplot( nd_2014$age, ci.pred(m1.diab_D, newdata=nd_2014 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Mujeres Diabéticos cada  1000 Personas-año 2014", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_D, lwd=2 )
+#--------------------------------------------------------#
+
+
+#--------------------------------------------------------#
+#2015 H 
+matplot( nd_2015$age, ci.pred(m1.diab_H, newdata=nd_2015 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Hombres Diabéticos cada  1000 Personas-año 2015", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_H, lwd=2 )
+
+#--------------------------------------------------------#
+#--------------------------------------------------------#
+#2015 D 
+matplot( nd_2015$age, ci.pred(m1.diab_D, newdata=nd_2015 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Mujeres Diabéticos cada  1000 Personas-año 2015", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_D, lwd=2 )
+#--------------------------------------------------------#
+
+
+#--------------------------------------------------------#
+#2016 H 
+matplot( nd_2016$age, ci.pred(m1.diab_H, newdata=nd_2016 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Hombres Diabéticos cada  1000 Personas-año 2016", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_H, lwd=2 )
+
+#--------------------------------------------------------#
+#--------------------------------------------------------#
+#2016 D 
+matplot( nd_2016$age, ci.pred(m1.diab_D, newdata=nd_2016 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Mujeres Diabéticos cada  1000 Personas-año 2016", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_D, lwd=2 )
+#--------------------------------------------------------#
+
+
+
+#--------------------------------------------------------#
+#2017 H 
+matplot( nd_2017$age, ci.pred(m1.diab_H, newdata=nd_2017 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Hombres Diabéticos cada  1000 Personas-año 2017", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_H, lwd=2 )
+
+#--------------------------------------------------------#
+#--------------------------------------------------------#
+#2017 D 
+matplot( nd_2017$age, ci.pred(m1.diab_D, newdata=nd_2017 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Mujeres Diabéticos cada  1000 Personas-año 2017", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_D, lwd=2 )
+#--------------------------------------------------------#
+
+
+
+#--------------------------------------------------------#
+#2018 H 
+matplot( nd_2018$age, ci.pred(m1.diab_H, newdata=nd_2018 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Hombres Diabéticos cada  1000 Personas-año 2018", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_H, lwd=2 )
+
+#--------------------------------------------------------#
+#--------------------------------------------------------#
+#2018 D 
+matplot( nd_2018$age, ci.pred(m1.diab_D, newdata=nd_2018 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Mujeres Diabéticos cada  1000 Personas-año 2018", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_D, lwd=2 )
+#--------------------------------------------------------#
+
+
+
+
+
+#HOMES:
+#--------------------------------------------------------#
+summary(m1.diab_H)
 # Genera una matriu amb dades i fa les prediccions segons el model ajustat
 age          <- c(35:100)
 period       <- seq(2004,2018,1)
-gender       <- c(0:1)
-nd           <- expand.grid(age, period, gender)
-colnames(nd) <- c("age","per","gender")
+#gender       <- c(0:1)
+nd           <- expand.grid(age, period)
+colnames(nd) <- c("age","per")
 nd           <- cbind(nd, lex.dur=1000)
-p1           <- ci.pred(r1, newdata = nd, Exp = FALSE)
+p1           <- ci.pred(m1.diab_H, newdata = nd, Exp = FALSE)
 colnames(p1) <- c("es_d", "lb_d", "ub_d")
 acm_DM       <- cbind(nd,p1, out="acm")
 #--------------------------------------------------------#
-res_DM_DIBAETIS <-cbind(acm_DM, rateD=exp(acm_DM$es_d), rateD_lb=exp(acm_DM$lb_d), rateD_ub=exp(acm_DM$ub_d))
+res_DM_DIBAETIS_H <-cbind(acm_DM, rateD=exp(acm_DM$es_d), rateD_lb=exp(acm_DM$lb_d), rateD_ub=exp(acm_DM$ub_d))
 #################
-#res_DM_DIBAETIS
+#res_DM_DIBAETIS_H
 ################
-figura3<-summary(r1)
-library(xlsx)
 #--------------------------------------------------------#
-write.xlsx(res_DM_DIBAETIS, file="MORATLITY_DIBAETIS.xlsx")
+write.xlsx(res_DM_DIBAETIS_H, file="MORATLITY_DIABETIS_HOMES.xlsx")
+#--------------------------------------------------------#
+
+
+#DONES:
+#--------------------------------------------------------#
+summary(m1.diab_D)
+# Genera una matriu amb dades i fa les prediccions segons el model ajustat
+age          <- c(35:100)
+period       <- seq(2004,2018,1)
+#gender       <- c(0:1)
+nd           <- expand.grid(age, period)
+colnames(nd) <- c("age","per")
+nd           <- cbind(nd, lex.dur=1000)
+p1           <- ci.pred(m1.diab_D, newdata = nd, Exp = FALSE)
+colnames(p1) <- c("es_d", "lb_d", "ub_d")
+acm_DM       <- cbind(nd,p1, out="acm")
+res_DM_DIBAETIS_D <-cbind(acm_DM, rateD=exp(acm_DM$es_d), rateD_lb=exp(acm_DM$lb_d), rateD_ub=exp(acm_DM$ub_d))
+#################
+#res_DM_DIBAETIS_H
+################
+#--------------------------------------------------------#
+write.xlsx(res_DM_DIBAETIS_H, file="MORATLITY_DIABETIS_DONES.xlsx")
 #--------------------------------------------------------#
 
 
@@ -1177,42 +1839,591 @@ write.xlsx(res_DM_DIBAETIS, file="MORATLITY_DIBAETIS.xlsx")
 
 
 
+
+#-----------------------------------------------------------#
+# M O D E L     P O I S S O N   G L M:      NO_DIABETIS/HOMES  #
+#------------------------------------------------------------#
+#--------------------------------------------------------#
+#[NO_DIABETIS: Causes de Mortalitat]  :  LEXIS_dt_total2_b_grup1
+#[S'HA DE CANVIAR A 2006-2018, quan tinguem tota la base de dades!, així convergirà]
+#--------------------------------------------------------#
+
+
 ##########################
-dbs1 <- popEpi::splitMulti(LEXIS_dt_total3_b_grup0, age = seq(35,100,1), per= seq(2004,2018,1))
-dbs1
+dbs1 <- popEpi::splitMulti( LEXIS_dt_total3_b_grup0, age = seq(35,100,1), per= seq(2004,2018,1))
+#--------------------------------------------------------#
 a.kn <- with(subset(dbs1, lex.Xst==1), quantile(age+lex.dur,(1:5-0.5)/5))
 p.kn <- with(subset(dbs1, lex.Xst==1), quantile(per+lex.dur,(1:5-0.5)/5))
-##########################
 #--------------------------------------------------------# 
-dbs1<-dbs1 %>% left_join(select(dt_total,idp,sexe)) %>% mutate(gender=if_else(sexe=="H",1,0))
+dbs1_H<-dbs1 %>% left_join(select(dt_total,idp,sexe)) %>% filter(sexe=="H")
+a.kn_H <- with(subset(dbs1_H, lex.Xst==1), quantile(age+lex.dur,(1:5-0.5)/5))
+p.kn_H <- with(subset(dbs1_H, lex.Xst==1), quantile(per+lex.dur,(1:5-0.5)/5))
+#--------------------------------------------------------# 
+dbs1_D<-dbs1 %>% left_join(select(dt_total,idp,sexe)) %>% filter(sexe=="D")
 #--------------------------------------------------------#
-r2 <- glm((lex.Xst==1)~Ns(age, knots = a.kn)*Ns(per, knots = p.kn)*gender,
-          family = poisson,
-          offset = log(lex.dur),
-          data   = dbs1)
+a.kn_D <- with(subset(dbs1, lex.Xst==1), quantile(age+lex.dur,(1:5-0.5)/5))
+p.kn_D <- with(subset(dbs1, lex.Xst==1), quantile(per+lex.dur,(1:5-0.5)/5))
+#--------------------------------------------------------# 
+
+
+
+
+
+
+
+
+
+
+#dbs1$lex.dur
+
+m1.Ndiab_H <- glm( (lex.Xst==1) ~ Ns( age, knots=a.kn_H)+Ns( per, knots=p.kn_H  ),
+                  offset = log( lex.dur ) ,
+                  family = poisson,
+                  data   = dbs1_H)
+figura4H<-summary(m1.Ndiab_H)
+
+m1.Ndiab_D <- glm( (lex.Xst==1) ~ Ns( age, knots=a.kn_D)+Ns( per, knots=p.kn_D ),
+                  offset = log( lex.dur ) ,
+                  family = poisson,
+                  data   = dbs1_D )
+figura4D<-summary(m1.Ndiab_D)
 #--------------------------------------------------------#
-summary(r2)
-figura4<-summary(r2)
+# Plot estimated age-mortality curve for the year 2005 and knots chosen.
+nd_2004 <- data.frame(age=35:100,per=2004,lex.dur=1000)
+nd_2005 <- data.frame(age=35:100,per=2005,lex.dur=1000)
+nd_2006 <- data.frame(age=35:100,per=2006,lex.dur=1000)
+nd_2007 <- data.frame(age=35:100,per=2007,lex.dur=1000)
+nd_2008 <- data.frame(age=35:100,per=2008,lex.dur=1000)
+nd_2009 <- data.frame(age=35:100,per=2009,lex.dur=1000)
+nd_2010 <- data.frame(age=35:100,per=2010,lex.dur=1000)
+nd_2011 <- data.frame(age=35:100,per=2011,lex.dur=1000)
+nd_2012 <- data.frame(age=35:100,per=2012,lex.dur=1000)
+nd_2013 <- data.frame(age=35:100,per=2013,lex.dur=1000)
+nd_2014 <- data.frame(age=35:100,per=2014,lex.dur=1000)
+nd_2015 <- data.frame(age=35:100,per=2015,lex.dur=1000)
+nd_2016 <- data.frame(age=35:100,per=2016,lex.dur=1000)
+nd_2017 <- data.frame(age=35:100,per=2017,lex.dur=1000)
+nd_2018 <- data.frame(age=35:100,per=2018,lex.dur=1000)
 #--------------------------------------------------------#
+
+
+
+#--------------------------------------------------------#
+#2004 H 
+
+matplot( nd_2004$age, ci.pred(m1.diab_H, newdata=nd_2004 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Hombres NO Diabéticos cada  1000 Personas-año 2004", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_H, lwd=2 )
+
+#--------------------------------------------------------#
+#--------------------------------------------------------#
+#2004 D 
+matplot( nd_2004$age, ci.pred(m1.diab_D, newdata=nd_2004 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Mujeres No Diabéticos cada  1000 Personas-año 2004", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_D, lwd=2 )
+#--------------------------------------------------------#
+
+
+#--------------------------------------------------------#
+#2005 H 
+matplot( nd_2005$age, ci.pred(m1.diab_H, newdata=nd_2005 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Hombres NO Diabéticos cada  1000 Personas-año 2005", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_H, lwd=2 )
+
+#--------------------------------------------------------#
+#--------------------------------------------------------#
+#2005 D 
+matplot( nd_2005$age, ci.pred(m1.diab_D, newdata=nd_2005 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Mujeres No Diabéticos cada  1000 Personas-año 2005", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_D, lwd=2 )
+#--------------------------------------------------------#
+
+
+
+#--------------------------------------------------------#
+#2006 H 
+matplot( nd_2006$age, ci.pred(m1.diab_H, newdata=nd_2006 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Hombres NO Diabéticos cada  1000 Personas-año 2006", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_H, lwd=2 )
+
+#--------------------------------------------------------#
+#--------------------------------------------------------#
+#2006 D 
+matplot( nd_2006$age, ci.pred(m1.diab_D, newdata=nd_2006 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Mujeres No Diabéticos cada  1000 Personas-año 2006", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_D, lwd=2 )
+#--------------------------------------------------------#
+
+
+
+#--------------------------------------------------------#
+#2007 H 
+matplot( nd_2007$age, ci.pred(m1.diab_H, newdata=nd_2007 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Hombres NO Diabéticos cada  1000 Personas-año 2007", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_H, lwd=2 )
+
+#--------------------------------------------------------#
+#--------------------------------------------------------#
+#2007 D 
+matplot( nd_2007$age, ci.pred(m1.diab_D, newdata=nd_2007 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Mujeres No Diabéticos cada  1000 Personas-año 2007", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_D, lwd=2 )
+#--------------------------------------------------------#
+
+
+#--------------------------------------------------------#
+#2008 H 
+matplot( nd_2008$age, ci.pred(m1.diab_H, newdata=nd_2008 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Hombres NO Diabéticos cada  1000 Personas-año 2008", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_H, lwd=2 )
+
+#--------------------------------------------------------#
+#--------------------------------------------------------#
+#2008 D 
+matplot( nd_2008$age, ci.pred(m1.diab_D, newdata=nd_2008 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Mujeres No Diabéticos cada  1000 Personas-año 2008", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_D, lwd=2 )
+#--------------------------------------------------------#
+
+
+#--------------------------------------------------------#
+#2009 H 
+matplot( nd_2009$age, ci.pred(m1.diab_H, newdata=nd_2009 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Hombres NO Diabéticos cada  1000 Personas-año 2009", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_H, lwd=2 )
+
+#--------------------------------------------------------#
+#--------------------------------------------------------#
+#2009 D 
+matplot( nd_2009$age, ci.pred(m1.diab_D, newdata=nd_2009 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Mujeres No Diabéticos cada  1000 Personas-año 2009", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_D, lwd=2 )
+#--------------------------------------------------------#
+
+
+#--------------------------------------------------------#
+#2010 H 
+matplot( nd_2010$age, ci.pred(m1.diab_H, newdata=nd_2010 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Hombres NO Diabéticos cada  1000 Personas-año 2010", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_H, lwd=2 )
+
+#--------------------------------------------------------#
+#--------------------------------------------------------#
+#2010 D 
+matplot( nd_2010$age, ci.pred(m1.diab_D, newdata=nd_2010 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Mujeres No Diabéticos cada  1000 Personas-año 2010", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_D, lwd=2 )
+#--------------------------------------------------------#
+
+
+
+#--------------------------------------------------------#
+#2010 H 
+matplot( nd_2010$age, ci.pred(m1.diab_H, newdata=nd_2010 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Hombres NO Diabéticos cada  1000 Personas-año 2010", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_H, lwd=2 )
+
+#--------------------------------------------------------#
+#--------------------------------------------------------#
+#2010 D 
+matplot( nd_2010$age, ci.pred(m1.diab_D, newdata=nd_2010 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Mujeres No Diabéticos cada  1000 Personas-año 2010", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_D, lwd=2 )
+#--------------------------------------------------------#
+
+#--------------------------------------------------------#
+#2011 H 
+matplot( nd_2011$age, ci.pred(m1.diab_H, newdata=nd_2011 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Hombres NO Diabéticos cada  1000 Personas-año 2011", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_H, lwd=2 )
+
+#--------------------------------------------------------#
+#--------------------------------------------------------#
+#2011 D 
+matplot( nd_2010$age, ci.pred(m1.diab_D, newdata=nd_2011 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Mujeres No Diabéticos cada  1000 Personas-año 2011", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_D, lwd=2 )
+#--------------------------------------------------------#
+
+#--------------------------------------------------------#
+#2012 H 
+matplot( nd_2012$age, ci.pred(m1.diab_H, newdata=nd_2012 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Hombres NO Diabéticos cada  1000 Personas-año 2012", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_H, lwd=2 )
+
+#--------------------------------------------------------#
+#--------------------------------------------------------#
+#2012 D 
+matplot( nd_2012$age, ci.pred(m1.diab_D, newdata=nd_2012 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Mujeres No Diabéticos cada  1000 Personas-año 2012", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_D, lwd=2 )
+#--------------------------------------------------------#
+
+
+#--------------------------------------------------------#
+#2013 H 
+matplot( nd_2013$age, ci.pred(m1.diab_H, newdata=nd_2013 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Hombres NO Diabéticos cada  1000 Personas-año 2013", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_H, lwd=2 )
+
+#--------------------------------------------------------#
+#--------------------------------------------------------#
+#2013 D 
+matplot( nd_2013$age, ci.pred(m1.diab_D, newdata=nd_2013 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Mujeres No Diabéticos cada  1000 Personas-año 2013", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_D, lwd=2 )
+#--------------------------------------------------------#
+
+#--------------------------------------------------------#
+#2014 H 
+matplot( nd_2014$age, ci.pred(m1.diab_H, newdata=nd_2014 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Hombres NO Diabéticos cada  1000 Personas-año 2014", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_H, lwd=2 )
+
+#--------------------------------------------------------#
+#--------------------------------------------------------#
+#2014 D 
+matplot( nd_2014$age, ci.pred(m1.diab_D, newdata=nd_2014 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Mujeres No Diabéticos cada  1000 Personas-año 2014", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_D, lwd=2 )
+#--------------------------------------------------------#
+
+
+#--------------------------------------------------------#
+#2015 H 
+matplot( nd_2015$age, ci.pred(m1.diab_H, newdata=nd_2015 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Hombres NO Diabéticos cada  1000 Personas-año 2015", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_H, lwd=2 )
+
+#--------------------------------------------------------#
+#--------------------------------------------------------#
+#2015 D 
+matplot( nd_2015$age, ci.pred(m1.diab_D, newdata=nd_2015 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Mujeres No Diabéticos cada  1000 Personas-año 2015", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_D, lwd=2 )
+#--------------------------------------------------------#
+
+
+#--------------------------------------------------------#
+#2016 H 
+matplot( nd_2016$age, ci.pred(m1.diab_H, newdata=nd_2016 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Hombres NO Diabéticos cada  1000 Personas-año 2016", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_H, lwd=2 )
+
+#--------------------------------------------------------#
+#--------------------------------------------------------#
+#2016 D 
+matplot( nd_2016$age, ci.pred(m1.diab_D, newdata=nd_2016 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Mujeres No Diabéticos cada  1000 Personas-año 2016", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_D, lwd=2 )
+#--------------------------------------------------------#
+
+
+
+#--------------------------------------------------------#
+#2017 H 
+matplot( nd_2017$age, ci.pred(m1.diab_H, newdata=nd_2017 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Hombres NO Diabéticos cada  1000 Personas-año 2017", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_H, lwd=2 )
+
+#--------------------------------------------------------#
+#--------------------------------------------------------#
+#2017 D 
+matplot( nd_2017$age, ci.pred(m1.diab_D, newdata=nd_2017 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Mujeres No Diabéticos cada  1000 Personas-año 2017", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_D, lwd=2 )
+#--------------------------------------------------------#
+
+
+
+#--------------------------------------------------------#
+#2018 H 
+matplot( nd_2018$age, ci.pred(m1.diab_H, newdata=nd_2018 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Hombres NO Diabéticos cada  1000 Personas-año 2018", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_H, lwd=2 )
+
+#--------------------------------------------------------#
+#--------------------------------------------------------#
+#2018 D 
+matplot( nd_2018$age, ci.pred(m1.diab_D, newdata=nd_2018 ),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad-Mujeres No Diabéticos cada  1000 Personas-año 2018", 
+         xlab="Edad", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( a.kn_D, lwd=2 )
+#--------------------------------------------------------#
+
+
+
+
+
+#HOMES:
+#--------------------------------------------------------#
+summary(m1.diab_H)
 # Genera una matriu amb dades i fa les prediccions segons el model ajustat
 age          <- c(35:100)
 period       <- seq(2004,2018,1)
-gender       <- c(0:1)
-nd           <- expand.grid(age, period, gender)
-colnames(nd) <- c("age","per","gender")
+#gender       <- c(0:1)
+nd           <- expand.grid(age, period)
+colnames(nd) <- c("age","per")
 nd           <- cbind(nd, lex.dur=1000)
-p1           <- ci.pred(r2, newdata = nd, Exp = FALSE)
+p1           <- ci.pred(m1.diab_H, newdata = nd, Exp = FALSE)
 colnames(p1) <- c("es_d", "lb_d", "ub_d")
 acm_DM       <- cbind(nd,p1, out="acm")
 #--------------------------------------------------------#
-res_DM_NO_DIBAETIS <-cbind(acm_DM, rateD=exp(acm_DM$es_d), rateD_lb=exp(acm_DM$lb_d), rateD_ub=exp(acm_DM$ub_d))
+res_DM_NO_DIBAETIS_H <-cbind(acm_DM, rateD=exp(acm_DM$es_d), rateD_lb=exp(acm_DM$lb_d), rateD_ub=exp(acm_DM$ub_d))
 #################
-#res_DM_NO_DIBAETIS
+#res_DM_DIBAETIS_H
 ################
-library(xlsx)
 #--------------------------------------------------------#
-write.xlsx(res_DM_NO_DIBAETIS, file="MORATLITY_NO_DIBAETIS.xlsx")
+write.xlsx(res_DM_NO_DIBAETIS_H, file="MORATLITY_NO_DIABETIS_HOMES.xlsx")
 #--------------------------------------------------------#
+
+
+#DONES:
+#--------------------------------------------------------#
+summary(m1.diab_D)
+# Genera una matriu amb dades i fa les prediccions segons el model ajustat
+age          <- c(35:100)
+period       <- seq(2004,2018,1)
+#gender       <- c(0:1)
+nd           <- expand.grid(age, period)
+colnames(nd) <- c("age","per")
+nd           <- cbind(nd, lex.dur=1000)
+p1           <- ci.pred(m1.diab_D, newdata = nd, Exp = FALSE)
+colnames(p1) <- c("es_d", "lb_d", "ub_d")
+acm_DM       <- cbind(nd,p1, out="acm")
+res_DM_NO_DIBAETIS_D <-cbind(acm_DM, rateD=exp(acm_DM$es_d), rateD_lb=exp(acm_DM$lb_d), rateD_ub=exp(acm_DM$ub_d))
+#################
+#res_DM_DIBAETIS_H
+################
+#--------------------------------------------------------#
+write.xlsx(res_DM_NO_DIBAETIS_H, file="MORATLITY_NO_DIABETIS_DONES.xlsx")
+
+
+
+
 
 
 
@@ -1267,7 +2478,7 @@ cox_lexis_model2
 cox_lexis_ratios2 <- cbind(HR = exp(coef(cox_lexis_model2)), exp(confint(cox_lexis_model2)))
 #As every other time we exponentiat the coefficients to get hazard ratios
 cox_lexis_out2 <- summary(cox_lexis_model2)
-cox_lexis_out2 <- cbind(cox_lexis_ratios2,cox_lexis_out3$coefficients)
+cox_lexis_out2 <- cbind(cox_lexis_ratios2,cox_lexis_out2$coefficients)
 #And we put everything in a nice table
 cox_lexis_out2
 #-----------------------------------------------#
@@ -1384,7 +2595,7 @@ cox_lexis_out3
 
 
 
-save(T00,taula_events,taula_events2,figura1,figura3,figura4,cox_lexis_out,cox_lexis_out2,cox_lexis_out3,file="DataHarmonization.Rdata")
+save(flowchart,T00,taula_events,taula_events2,figura1,figura3,figura4,cox_lexis_out,cox_lexis_out2,cox_lexis_out3,file="DataHarmonization.Rdata")
 
 
 #http://www.sthda.com/english/wiki/cox-proportional-hazards-model
@@ -1398,25 +2609,3 @@ save(T00,taula_events,taula_events2,figura1,figura3,figura4,cox_lexis_out,cox_le
 
 
 
-# s'ha de fer :
-# !!! Lexis.lines 
-# !!! i FLOW-CHART!
-
-
-#T13<-diagramaFlowchart(
-#  grups=1,
-#  pob_lab1=c("Pacientes con criterio de Inclusion ","Pacientes con criterio de Inclusion y sin criterios de Exclusion  "),
-#  pob1=c(264,257),
-#  exc1=c(1,2,6),
-#  exc_lab1=c('Pacientes diagnosticados de DM1/Diabetis Gestacional/Diabetis Secundaria a medicamentos',
-#             'Pacientes con una esperanza de vida < 1 año',
-#             'Ulceras activas a inicio del estudio'),
-#  colors=c('white','grey'),
-#  forma=c('box','box'))
-
-
-#T13
-
-
-
-# !!! RR GLOBAL!

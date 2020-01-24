@@ -141,6 +141,9 @@ devtools::source_url(link_source)
 ```{r, message=FALSE, warning=FALSE, include=T, echo=FALSE,size="huge"}
 ####  Llegir dades    #####
 load("DataHarmonization.Rdata")
+
+flowchart
+
 #Taula1
 export2md(T00,caption="**Perfil demográfico y clínico del Grupo Caso(Diabético) y Grupo Control**")
 ```
@@ -186,15 +189,46 @@ figura1
 
 ```{r, message=FALSE, warning=FALSE, include=T, echo=FALSE,size="huge"}
 
-'Modelo lineal generalizado para ajustar un modelo de regresión de Poisson de la Tasas de  todo tipo de Mortalidad ,para el Grupo Caso(Diabético).(figura3)'
+'Modelo lineal generalizado para ajustar un modelo de regresión de Poisson de la Tasas de  todo tipo de Mortalidad ,para el Grupo Caso(Diabético Hombres).(figura3H)'
 
-figura3
+figura3H
 
-'Modelo lineal generalizado para ajustar un modelo de regresión de Poisson de la Tasas de  todo tipo de Mortalidad ,para e Grupo Control(figura4)'
 
-figura4
+'Modelo lineal generalizado para ajustar un modelo de regresión de Poisson de la Tasas de  todo tipo de Mortalidad ,para el Grupo Caso(Diabético Mujeres).(figura3D)'
+
+figura3D
+
+
+'Modelo lineal generalizado para ajustar un modelo de regresión de Poisson de la Tasas de  todo tipo de Mortalidad ,para e Grupo Control Hombres(figura4H)'
+
+figura4H
+
+
+
+'Modelo lineal generalizado para ajustar un modelo de regresión de Poisson de la Tasas de  todo tipo de Mortalidad ,para e Grupo Control Mujeres(figura4H)'
+
+figura4D
 
 ```
+
+
+
+
+
+* Gráficas de Tasas de Mortalidad 2008, (Modelo Poisson)
+
+![](PLOT2008H.png)
+
+![](PLOT2008D.png)
+
+
+![](PLOT2008H_ND.png)
+
+![](PLOT2008D_ND.png)
+
+
+
+
 
 
 
