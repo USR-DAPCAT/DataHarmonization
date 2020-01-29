@@ -154,6 +154,10 @@ load("DataHarmonization.Rdata")
 #Taula0
 kable(taula_events2, digits = 2, caption="Tasa de Moratlidad por cada 10000 perosnas-año") %>% kableExtra::kable_styling()
 
+#table_rate
+
+
+
 ```
 
 
@@ -177,6 +181,8 @@ figura1
 
 ```
 
+![](grafica7.png)
+
 * Aplicamos un Diagrama de Lexis para el Grupo Caso(Diabético)(figura2a)
 
 ![](figura2a.png)
@@ -189,25 +195,20 @@ figura1
 
 ```{r, message=FALSE, warning=FALSE, include=T, echo=FALSE,size="huge"}
 
-'Modelo lineal generalizado para ajustar un modelo de regresión de Poisson de la Tasas de  todo tipo de Mortalidad ,para el Grupo Caso(Diabético Hombres).(figura3H)'
+'Modelo lineal generalizado para ajustar un modelo de regresión de Poisson de la Tasas de  todo tipo de Mortalidad ,[Periodo*Grupo](figura00_TOTAL)'
 
-figura3H
-
-
-'Modelo lineal generalizado para ajustar un modelo de regresión de Poisson de la Tasas de  todo tipo de Mortalidad ,para el Grupo Caso(Diabético Mujeres).(figura3D)'
-
-figura3D
+figura00_TOTAL
 
 
-'Modelo lineal generalizado para ajustar un modelo de regresión de Poisson de la Tasas de  todo tipo de Mortalidad ,para e Grupo Control Hombres(figura4H)'
+'Modelo lineal generalizado para ajustar un modelo de regresión de Poisson de la Tasas de  todo tipo de Mortalidad ,[Periodo*Edad*Grupo](figura02_TOTAL2)'
 
-figura4H
+figura02_TOTAL2
+
+'Modelo lineal generalizado para ajustar un modelo de regresión de Poisson de la Tasas de  todo tipo de Mortalidad ,[Periodo+Edad+Grupo](figura02_TOTAL3)'
+
+figura02_TOTAL3
 
 
-
-'Modelo lineal generalizado para ajustar un modelo de regresión de Poisson de la Tasas de  todo tipo de Mortalidad ,para e Grupo Control Mujeres(figura4H)'
-
-figura4D
 
 ```
 
@@ -217,15 +218,28 @@ figura4D
 
 * Gráficas de Tasas de Mortalidad 2008, (Modelo Poisson)
 
-![](PLOT2008H.png)
-
-![](PLOT2008D.png)
 
 
-![](PLOT2008H_ND.png)
 
-![](PLOT2008D_ND.png)
 
+![](grafica1.png)
+
+
+
+
+![](grafica2.png)
+
+
+![](grafica3.png)
+
+
+![](grafica4.png)
+
+
+![](grafica5.png)
+
+
+![](grafica6.png)
 
 
 
