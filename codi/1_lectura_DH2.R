@@ -1,4 +1,8 @@
 #-----------#
+
+
+#############
+#[30.01.2020]
 #[29.01.2020]
 #[28.01.2020]
 #[27.01.2020]
@@ -111,7 +115,18 @@ library(lubridate)
 library("LexisPlotR")
 library("Epi")
 library("lubridate")
-library("xlsx")
+# library("xlsx")
+
+
+# Parametres  --------------------------
+
+# Si mostra = T llegeix MOSTRA (Altri llegeix població)
+
+mostra<-FALSE
+if (mostra) directori_dades<-"dades/sidiap/test" else directori_dades<-"dades/sidiap"
+directori_dades
+
+
 #--------------------------------------------------------------------------#
 link_source<-paste0("https://github.com/jrealgatius/Stat_codis/blob/master/funcions_propies.R","?raw=T")
 devtools::source_url(link_source)
@@ -124,53 +139,57 @@ devtools::source_url(link_source)
 
 # Llegir tots els fitxers RDS dins d'un directori i generar una mostra aleatoria i salvar-lo en un directori "mostra"
 
+#LLEGIR.cmbdh_diagnostics_padris<-readRDS("dades/SIDIAP/test" ) without 
 
 #i        [cmbdh_diagnostics] mult
-LLEGIR.cmbdh_diagnostics_padris<-readRDS("dades/SIDIAP/test" %>% here::here("testDAPCRMM_entregable_cmbdh_diagnostics_padris_20190930_093320.rds")) %>% as_tibble()
+
+list.files(directori_dades)
+
+LLEGIR.cmbdh_diagnostics_padris<-readRDS(directori_dades%>% here::here("DAPCRMM_entregable_cmbdh_diagnostics_padris_20190930_093320.rds")) %>% as_tibble()
 variable.names(LLEGIR.cmbdh_diagnostics_padris)
 #[1] "idp"    "cod"    "dat"    "dx_pos" "dalta"  "calta"  "agr" 
 #----------------------------------------------#
 #ii       [dianostics]  mult
-LLEGIR.diagnostics<-readRDS("dades/SIDIAP/test" %>% here::here("testDAPCRMM_entregable_diagnostics_20190926_103409.rds")) %>% as_tibble()
+LLEGIR.diagnostics<-readRDS(directori_dades %>% here::here("DAPCRMM_entregable_diagnostics_20190926_103409.rds")) %>% as_tibble()
 variable.names(LLEGIR.diagnostics)
 #[1] "idp"    "cod"    "dat"    "dbaixa" "agr"   
 #----------------------------------------------#
 
 #iii      [farmacs_facturats] mult
-LLEGIR.farmacs_facturat<-readRDS("dades/SIDIAP/test" %>% here::here("testDAPCRMM_entregable_farmacs_facturats_20190926_103409.rds")) %>% as_tibble()
+LLEGIR.farmacs_facturat<-readRDS(directori_dades %>% here::here("DAPCRMM_entregable_farmacs_facturats_20190926_103409.rds")) %>% as_tibble()
 variable.names(LLEGIR.farmacs_facturat)
 #[1]"idp" "cod" "dat" "agr" "env"
 #----------------------------------------------#
 #iv       [farmacs_prescrits] mult
-LLEGIR.farmacs_prescrits<-readRDS("dades/SIDIAP/test" %>% here::here("testDAPCRMM_entregable_farmacs_prescrits_20190926_103409.rds")) %>% as_tibble()
+LLEGIR.farmacs_prescrits<-readRDS(directori_dades %>% here::here("DAPCRMM_entregable_farmacs_prescrits_20190926_103409.rds")) %>% as_tibble()
 variable.names(LLEGIR.farmacs_prescrits)
 #[1] "idp"    "cod"    "dat"    "dbaixa" "ics"    "ap"     "agr"
 #----------------------------------------------#
 
 #v        [població] unic
-LLEGIR.poblacio<-readRDS("dades/SIDIAP/test" %>% here::here("testDAPCRMM_entregable_poblacio_20190926_103409.rds")) %>% as_tibble()
+LLEGIR.poblacio<-readRDS(directori_dades %>% here::here("DAPCRMM_entregable_poblacio_20190926_103409.rds")) %>% as_tibble()
 variable.names(LLEGIR.poblacio)
 #[1]  "idp"      "sexe"     "dnaix"    "entrada"  "sortida"  "situacio"
 #----------------------------------------------#
 #vi       [tabaquisme] unic
-LLEGIR.tabaquisme<-readRDS("dades/SIDIAP/test" %>% here::here("testDAPCRMM_entregable_tabaquisme_20190926_103409.rds")) %>% as_tibble()
+LLEGIR.tabaquisme<-readRDS(directori_dades %>% here::here("DAPCRMM_entregable_tabaquisme_20190926_103409.rds")) %>% as_tibble()
 variable.names(LLEGIR.tabaquisme)
 #[1] "idp"    "val"    "dat"    "dbaixa"
 #----------------------------------------------#
 
 #vii      [analitiques] mult
-LLEGIR.variables_analitiques<-readRDS("dades/SIDIAP/test" %>% here::here("testDAPCRMM_entregable_variables_analitiques_20190926_103409.rds")) %>% as_tibble()
+LLEGIR.variables_analitiques<-readRDS(directori_dades %>% here::here("DAPCRMM_entregable_variables_analitiques_20190926_103409.rds")) %>% as_tibble()
 variable.names(LLEGIR.variables_analitiques)
 #[1] "idp" "cod" "dat" "val" "agr"
 #----------------------------------------------#
 #viii     [variables_cliíniques] mult
-LLEGIR.variables_cliniques<-readRDS("dades/SIDIAP/test" %>% here::here("testDAPCRMM_entregable_variables_cliniques_20190926_103409.rds")) %>% as_tibble()
+LLEGIR.variables_cliniques<-readRDS(directori_dades %>% here::here("DAPCRMM_entregable_variables_cliniques_20190926_103409.rds")) %>% as_tibble()
 variable.names(LLEGIR.variables_cliniques)
 #[1] "idp" "cod" "dat" "val" "agr"
 #----------------------------------------------#
 
 #ix       [variables geo_sanitàries] unic
-LLEGIR.variables_geo_sanitaries<-readRDS("dades/SIDIAP/test" %>% here::here("testDAPCRMM_entregable_variables_geo_sanitaries_20190926_103409.rds")) %>% as_tibble()
+LLEGIR.variables_geo_sanitaries<-readRDS(directori_dades %>% here::here("DAPCRMM_entregable_variables_geo_sanitaries_20190926_103409.rds")) %>% as_tibble()
 variable.names(LLEGIR.variables_geo_sanitaries)
 #[1] "idp"     "idup"    "idabs"   "idrs"    "iddap"   "idambit"  
 
@@ -178,7 +197,7 @@ variable.names(LLEGIR.variables_geo_sanitaries)
 
 #----------------------------------------------#  
 #x        [variables socioeconòmiques] unic
-LLEGIR.variables_socioeconomiques<-readRDS("dades/SIDIAP/test" %>% here::here("testDAPCRMM_entregable_variables_socioeconomiques_20190926_103409.rds")) %>% as_tibble()
+LLEGIR.variables_socioeconomiques<-readRDS(directori_dades %>% here::here("DAPCRMM_entregable_variables_socioeconomiques_20190926_103409.rds")) %>% as_tibble()
 variable.names(LLEGIR.variables_socioeconomiques)
 #[1] "idp"       "qmedea"    "ruralitat"
 
@@ -289,10 +308,11 @@ dt_cataleg<-read_excel("Spain_codes.xls") %>% select(cod,agr,exposed)
 dt_diagnostics<-dt_diagnostics %>% left_join(dt_cataleg,by="cod") %>% filter(exposed=="exposed") 
 #
 #ii) FILTRE_2 : Filtrem la base de dades 2004-2018 *[S'HA DE CANVIAR A 2006-2018, quan tinguem tota la base de dades!, així convergirà]
-dt_diagnostics<-dt_diagnostics%>% filter(dat>=20040101  & dat<=20181231)
+# canvi a 2006!
+dt_diagnostics<-dt_diagnostics%>% filter(dat>=20060101  & dat<=20181231)
 #
 ######################################
-
+gc()
 
 #busquem la DATA ÍNDEX!:[]
 
@@ -300,9 +320,6 @@ dt_diagnostics<-dt_diagnostics%>% filter(dat>=20040101  & dat<=20181231)
 #-----#
 DINDEX<-dt_diagnostics%>% group_by(idp)%>%summarise(data_index=min(dat,na.rm = TRUE))%>%ungroup()
 #DINDEX
-
-
-
 
 
 ##############################################################################################################################
@@ -316,14 +333,12 @@ variable.names(C_EXPOSATS)
 C_EXPOSATS_num<-length(C_EXPOSATS$idp)
 #C_EXPOSATS_num
 
-
-
-
 #[1] "idp"        "data_index" "sexe"       "dnaix"      "entrada"    "sortida"    "situacio"   "Edat"  
 #-----------------------------------------------------------------------------------------------------------------------#
 #[ Crearé una altre base de dades , que seran els No exposats,tots menys els exposats!!]
 #[#Excluits entrada:abans(01/01/2004) i  després de (31/12/2018)]
-C_NO_EXPOSATS<-LLEGIR.poblacio%>%filter(entrada>=20040101  & entrada<=20181231)%>%anti_join(C_EXPOSATS,by="idp")
+# canvi a 2006!
+C_NO_EXPOSATS<-LLEGIR.poblacio%>%filter(entrada<=20181231)%>%anti_join(C_EXPOSATS,by="idp")
 C_NO_EXPOSATS<-C_NO_EXPOSATS 
 variable.names(C_NO_EXPOSATS)
 #[1]  "idp"      "sexe"     "dnaix"    "entrada"  "sortida"  "situacio"
@@ -375,12 +390,9 @@ num_controls<-10
 llavor<-125
 set.seed(llavor)
 
+gc()
 
-
-
-
-
-
+#5188815
 
 
 
@@ -415,8 +427,8 @@ dades_match<- dades_match %>% mutate(numControls=numControls-1)
 
 # Verificació d'aparellament per edad + sexe 
 
-descrTable(grup~dnaix+any_naix+sexe,data=dt_matching)
-descrTable(grup~dnaix+any_naix+sexe,data=dades_match)
+#descrTable(grup~dnaix+any_naix+sexe,data=dt_matching)
+#descrTable(grup~dnaix+any_naix+sexe,data=dades_match)
 #---------------------------------------------------------------------------------------------#
 # ---------------------------------------------------------------------------------------------#
 # Preparo dt_index_match per
@@ -459,8 +471,8 @@ dt_index_match<-dt_index_match %>% filter(numControls>=1)
 table(dt_index_match$numControls,dt_index_match$grup)
 
 # Verificació d'aparellament per edad + sexe 
-descrTable(grup~dnaix+sexe,data=dt_index_match)
-descrTable(grup~dnaix+sexe,data=dt_matching)
+#descrTable(grup~dnaix+sexe,data=dt_index_match)
+#descrTable(grup~dnaix+sexe,data=dt_matching)
 
 # Agregar resta d'historics  -----------------
 
@@ -705,7 +717,12 @@ T00<-descrTable(formula_taula00,method = 1,data=dt_total4,max.xlev = 100, show.p
 # FLOWCHART.
 #***********************************************************************#
 
-pob=c(10000)
+#
+
+#pob=c(10000)
+
+
+pob=c(5188815)
 pob_lab=c("Mortalidad en personas Diabéticas Tipo 2 en comparación en Población Control[MUESTRA]")
 
 
@@ -1276,8 +1293,8 @@ r00<- glm((lex.Xst==1)~Ns(per, knots = p.kn0)*grup,
           offset = log(lex.dur),
           data   = dbs00 )
 #--------------------------------------------------------#
-#figura00_TOTAL<-summary(r00)
-#figura00_TOTAL
+figura00_TOTAL<-summary(r00)
+figura00_TOTAL
 #--------------------------------------------------------#
 
 
@@ -1345,8 +1362,8 @@ r01<- glm((lex.Xst==1)~Ns( age, knots=a.kn)*grup,
           offset = log(lex.dur),
           data   = dbs01 )
 #--------------------------------------------------------#
-#figura00_TOTAL2<-summary(r01)
-#figura00_TOTAL2
+figura00_TOTAL2<-summary(r01)
+figura00_TOTAL2
 
 
 
@@ -1415,9 +1432,8 @@ r02 <- glm((lex.Xst==1)~Ns(age, knots = a.kn)*Ns(per, knots = p.kn)*grup,
           family = poisson,
           offset = log(lex.dur),
           data   = dbs1 )
-#figura02_TOTAL2<-summary(r2)
-#figura02_TOTAL2
-
+figura02_TOTAL2<-summary(r02)
+figura02_TOTAL2
 
 
 
@@ -1427,8 +1443,8 @@ r03 <- glm((lex.Xst==1)~Ns(age, knots = a.kn)+Ns(per, knots = p.kn)+grup,
            family = poisson,
            offset = log(lex.dur),
            data   = dbs1 )
-#figura02_TOTAL3<-summary(r03)
-#figura02_TOTAL3
+figura02_TOTAL3<-summary(r03)
+figura02_TOTAL3
 #-------------------------------------------------------------------------------------------#
 
 
@@ -1520,8 +1536,8 @@ par( mfrow=c(1,1) )
 
                          
 #-------------------------------------------------------------------------------------------#
-figura02_TOTAL2
-figura02_TOTAL3
+# figura02_TOTAL2
+# figura02_TOTAL3
 # Genera una matriu amb dades i fa les prediccions segons el model ajustat
 age          <- c(35:100)
 period       <- seq(2006,2018,1)
@@ -1535,7 +1551,8 @@ acm_DM       <- cbind(nd,p1, out="acm")
 #--------------------------------------------------------#
 res_MORTALITY_PRODUCTE <-cbind(acm_DM, rateD=exp(acm_DM$es_d), rateD_lb=exp(acm_DM$lb_d), rateD_ub=exp(acm_DM$ub_d))
 #--------------------------------------------------------#
-write.xlsx(res_MORTALITY_PRODUCTE, file="res_MORTALITY_PRODUCTE.xlsx")
+# write.xlsx(res_MORTALITY_PRODUCTE, file="res_MORTALITY_PRODUCTE.xlsx")
+write.csv2(res_MORTALITY_PRODUCTE, file="res_MORTALITY_PRODUCTE.csv")
 #--------------------------------------------------------#
 
 
@@ -1552,7 +1569,7 @@ acm_DM       <- cbind(nd,p1, out="acm")
 #--------------------------------------------------------#
 res_MORTALITY_SUMA <-cbind(acm_DM, rateD=exp(acm_DM$es_d), rateD_lb=exp(acm_DM$lb_d), rateD_ub=exp(acm_DM$ub_d))
 #--------------------------------------------------------#
-write.xlsx(res_MORTALITY_SUMA, file="res_MORTALITY_SUMA.xlsx")
+write.csv2(res_MORTALITY_SUMA, file="res_MORTALITY_SUMA.csv")
 #--------------------------------------------------------#
 
 
