@@ -13,6 +13,10 @@
 .ppt
 .html
 
+# Figures 
+.png
+.jpg
+
 # Directoris a iognorar
 /docs
 /dades
