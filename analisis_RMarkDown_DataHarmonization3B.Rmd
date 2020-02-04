@@ -150,7 +150,6 @@ export2md(T00,caption="**Perfil demográfico y clínico del Grupo Caso(Diabétic
 
 ```{r, message=FALSE, warning=FALSE, include=T, echo=FALSE,size="huge"}
 ####  Llegir dades    #####
-load("DataHarmonization.Rdata")
 #Taula0
 kable(taula_events2, digits = 2, caption="Tasa de Moratlidad por cada 10000 perosnas-año") %>% kableExtra::kable_styling()
 
@@ -163,7 +162,6 @@ kable(taula_events2, digits = 2, caption="Tasa de Moratlidad por cada 10000 pero
 
 ```{r, message=FALSE, warning=FALSE, include=T, echo=FALSE,size="huge"}
 ####  Llegir dades    #####
-load("DataHarmonization.Rdata")
 #Taula0
 kable(taula_events, digits = 2, caption="Tasa de Moratlidad por cada 10000 perosnas-año/Sexo") %>% kableExtra::kable_styling()
 
@@ -183,15 +181,15 @@ figura1
 
 
 
-[](grafica7.png)
+![](grafica7.png)
 
 * Aplicamos un Diagrama de Lexis para el Grupo Caso(Diabético)(figura2a)
 
-[](figura2a.png)
+![](figura2a.png)
 
 * Aplicamos un Diagrama de Lexis para el Grupo Control(figura2b).
 
-[](figura2b.png)
+![](figura2b.png)
 
 
 
@@ -222,17 +220,17 @@ figura02_TOTAL3
 
 * Triar el MODEL!
 
-[](grafica1.png)
+![](grafica1.png)
 
-[](grafica2.png)
+![](grafica2.png)
 
-[](grafica3.png)
+![](grafica3.png)
 
-[](grafica4.png)
+![](grafica4.png)
 
-[](grafica5.png)
+![](grafica5.png)
 
-[](grafica6.png)
+![](grafica6.png)
 
 
 

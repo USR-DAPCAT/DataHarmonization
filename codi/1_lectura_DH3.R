@@ -171,7 +171,7 @@ library("lubridate")
 
 # Si mostra = T llegeix MOSTRA (Altri llegeix població)
 
-mostra<-T
+mostra<-F
 if (mostra) directori_dades<-"dades/sidiap/test" else directori_dades<-"dades/sidiap"
 directori_dades
 
@@ -578,9 +578,10 @@ dtagr_prescrip<-agregar_prescripcions(
 #FP.INSULINAS
 #FP.SULFO     
 
+
+
 #??????????????????????????????????????????????????????????????????????? ULL
 dtagr_prescrip<-dtagr_prescrip%>%mutate(FP.ALFAGLUC=case_when(FP.ALFAGLUC>=1 ~ 1,TRUE~0))
-
 dtagr_prescrip<-dtagr_prescrip%>%mutate(FP.ALT_GLUC=case_when(FP.ALT_GLUC>=1 ~ 1,TRUE~0))
 dtagr_prescrip<-dtagr_prescrip%>%mutate(FP.BIGUANIDAS=case_when(FP.BIGUANIDAS>=1 ~ 1,TRUE~0))
 dtagr_prescrip<-dtagr_prescrip%>%mutate(FP.COMB_GLUC=case_when(FP.COMB_GLUC>=1 ~ 1,TRUE~0))
@@ -592,7 +593,9 @@ dtagr_prescrip<-dtagr_prescrip%>%mutate(FP.SULFO=case_when(FP.SULFO  >=1 ~ 1,TRU
 # ----------------------------------------------------------#
 
 
-
+# dtagr_prescrip<-dtagr_prescrip%>%mutate_at(vars(starts_with("FP."), ~if_else(is.na(.)>=1,1,0)))
+                                                  
+                                                  
 # ----------------------------------------------------------#
 # v    LLEGIR.farmacs_facturat
 # Facturació pendent de CODIS / AGREGADORS 
@@ -1164,12 +1167,10 @@ LEXIS_dt_total3_b_grup1<- Lexis(
 #####################################################################
 #[S'HA DE CANVIAR A 2006-2018, quan tinguem tota la base de dades!, així convergirà]
 
+png('figura2a.png')
 plot(LEXIS_dt_total3_b_grup1, grid=0:20*5, col="black", xaxs="i", yaxs="i",xlim=c(2004,2019), ylim=c(35,100), lwd=1, las=1 )
 points(LEXIS_dt_total3_b_grup1, pch=c(NA,16)[LEXIS_dt_total3_b_grup1$fail+1] )
-
-#GARVAR-HO!!!!!
-#figura2a.png
-
+dev.off()
 
 
 #grup0 (NO DIABTEIS)
@@ -1189,8 +1190,11 @@ LEXIS_dt_total3_b_grup0<- Lexis(
 #            data = dt_total3_grup0))
 #####################################################################
 #[S'HA DE CANVIAR A 2006-2018, quan tinguem tota la base de dades!, així convergirà]
+
+png('figura2b.png')
 plot(LEXIS_dt_total3_b_grup0, grid=0:20*5, col="black", xaxs="i", yaxs="i",xlim=c(2004,2019), ylim=c(35,100), lwd=1, las=1 )
 points(LEXIS_dt_total3_b_grup0, pch=c(NA,16)[LEXIS_dt_total3_b_grup0$fail+1] )
+dev.off()
 
 #GARVAR-HO!!!!!
 #figura2b.png
@@ -1335,6 +1339,9 @@ table_rate<- table_rate%>%select(AÑO,
 #----------------------------------------------------------------------------------------------------#
 #...[plot!] taula_events2
 #----------------------------------------------------------------#
+
+png("grafica7.png")
+
 matplot(as.numeric(dimnames(YDrate)[[1]]), 
          log="y",
          las=1,
@@ -1349,6 +1356,7 @@ matplot(as.numeric(dimnames(YDrate)[[1]]),
 #table_rate$Mortalidad_No_Diabeticos
 #----------------------------------------------------------------#
 
+dev.off()
 
 
 
@@ -1399,6 +1407,8 @@ figura00_TOTAL
 nd00<- data.frame(per=2006:2018,grup=0,lex.dur=1000)
 #--------------------------------------------------------#
 #ci.pred(r0)
+
+png("grafica1.png")
 matplot( nd00$per,ci.pred(r00, newdata=nd00),
          type="l",
          lwd=c(3,1,1), 
@@ -1410,13 +1420,15 @@ matplot( nd00$per,ci.pred(r00, newdata=nd00),
          ylim=c(1,1000) )
 rug( p.kn0, lwd=2 )
 #--------------------------------------------------------#
-
+dev.off()
 #grafica2.png
 #DIABÈTICS!
 #--------------------------------------------------------#
 nd01<- data.frame(per=2006:2018,grup=1,lex.dur=1000)
 #--------------------------------------------------------#
 #ci.pred(r0)
+
+png("grafica2.png")
 matplot( nd01$per,ci.pred(r00, newdata=nd01),
          type="l",
          lwd=c(3,1,1), 
@@ -1429,7 +1441,7 @@ matplot( nd01$per,ci.pred(r00, newdata=nd01),
 rug( p.kn0, lwd=2 )
 par( mfrow=c(1,1) )
 #--------------------------------------------------------#
-
+dev.off()
 
 #--------------------------------------------------------#
 #COMPROVACIO: EDAT!
@@ -1466,6 +1478,8 @@ figura00_TOTAL2
 nd00<- data.frame(age=35:100,grup=0,lex.dur=1000)
 #--------------------------------------#
 #ci.pred(r0)
+
+png("grafica3.png")
 matplot( nd00$age,ci.pred(r01, newdata=nd00),
          type="l",
          lwd=c(3,1,1), 
@@ -1476,6 +1490,7 @@ matplot( nd00$age,ci.pred(r01, newdata=nd00),
          las=1, 
          ylim=c(1,1000) )
 rug( a.kn , lwd=2 )
+dev.off()
 
 #grafica4.png
 #DIABÈTICS!
@@ -1483,6 +1498,8 @@ rug( a.kn , lwd=2 )
 nd00<- data.frame(age=35:100,grup=1,lex.dur=1000)
 #--------------------------------------#
 #ci.pred(r0)
+
+png("grafica4.png")
 matplot( nd00$age,ci.pred(r01, newdata=nd00),
          type="l",
          lwd=c(3,1,1), 
@@ -1493,8 +1510,7 @@ matplot( nd00$age,ci.pred(r01, newdata=nd00),
          las=1, 
          ylim=c(1,1000) )
 rug( a.kn , lwd=2 )
-
-
+dev.off()
 
 
 
@@ -1547,6 +1563,8 @@ figura02_TOTAL3
 nd00<- data.frame(per=2006:2018,grup=0,lex.dur=1000,age=65)
 #--------------------------------------------------------#
 #ci.pred(r0)
+
+png("grafica5.png")
 matplot( nd00$per,ci.pred(r02, newdata=nd00),
          type="l",
          lwd=c(3,1,1), 
@@ -1558,13 +1576,14 @@ matplot( nd00$per,ci.pred(r02, newdata=nd00),
          ylim=c(1,1000) )
 rug( p.kn0, lwd=2 )
 #--------------------------------------------------------#
-
+dev.off()
 #grafica6.png
 #DIABÈTICS! MODEL producte mitjana:65 anys
 #--------------------------------------------------------#
 nd01<- data.frame(per=2006:2018,grup=1,lex.dur=1000,age=65)
 #--------------------------------------------------------#
 #ci.pred(r0)
+png("grafica6.png")
 matplot( nd01$per,ci.pred(r02, newdata=nd01),
          type="l",
          lwd=c(3,1,1), 
@@ -1577,7 +1596,7 @@ matplot( nd01$per,ci.pred(r02, newdata=nd01),
 rug( p.kn0, lwd=2 )
 par( mfrow=c(1,1) )
 #--------------------------------------------------------#
-
+dev.off()
 
 
 
