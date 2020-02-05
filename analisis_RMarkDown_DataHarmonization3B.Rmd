@@ -49,15 +49,15 @@ output:
 
 ## 1. Objectivos Principales
 
-- Análisis de las tendencias en mortalidad a lo largo del tiempo  de todas las causas entre el 01.01.2004 y la   captura más reciente del SIDIAP (31.12.2018) en personas con reciente diabetes tipo 2 y en comparación con 1 población control sin diabetes.
+- Análisis de las tendencias en mortalidad a lo largo del tiempo  de todas las causas entre el 01.01.2006 y la   captura más reciente del SIDIAP (31.12.2018) en personas con reciente diabetes tipo 2 y en comparación con 1 población control sin diabetes.
 
-- Análisis de las diferncias y las proporciones de las tasas  en mortalidad a lo largo del tiempo  de todas las causas entre el 01.01.2004 y la   captura más reciente del SIDIAP (31.12.2018) en personas con reciente diabetes tipo 2 y en comparación con 1 población control sin diabetes.
+- Análisis de las diferncias y las proporciones de las tasas  en mortalidad a lo largo del tiempo  de todas las causas entre el 01.01.2006 y la   captura más reciente del SIDIAP (31.12.2018) en personas con reciente diabetes tipo 2 y en comparación con 1 población control sin diabetes.
 
 ## 2. Objectivos Secundarios
 
-- Análisis de las tendencias en mortalidad cardiovascular a lo largo del tiempo entre el 01.01.2004 y la   captura más reciente del SIDIAP (31.12.2018) en personas con reciente diabetes tipo 2 y en comparación con 1 población control sin diabetes.
+- Análisis de las tendencias en mortalidad cardiovascular a lo largo del tiempo entre el 01.01.2006 y la   captura más reciente del SIDIAP (31.12.2018) en personas con reciente diabetes tipo 2 y en comparación con 1 población control sin diabetes.
 
-- Análisis de las diferncias y las proporciones de las tasas  en mortalidad  cardiovascular  a lo largo del tiempo  entre el 01.01.2004 y la   captura más reciente del SIDIAP (31.12.2018) en personas con reciente diabetes tipo 2 y en comparación con 1 población control sin diabetes.
+- Análisis de las diferncias y las proporciones de las tasas  en mortalidad  cardiovascular  a lo largo del tiempo  entre el 01.01.2006 y la   captura más reciente del SIDIAP (31.12.2018) en personas con reciente diabetes tipo 2 y en comparación con 1 población control sin diabetes.
 
 - Comparar las tendencias de las tasas de mortalidad y de ratio entre los diferentes países.
 
@@ -73,7 +73,7 @@ output:
 
 
 * Grupo de Casos (diabéticos incidentes):
-   + Tener un nuevo diagnóstico de DM2 no dado de baja registrado durante 2004-2018.La fecha del primer diagnóstico de DM2 pasará a ser la fecha de índice.[DINDEX].
+   + Tener un nuevo diagnóstico de DM2 no dado de baja registrado durante 2006-2018.La fecha del primer diagnóstico de DM2 pasará a ser la fecha de índice.[DINDEX].
    + Tener 35 años o más en índice.[DINDEX].
    + Tener mínimo un año de historia clínica previa antes de índice[DINDEX].
 
@@ -86,7 +86,7 @@ output:
    
 ## 4. Período de observación:
 
-* 1 de enero del 2004  a 31 de diciembre del 2018
+* 1 de enero del 2006 a 31 de diciembre del 2018
 
 ## 5. Análisis Estadístico
 
@@ -151,7 +151,7 @@ export2md(T00,caption="**Perfil demográfico y clínico del Grupo Caso(Diabétic
 ```{r, message=FALSE, warning=FALSE, include=T, echo=FALSE,size="huge"}
 ####  Llegir dades    #####
 #Taula0
-kable(taula_events2, digits = 2, caption="Tasa de Moratlidad por cada 10000 perosnas-año") %>% kableExtra::kable_styling()
+kable(taula_events2, digits = 2, caption="Tasa de Moratlidad por cada 1000 perosnas-año") %>% kableExtra::kable_styling()
 
 #table_rate
 
@@ -163,7 +163,7 @@ kable(taula_events2, digits = 2, caption="Tasa de Moratlidad por cada 10000 pero
 ```{r, message=FALSE, warning=FALSE, include=T, echo=FALSE,size="huge"}
 ####  Llegir dades    #####
 #Taula0
-kable(taula_events, digits = 2, caption="Tasa de Moratlidad por cada 10000 perosnas-año/Sexo") %>% kableExtra::kable_styling()
+kable(taula_events, digits = 2, caption="Tasa de Moratlidad por cada 1000 perosnas-año/Sexo") %>% kableExtra::kable_styling()
 
 ```
 
@@ -221,15 +221,10 @@ figura02_TOTAL3
 * Triar el MODEL!
 
 ![](grafica1.png)
-
 ![](grafica2.png)
-
 ![](grafica3.png)
-
 ![](grafica4.png)
-
 ![](grafica5.png)
-
 ![](grafica6.png)
 
 
