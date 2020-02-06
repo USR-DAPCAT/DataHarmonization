@@ -1,8 +1,15 @@
-        ############################################
-        # D  A T A     H A R M O N I Z A T I O N   #
-        ############################################
+############################################
+# D  A T A     H A R M O N I Z A T I O N   #
+############################################
 
+
+# ●	Tenir 35 anys o més a DINDEX.
+# ●	Tenir mínim un any d’història clínica prèvia abans de DINDEX.
+
+
+# DATES dels fitxers --------------------        
 #-----------#
+#[06.02.2020]
 #[05.02.2020]
 #[04.02.2020]
 #[03.02.2020]
@@ -80,7 +87,7 @@ devtools::source_url(link_source)
 
 #i        [cmbdh_diagnostics] mult
 
-list.files(directori_dades)
+# list.files(directori_dades)
 
 LLEGIR.cmbdh_diagnostics_padris<-readRDS(directori_dades%>% here::here("DAPCRMM_entregable_cmbdh_diagnostics_padris_20190930_093320.rds")) %>% as_tibble()
 variable.names(LLEGIR.cmbdh_diagnostics_padris)
@@ -136,7 +143,11 @@ LLEGIR.variables_Cataleg<-readRDS("dades/SIDIAP/test" %>% here::here("DAPCRMM_en
 variable.names(LLEGIR.variables_Cataleg)
 #[1]  "domini" "cod"    "des"    "agr"   
 #----------------------------------------------#  
-#table(LLEGIR.variables_Cataleg$agr)
+
+
+
+
+
 
 
 
@@ -148,52 +159,54 @@ variable.names(LLEGIR.variables_Cataleg)
 #1.	  From the entire database (ED), extract T2DM cohort with any codes in sheet “exposed”; 
 #     then remove patients with any codes in sheet “exclude” before the end of the study (31/12/2018); 
 #     use the first appearance diagnosis code of T2DM as the index date for exposed patient cohort (T2C).
-#     --------------------------------------------------------------------------------------------------------
-#     De tota la base de dades (ED), extreu la cohort T2DM amb els codis del full "exposat"; 
+
+#1.   De tota la base de dades (ED), extreu la cohort T2DM amb els codis del full "exposat"; 
 #     després elimineu els pacients amb els codis del full "excloure" abans de finalitzar l'estudi (31/12/2018);
 #     utilitzeu el codi de diagnòstic de primera aparició de T2DM com a data índex de la cohort del pacient exposada (T2C). 
-#     --------------------------------------------------------------------------------------------------------
+
+
 #2.	  From this cohort (T2C), 
 #     remove patients with any codes in sheet “prevalent” or “cancer” appearing before the index date; 
 #     this is the exposed cohort (EC).
-#     --------------------------------------------------------------------------------------------------------
+#
 #     D’aquesta cohort (T2C), traieu els pacients amb els codis del full “prevalent” o “càncer” 
 #     que apareixin abans de la data de l’índex; es tracta de la cohort exposada (CE). 
-#     --------------------------------------------------------------------------------------------------------
+#
+
 #3.	  From the entire database (ED), 
 #     remove patients with any codes in sheet “non-exposed pool” before the end of the study (31/12/2018), 
 #     to get the candidate non-exposed patients (CNE).
-#     --------------------------------------------------------------------------------------------------------
+#
 #     De tota la base de dades (ED), elimineu els pacients amb els codis del full "piscina no exposada" 
 #     abans de finalitzar l'estudi (31/12/2018) per obtenir els pacients candidats no exposats (CNE). 
-#     --------------------------------------------------------------------------------------------------------
+#
 #4.	  Exact matching the exposed cohort (EC) to the candidate non-exposed patients (CNE) with a ratio 1:10 (EC:CNE)
 #     by year of birth (+/-1year), sex, and practice, 
 #     without replacement (each candidate non-exposed patient can be only matched once). 
 #     This is the matched cohort (MC), and the index date is the same as the matched exposed patient.
-#     --------------------------------------------------------------------------------------------------------
+#
 #     Correspondre exactament a la cohort exposada (CE)
 #     als pacients candidats no exposats (CNE) amb una proporció 1:10 (EC: CNE) 
 #     per any de naixement (+/- 1 any), sexe i pràctica, sense substitució 
 #     ( cada pacient candidat no exposat només es pot combinar una vegada). Aquesta és la cohort coincident (MC)
 #     i la data de l’índex és la mateixa que el pacient exposat igualat. 
-#     --------------------------------------------------------------------------------------------------------
+#
 #5.	  From the matched cohort (MC), remove patients died before the index date; 
 #     then remove patients with any codes in sheet “prevalent” or “cancer” appearing before the index date; 
 #     then keep a randomly selected 5 matched non-exposed patients 
 #     (good to set a seed to make the random selection replicable). This is the final non-exposed cohort (FNE).
-#     --------------------------------------------------------------------------------------------------------
+#--------------------------------------------------------------------------------------------------------
 #     De la cohort aparellada (MC), elimineu els pacients morts abans de la data de l’índex; 
 #     a continuació, elimineu els pacients amb qualsevol codi en el full "prevalent" o "càncer" 
 #     que aparegui abans de la data de l'índex; a continuació, 
 #     mantingueu a 5 pacients no exposats seleccionats aleatòriament
 #     (és bo establir una llavor perquè la selecció aleatòria sigui replicable). 
 #     Es tracta de la cohort final no exposada (FNE).
-#     --------------------------------------------------------------------------------------------------------
+#--------------------------------------------------------------------------------------------------------
 #6.	  The final study cohort is the combination of the exposed cohort (EC) and the final non-exposed cohort (FNE).
-#     --------------------------------------------------------------------------------------------------------
+#--------------------------------------------------------------------------------------------------------
 #     La cohort d'estudi final és la combinació de la cohorte exposada (EC) i la cohort final no exposada (FNE)
-#     --------------------------------------------------------------------------------------------------------
+#--------------------------------------------------------------------------------------------------------
 
 #----------------------------------------------#
 #i        [cmbdh_diagnostics]               mult
@@ -227,8 +240,7 @@ NUM_POBLACIO<-length(LLEGIR.poblacio$idp)
 #i)  FILTRE_1 : exposed=="exposed"
 dt_diagnostics<-dt_diagnostics %>% left_join(dt_cataleg,by="cod") %>% filter(exposed=="exposed") 
 #
-#ii) FILTRE_2 : Filtrem la base de dades 2004-2018 *[S'HA DE CANVIAR A 2006-2018, quan tinguem tota la base de dades!, així convergirà]
-# canvi a 2006!
+#ii) FILTRE_2 : Filtrem la base de dades 2006-2018 
 dt_diagnostics<-dt_diagnostics%>% filter(dat>=20060101  & dat<=20181231)
 #
 ######################################
@@ -259,7 +271,7 @@ C_EXPOSATS_num<-length(C_EXPOSATS$idp)
 #[#Excluits entrada:abans(01/01/2004) i  després de (31/12/2018)]
 # canvi a 2006!
 C_NO_EXPOSATS<-LLEGIR.poblacio%>%filter(entrada<=20181231)%>%anti_join(C_EXPOSATS,by="idp")
-C_NO_EXPOSATS<-C_NO_EXPOSATS 
+
 variable.names(C_NO_EXPOSATS)
 #[1]  "idp"      "sexe"     "dnaix"    "entrada"  "sortida"  "situacio"
 #-----------------------------------------------------------------------------------------------------------------------#
@@ -269,25 +281,33 @@ C_NO_EXPOSATS_num<-length(C_NO_EXPOSATS$idp)
 #C_NO_EXPOSATS_num
 
 
-#iii) FILTRE_3 : Els  EXPOSATS a DIABETIS TIPUS2 amb DIAiNDEX que tinguin <35 anys l'any 1/1/2006, quedaran FORA!, per tant hagin nascut l'any <=1971.
-C_EXPOSATS<-C_EXPOSATS%>%filter(dnaix<=19710101)
-C_EXPOSATS2_num<-length(C_EXPOSATS$idp)
-#C_EXPOSATS2_num
-
 
 
 # PREPARACIÓ ------------------
 
-
-
-
 # Fusionar base de dades en dues : 
-
 dt_matching<-mutate(C_EXPOSATS,grup=1) %>% bind_rows(mutate(C_NO_EXPOSATS,grup=0))
 
+
+
+
+#iii) FILTRE_3 : Els  EXPOSATS a DIABETIS TIPUS2 amb DIAiNDEX que tinguin <35 anys l'any 1/1/2018, quedaran FORA!, per tant hagin nascut l'any <=1984.
+
+# dt_matching$dnaix>19840101 # posteriors a 84 (Massa Joves)
+# dt_matching$dnaix<19060101 # posteriors al 1906 (Massa grans)
+
+Nexclosos_naixament<-dt_matching %>% filter(dt_matching$dnaix>19840101 | dt_matching$dnaix<19060101) %>% count()
+
+dt_matching<-dt_matching%>%filter(dnaix<=19840101 & dnaix>=19060101)
+
+# C_EXPOSATS2_num<-length(C_EXPOSATS$idp)
+
+
 # Preparar matching i setriskmatching #
-dt_matching<-dt_matching %>% transmute(idp,dnaix,sexe,grup,dtevent=data_index,sortida) %>%left_join(LLEGIR.variables_geo_sanitaries,by="idp")
+dt_matching<-dt_matching %>% transmute(idp,dnaix,sexe,grup,dtevent=data_index,sortida) %>%
+  left_join(LLEGIR.variables_geo_sanitaries,by="idp")
 #dt_matching
+
 
 #   5.2.1 Generar data de sortida (Data event / Data de censura)     -----------------
 ## dtindex_case 
@@ -313,7 +333,7 @@ gc()
 
 #5188815
 
-
+table(dt_matching$grup)
 
 
 
@@ -343,6 +363,8 @@ dades_match[,numControls:=.N,by=caseid]
 dades_match<- dades_match %>% mutate(numControls=numControls-1)
 
 
+table(dades_match$grup,dades_match$numControls)
+
 # Verificació d'aparellament per edad + sexe 
 
 #descrTable(grup~dnaix+any_naix+sexe,data=dt_matching)
@@ -361,16 +383,32 @@ dt_agregada_agr<-agregar_problemes(select(dt_diagnostics_global,idp,cod,dat),
                                    bd.dindex = bd_index,
                                    dt.agregadors=select(dt_cataleg,cod,agr))
 
-
 #iV) FILTRE_4:  Si un dels elements del grup [caseid] és prevalent o càncer, tot el [caseid] anirà a FORA!!!
 #                Filtrar per exclusions (Eliminar prevalents i cancer)
 
 dt_index_match <-dt_index_match %>% 
-  left_join(select(dt_agregada_agr,-dtindex),by="idp") %>%
-  mutate(can_prev=ifelse(!is.na(DG.prevalent) | !is.na(DG.cancer),0,1 ))%>%
-  group_by(caseid)%>%mutate(sel=min(can_prev)) %>% ungroup() %>%
-  filter(sel==1) %>% select(-sel)
+  left_join(select(dt_agregada_agr,-dtindex),by="idp") %>% 
+  mutate(exc_cancer=ifelse(is.na(DG.cancer),0,1),
+         exc_prev_CVD=ifelse(is.na(DG.prevalent_CVD),0,1),
+         exc_prev_KD=ifelse(is.na(DG.prevalent_KD),0,1),
+         exc_prev_MET=ifelse(is.na(DG.prevalent_MET),0,1))
 
+# Faig copia per comptar exclusions 
+dt_index_global<-dt_index_match
+
+
+# Eliminem exclosos i parelles respectives (Grups a risk): Apestats
+
+# Actualitzar apestats
+dt_index_global<-dt_index_global %>% 
+  mutate(exc_idp=ifelse(exc_cancer | exc_prev_CVD |  exc_prev_KD | exc_prev_MET ,1,0)) %>% 
+  group_by(caseid)%>%mutate(exc_caseid=max(exc_idp)) %>% ungroup() 
+
+# Aplicar filtre 
+dt_index_match<-dt_index_match %>% 
+  mutate(exc_idp=ifelse(exc_cancer | exc_prev_CVD |  exc_prev_KD | exc_prev_MET ,1,0)) %>% 
+  group_by(caseid)%>%mutate(exc_caseid=max(exc_idp)) %>% ungroup() %>% 
+  filter(exc_caseid==0) 
 
 
 # Seleccionar com a molt 5 No exposats ---------
@@ -378,13 +416,29 @@ dt_index_match <-dt_index_match %>%
 dt_index_match<-dt_index_match%>%group_by(caseid)%>%mutate(idp2 = row_number())%>%ungroup()
 dt_index_match<-dt_index_match%>%mutate(idp2=ifelse(grup==1,0,idp2))
 #---------------------------------------------------------------------------------------------#
+
+
+# Actualitzar info de exclusions de controls no seleccionats 
+dt_temp<-dt_index_match %>% mutate (exc_rand_exclusion=ifelse(idp2>5,1,0)) %>% select(idp,exc_rand_exclusion)
+dt_index_global<-
+  dt_index_global %>% left_join(dt_temp,by="idp") %>%  
+  mutate(exc_rand_exclusion=ifelse(is.na(exc_rand_exclusion) | exc_rand_exclusion==0,0,1)) 
+
+# Aplico filtre
 dt_index_match<-dt_index_match%>%filter(idp2<=5)%>%as_tibble()
 #---------------------------------------------------------------------------------------------#
 dt_index_match<-dt_index_match %>% group_by(caseid) %>% mutate(numControls=n()-1) %>% ungroup() %>% select(-idp2)
 
 #---------------------------------------------------------------------------------------------#
 
-# Eliminem pajaros que notenen controls o casos
+# Pajaracos sense control eliminats ()
+dt_temp<-dt_index_match %>% mutate (exc_sensecontrol=ifelse(numControls==0,1,0)) %>% select(idp,exc_sensecontrol)
+dt_index_global<-
+  dt_index_global %>% left_join(dt_temp,by="idp") %>% 
+  mutate(exc_sensecontrol=ifelse(is.na(exc_sensecontrol) | exc_sensecontrol==0,0,1)) 
+
+
+# Apliquem filtre 
 dt_index_match<-dt_index_match %>% filter(numControls>=1)
 
 # Verifiquem num controls x cas 
@@ -393,6 +447,31 @@ table(dt_index_match$numControls,dt_index_match$grup)
 # Verificació d'aparellament per edad + sexe 
 #descrTable(grup~dnaix+sexe,data=dt_index_match)
 #descrTable(grup~dnaix+sexe,data=dt_matching)
+
+# Filtre edat 
+# Construir criteris edat data index 
+dt_temp<-dt_index_match %>% transmute(idp,edat=(as_date(dtindex)-ymd(dnaix))/365.25,
+                                   exc_edat=ifelse(edat>100 | edat<35,1,0)) %>% select(idp,exc_edat)
+dt_index_global<-
+  dt_index_global %>% left_join(dt_temp,by="idp") %>% 
+  mutate(exc_edat=ifelse(is.na(exc_edat) | exc_edat==0,0,1)) 
+
+# Apliquem filtre 
+dt_index_match<-dt_index_match %>% 
+  mutate(edat=(as_date(dtindex)-ymd(dnaix))/365.25) %>% 
+  filter(edat<=100 & edat>=35) 
+
+# Falta un criteri de d'exclusió 
+# Tenir mínim un any d’història clínica prèvia abans de DINDEX
+
+criteris_exclusio_diagrama(dt_index_global,"conductor_exclusions.xls",criteris = "exclusio",grups="grup",
+                           etiquetes="lab_exclusio",
+                           ordre="ordre",sequencial = T,
+                           pob_lab=c("Població generació:1906-1984","Mostra aparellada final"))
+
+
+
+
 
 # Agregar resta d'historics  -----------------
 
@@ -404,16 +483,11 @@ table(dt_index_match$numControls,dt_index_match$grup)
 #v    LLEGIR.farmacs_facturat
 #vi   LLEGIR.variables_socioeconomiques
 
-
-
-
-
 # Agregar variables --------------
 dt_variables<-LLEGIR.variables_analitiques %>% bind_rows(LLEGIR.variables_cliniques) %>% 
   transmute(idp,cod=agr,dat,val)
 dt_temp<-dt_index_match %>% transmute(idp,dtindex=lubridate::as_date(dtindex))
 dtagr_variables<-agregar_analitiques(dt=dt_variables,bd.dindex=dt_temp,finestra.dies = c(-365,0))
-
 
 
 # Agregar tabac --------------
@@ -553,6 +627,9 @@ dt_plana<-dt_plana%>%mutate(IMC.valor2=case_when(   IMC.valor   <15~ 1,
                                                     IMC.valor   >=15 & IMC.valor   <25 ~ 2,  
                                                     IMC.valor   >=25 & IMC.valor   <30 ~ 3,
                                                     IMC.valor   >=30  ~ 4))
+
+
+
 
 
 

@@ -48,6 +48,7 @@
 
 
 #-----------#
+#[04.02.2020]
 #[03.02.2020]
 #[31.01.2020]
 #[30.01.2020]
@@ -341,10 +342,8 @@ dt_diagnostics_global<-LLEGIR.cmbdh_diagnostics_padris %>%
 ##################################################################################################
 dt_cataleg<-read_excel("Spain_codes.xls") %>% select(cod,agr,exposed)
 ######################################
-
-
-
-
+NUM_POBLACIO<-length(LLEGIR.poblacio$idp)
+#----------------------------------------------------------------------------
 
 
 # FILTRE C.INCLUSIÓ   --------------- 
@@ -672,14 +671,29 @@ dt_total<-dt_index_match %>%
           left_join(dtagr_facturat ,by="idp")%>%
                 left_join(dt_sociodemo ,by="idp")
   
+
+#canvis :[]
   
 dt_total2<-dt_total%>%mutate(dtindex=as_date(dtindex))
-
 dt_total2<-dt_total2 %>% mutate(any_index=lubridate::year(lubridate::as_date(dtindex)))
 dt_total2<-dt_total2 %>% mutate(agein=(as_date(dtindex)-ymd(dnaix))/365.25)
 dt_total2<-dt_total2 %>% mutate(exitus=if_else(situacio=="D",1,0))
 dt_total2<-dt_total2 %>% mutate(temps_FU=ymd(sortida)-as_date(dtindex))
+dt_total2<-dt_total2 %>% mutate(agein2=as.numeric(as_date(dtindex)-ymd(dnaix))/365.25)
+dt_total2$dnaix<-as.character(dt_total2$dnaix)
+dt_total2$any_index2<-as.character(dt_total2$any_index)
 
+#recodificació:
+dt_total2<-dt_total2%>%mutate(agein3.cat6=case_when(agein2<40~ 1,
+                                                    agein2>=40 & agein2<50 ~ 2,  
+                                                    agein2>=50 & agein2<60 ~ 3,
+                                                    agein2>=60 & agein2<70 ~ 4,
+                                                    agein2>=70  ~ 5))
+
+dt_total2_num<-length(dt_total2$grup)
+
+
+#dt_total2$agein2
 
 #variable.names(dt_total2)
 
@@ -699,7 +713,7 @@ dt_total2<-dt_total2 %>% mutate(temps_FU=ymd(sortida)-as_date(dtindex))
 #dt_total2$ruralitat
 
 
-dt_total2_num<-length(dt_total2$grup)
+
 #dt_total2_num
 #table(dt_total2$grup)
 
@@ -730,23 +744,30 @@ dt_total2_num<-length(dt_total2$grup)
 # D E S C R I P C I Ó :
 #--------------------------------------#
 
+#dtagr_prescrip<-dtagr_prescrip%>%mutate(FP.SULFO=case_when(FP.SULFO  >=1 ~ 1,TRUE~0))
+#dades_1000<-dades_1000%>%mutate(CVD_CHF=case_when((DG.CHF=="Yes" | DG.MCV=="Yes")~ "Yes",TRUE~"No" ))
+#x & y	x AND y
 
-
-#canviar
-
-#------------------------------------------------------------------#
+----------------------------------------------------------------#
 conductor_variables<-"conductor_DataHarmonization.xls"
 #------------------------------------------------------------------#
 dt_total2<-recodificar(dt_total2,taulavariables = conductor_variables,"recode",missings = T)
 variable.names(dt_total2)
+#dt_total2$agein2
 #------------------------------------------------------------------#
+
+
+#apliquem esl conductor!:[ull!]
 dt_total4<-dt_total2
-dt_total4$dnaix<-as.character(dt_total4$dnaix)
+
+
+
 #------------------------------------------------------------------#
 dt_total4<-convertir_dates(d=dt_total4,taulavariables=conductor_variables)
 dt_total4<-etiquetar_valors(dt=dt_total4,variables_factors=conductor_variables,fulla="etiquetes",camp_etiqueta="etiqueta2")
 dt_total4<-etiquetar(d=dt_total4,taulavariables=conductor_variables)
 #------------------------------------------------------------------#
+
 variable.names(dt_total4)
 
 #dt_recod  <-dt_total4%>%select(IMC.valor.cat5 )
@@ -754,7 +775,7 @@ variable.names(dt_total4)
 #ActualitzarConductor(d=dt_recod,taulavariables="conductor_DataHarmonization.xls")
 
 
-
+# mirar-ho per MEDIAN [[temps_FU;agein;any_index]]
 
 #variable.names(dt_total2)
 
@@ -762,7 +783,7 @@ variable.names(dt_total4)
 #***********************************************************************#
 formula_taula00<-formula_compare("taula00",y="grup",taulavariables = conductor_variables)
 
-T00<-descrTable(formula_taula00,method = 1,data=dt_total4,max.xlev = 100, show.p.overall=FALSE)
+T00<-descrTable(formula_taula00,method = c(IMC.valor=2,temps_FU = 2,agein=2,any_index=2),data=dt_total4,max.xlev = 100, show.p.overall=FALSE)
 #***********************************************************************#
 T00
 #***********************************************************************#
@@ -776,7 +797,9 @@ T00
 
 #
 
-pob=c(10000)
+
+
+pob=NUM_POBLACIO
 #pob=c(5188815)
 
 pob_lab=c("Mortalidad en personas Diabéticas Tipo 2 en comparación en Población Control[MUESTRA]")
@@ -804,8 +827,8 @@ C_NO_EXPOSATS_MATCHED_num<-length(C_NO_EXPOSATS_MATCHED_num$idp)
 pob1=c(C_EXPOSATS_num,C_EXPOSATS_MATCHED_num)
 pob2=c(C_NO_EXPOSATS_num,C_NO_EXPOSATS_MATCHED_num)
 
-pob_lab1=c("Población Diabética íncidente anterior del Matched [01/01/2004 - 31.12.2018]","Matched:[Sexo-Año de Nacimiento-Iddap] 1:5")
-pob_lab2=c("Población No Diabética íncidente anterior del Matched [01/01/2004 - 31.12.2018]","Matched:[Sexo-Año de Nacimiento-Iddap] 1:5")
+pob_lab1=c("Población Diabética íncidente anterior del Matched [01/01/2006 - 31.12.2018]","Matched:[Sexo-Año de Nacimiento-Iddap] 1:5")
+pob_lab2=c("Población No Diabética íncidente anterior del Matched [01/01/2006 - 31.12.2018]","Matched:[Sexo-Año de Nacimiento-Iddap] 1:5")
 
 
 exc1=c(C_EXPOSATS2_num)
@@ -834,7 +857,7 @@ flowchart<-diagramaFlowchart(
       colors=colors,
       forma=forma)
 #***********************************************************************#
-#flowchart
+flowchart
 #***********************************************************************#
 
 
@@ -900,9 +923,15 @@ conductor_variables<-"conductor_DataHarmonization.xls"
 taula_events2<-etiquetar_valors(dt=taula_events2,variables_factors=conductor_variables,fulla="etiquetes",camp_etiqueta="etiqueta2")
 #-------------------------------------------------------#
 
+
+
+
 ###################
 #[Taula de TAXES!]#
 ###################
+taula_events
+taula_events2
+
 
 #taula_events2
 #kable(taula_events, digits = 2, caption="Tasa de Moratlidad por cada 1000 perosnas-año")
@@ -917,8 +946,10 @@ fit<- survfit(Surv(temps_FU, exitus) ~ grup, data = dt_total2)
 library("survminer")
 survminer::ggsurvplot(fit,data = dt_total2)
 figura1<-survminer::ggsurvplot(fit,data = dt_total2)
+figura1
 
-#figura1
+
+
 #
 ###################################################################################
 #Part descriptiva  inicial!!!
@@ -1075,9 +1106,9 @@ dt_total3_10cases<-dt_total3[1:150,]
 dt_total3_10cases_grup0<-dt_total3_grup0[1:150,]
 dt_total3_10cases_grup1<-dt_total3_grup1[1:150,]
 #####################################################################
-dt_total3_10cases
-dt_total3_10cases_grup0
-dt_total3_10cases_grup1
+#dt_total3_10cases
+#dt_total3_10cases_grup0
+#dt_total3_10cases_grup1
 #####################################################################
 
 
@@ -1133,7 +1164,7 @@ LEXIS_dt_total3_b_grup1<- Lexis(
 plot(LEXIS_dt_total3_b_grup1, grid=0:20*5, col="black", xaxs="i", yaxs="i",xlim=c(2004,2019), ylim=c(35,100), lwd=1, las=1 )
 points(LEXIS_dt_total3_b_grup1, pch=c(NA,16)[LEXIS_dt_total3_b_grup1$fail+1] )
 
-
+#GARVAR-HO!!!!!
 #figura2a.png
 
 
@@ -1158,7 +1189,7 @@ LEXIS_dt_total3_b_grup0<- Lexis(
 plot(LEXIS_dt_total3_b_grup0, grid=0:20*5, col="black", xaxs="i", yaxs="i",xlim=c(2004,2019), ylim=c(35,100), lwd=1, las=1 )
 points(LEXIS_dt_total3_b_grup0, pch=c(NA,16)[LEXIS_dt_total3_b_grup0$fail+1] )
 
-
+#GARVAR-HO!!!!!
 #figura2b.png
 
 
@@ -1293,8 +1324,10 @@ table_rate<- table_rate%>%select(AÑO,
                                  Per_Año_No_Diabet,
                                  Tasa_de_Mort_1000_Personas_Año_No_Diabet)%>% tibble() 
 #----------------------------------------------------------------------------------------------------#
+table_rate
 
 
+#GARFICA GRAVAR-HO!!!
 
 #----------------------------------------------------------------------------------------------------#
 #...[plot!]
@@ -1341,9 +1374,9 @@ dbs00<-dbs00 %>%left_join(select(dt_total,idp,grup))
 p.kn0 <- with(subset(dbs00, lex.Xst==1), quantile(per+lex.dur,(1:5-0.5)/5))
 #--------------------------------------------------------#
 
+
+
 #MODEL POISSON PERIODO +GRUP!
-
-
 r00<- glm((lex.Xst==1)~Ns(per, knots = p.kn0)*grup,
           family = poisson,
           offset = log(lex.dur),
@@ -1411,7 +1444,7 @@ dbs01<-dbs01 %>%left_join(select(dt_total,idp,grup))
 a.kn <- with(subset(dbs01, lex.Xst==1), quantile(age+lex.dur,(1:5-0.5)/5))
 #--------------------------------------------------------#
 
-#MODEL POISSON AGE +GRUP!
+#MODEL POISSON AGE*GRUP!
 
 r01<- glm((lex.Xst==1)~Ns( age, knots=a.kn)*grup,
           family = poisson,
@@ -1465,12 +1498,7 @@ rug( a.kn , lwd=2 )
 
 
 
-
-#-------------------------------------------------------------------------------------------#
-#M O D E L    P R O D U C T E#[DIABETIS:(AGE*PER*GRUP)]
-#--------------------------------------#
-#model diabetis_Dona_aditiu[[age+per]]
-
+#M O D E L    P R O D U C T E , M O D E L   S U M A
 
 #--------------------------------------------------------#
 dbs1 <- popEpi::splitMulti(LEXIS_dt_total3_b, age = seq(35,100,1), per= seq(2006,2018,1))
@@ -1482,7 +1510,7 @@ p.kn <- with(subset(dbs1, lex.Xst==1), quantile(per+lex.dur,(1:5-0.5)/5))
 
 
 
-
+#M O D E L    P R O D U C T E#[DIABETIS:(AGE*PER*GRUP)]
 #--------------------------------------#
 r02 <- glm((lex.Xst==1)~Ns(age, knots = a.kn)*Ns(per, knots = p.kn)*grup,
           family = poisson,
@@ -1493,7 +1521,7 @@ figura02_TOTAL2
 
 
 
-
+#M O D E L   S U M A#[DIABETIS:(AGE+PER+GRUP)]
 #--------------------------------------#
 r03 <- glm((lex.Xst==1)~Ns(age, knots = a.kn)+Ns(per, knots = p.kn)+grup,
            family = poisson,
@@ -1745,101 +1773,3 @@ save(flowchart,
 
 
 
-
-#----------------------------------------#
-
-library(splines)
-library(stats)
-library(graphics)
-
-ns( women$height, df = 3)
-Ns( women$height, knots=c(63,59,71,67) )
-
-# Gives the same results as ns:
-summary( lm(weight ~ ns(height, df = 3), data = women) )
-summary( lm(weight ~ Ns(height, df = 3), data = women) )
-
-# Get the diabetes data and set up as Lexis object
-data(DMlate)
-DMlate <- DMlate[sample(1:nrow(DMlate),500),]
-dml <- Lexis( entry = list(Per=dodm, Age=dodm-dobth, DMdur=0 ),
-              exit = list(Per=dox),
-              exit.status = factor(!is.na(dodth),labels=c("DM","Dead")),
-              data = DMlate )
-
-# Split follow-up in 1-year age intervals
-dms <- splitLexis( dml, time.scale="Age", breaks=0:100 )
-summary( dms )
-
-# Model  age-specific rates using Ns with 6 knots
-# and period-specific RRs around 2000 with 4 knots
-# with the same number of deaths between each pair of knots
-n.kn <- 6
-( a.kn <- with( subset(dms,lex.Xst=="Dead"),quantile( Age+lex.dur, probs=(1:n.kn-0.5)/n.kn ) ) )
-n.kn <- 4
-( p.kn <- with( subset( dms, lex.Xst=="Dead" ),quantile( Per+lex.dur, probs=(1:n.kn-0.5)/n.kn ) ) )
-
-
-
-
-m1 <- glm( lex.Xst=="Dead" ~ Ns( Age, kn=a.kn ) +
-             Ns( Per, kn=p.kn, ref=2000 ),
-           offset = log( lex.dur ),
-           family = poisson,
-           data = dms )
-
-
-
-#-------------------------------------------------------------------------------#
-# Plot estimated age-mortality curve for the year 2005 and knots chosen:
-nd <- data.frame( Age=seq(40,100,0.1), Per=2005, lex.dur=1000 )
-par( mfrow=c(1,2) )
-#-------------------------------------------------------------------------------#
-matplot( nd$Age, ci.pred( m1, newdata=nd ),
-         type="l", 
-         lwd=c(3,1,1),
-         lty=1,
-         col="black",
-         log="y",
-         ylab="Mortality rates per 1000 PY", xlab="Age (years)", 
-         las=1, 
-         ylim=c(1,1000) )
-rug( a.kn, lwd=2 )
-# Clamped Age effect to the right of rightmost knot.
-m1.c <- glm( lex.Xst=="Dead" ~ Ns( Age, kn=a.kn, fixsl=c(FALSE,TRUE) ) +
-               Ns( Per, kn=p.kn, ref=2000 ),
-             offset = log( lex.dur ),
-             family = poisson,
-             data = dms )
-#-------------------------------------------------------------------------------#
-
-#-------------------------------------------------------------------------------#
-# Plot estimated age-mortality curve for the year 2005 and knots chosen.
-matplot( nd$Age, ci.pred( m1.c, newdata=nd ),
-         type="l", 
-         lwd=c(3,1,1),
-         lty=1, col="black",
-         log="y",
-         ylab="Mortality rates per 1000 PY",
-         xlab="Age (years)", 
-         las=1, ylim=c(1,1000) )
-rug( a.kn, lwd=2 )
-par( mfrow=c(1,1) )
-#-------------------------------------------------------------------------------#
-
-
-#-------------------------------------------------------------------------------#
-# Including a linear Age effect of 0.05 to the right of rightmost knot.
-m1.l <- glm( lex.Xst=="Dead" ~ Ns( Age, kn=a.kn, fixsl=c(FALSE,TRUE) ) +
-               Ns( Per, kn=p.kn, ref=2000 ),
-             offset = log( lex.dur ) + pmax( Age, max( a.kn ) ) * 0.05,
-             family = poisson,
-             data = dms )
-#-------------------------------------------------------------------------------#
-# Plot estimated age-mortality curve for the year 2005 and knots chosen.
-nd <- data.frame(Age=40:100,Per=2005,lex.dur=1000)
-matplot( nd$Age, ci.pred( m1.l, newdata=nd ),
-         type="l", lwd=c(3,1,1), lty=1, col="black", log="y",
-         ylab="Mortality rates per 1000 PY", xlab="Age (years)", las=1, ylim=c(1,1000) )
-rug( a.kn, lwd=2 )
-#-------------------------------------------------------------------------------#
