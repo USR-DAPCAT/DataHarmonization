@@ -9,6 +9,7 @@
 
 # DATES dels fitxers --------------------        
 #-----------#
+#[07.02.2020]
 #[06.02.2020]
 #[05.02.2020]
 #[04.02.2020]
@@ -144,9 +145,33 @@ variable.names(LLEGIR.variables_Cataleg)
 #[1]  "domini" "cod"    "des"    "agr"   
 #----------------------------------------------#  
 
+#[COM HO FAREM:]
 
+#     [PART I]
+#----------------------------------------------#
+#0)   [De la B.D POBLACIO ho restringim a DAT<=31.12.2018]                                      :filtre0
+#i)   [De les dues B.D DIAGNOSTICS ---> AGAFEM DIABETIS[EXPOSED a l'excel(Spain_codes)]         :filtre1
+#ii)  [Dels DIABETIS escollits nomes agafem els que han entrat a  1.1.2006 --- 31.12.2018]      :filtre2 
+#iii) [agafem la data mínima , serà la DATINDEX]
+#iv)  [De la B.D POBLACIÓ , separem aquells que tinguin DIABETIS ]
+#v)   [DOS GRUPS: 
+#               EXPOSATS:   DIABETICS  
+#               NO EXPOSATS:NO DIABETIS
+#vi)  [DELS DOS GRUPS, 1.1.2006,no poden tenir mes de 100 anys, 31.12.2018, no menys de 35 anys]:filtre3
+#vii) [ #### Parametres d'aparellament: llistaPS=c("sexe","any_naix","iddap")]
+#viii)[MATCHING 1:10]
+#----------------------------------------------#
 
-
+#     [PART II]
+#----------------------------------------------#
+#ix)  [Tenim la DATINDEX pels 2 grups EXPOSATS(Diabetis), i NO EXPOSATS(No Diabetis)]
+#x)   [Eliminen TOTS aquells que hagin tingut abans  DATINDEX;[CANCER,CVD,KD,MET]   ]           :filtre4
+#xi)  [Si un dels grups 1_CAS/10_Controls hi ha un pacient eliminat , TOT EL GRUP ELIMINAT]     :filtre5
+#xii) [Eliminem aleatoriament aquells controls superiors a 5][1:5]                              :filtre6
+#xiii)[Eliminem aquells individus que la DATINDEX, tinguin menys de 35 anys i mes de 100 anys ] :filtre7
+#xiv) [Eliminem aquells individus que la DATINDEX ,tinguin un any o menys Història Clínica]     :filtre8
+#xv)  [Aquell EXPOSAT sense No Exposats, també serà ELIMINAT!]                                  :filtre9
+#----------------------------------------------#
 
 
 
@@ -238,18 +263,29 @@ NUM_POBLACIO<-length(LLEGIR.poblacio$idp)
 ######################################
 #
 #i)  FILTRE_1 : exposed=="exposed"
-dt_diagnostics<-dt_diagnostics %>% left_join(dt_cataleg,by="cod") %>% filter(exposed=="exposed") 
-#
-#ii) FILTRE_2 : Filtrem la base de dades 2006-2018 
-dt_diagnostics<-dt_diagnostics%>% filter(dat>=20060101  & dat<=20181231)
-#
+#    [De les dues B.D DIAGNOSTICS ---> AGAFEM DIABETIS[EXPOSED a l'excel(Spain_codes)]                    :filtre1
 ######################################
+
+
+dt_diagnostics<-dt_diagnostics %>% left_join(dt_cataleg,by="cod") %>% filter(exposed=="exposed") 
+
+
+######################################
+#ii) FILTRE_2 : Filtrem la base de dades 2006-2018 
+#   [Dels DIABETIS escollits nomes agafem els que han entrat a  1.1.2006 --- 31.12.2018]                  :filtre2 
+dt_diagnostics<-dt_diagnostics%>% filter(dat>=20060101  & dat<=20181231)
+######################################
+
+
 gc()
 
 #busquem la DATA ÍNDEX!:[]
 
+######################################
+#iii) [agafem la data mínima , serà la DATINDEX]
+######################################
+
 #data minima[data Índex!!!]#
-#-----#
 DINDEX<-dt_diagnostics%>% group_by(idp)%>%summarise(data_index=min(dat,na.rm = TRUE))%>%ungroup()
 #DINDEX
 
@@ -270,6 +306,8 @@ C_EXPOSATS_num<-length(C_EXPOSATS$idp)
 #[ Crearé una altre base de dades , que seran els No exposats,tots menys els exposats!!]
 #[#Excluits entrada:abans(01/01/2004) i  després de (31/12/2018)]
 # canvi a 2006!
+
+#0)  De la B.D POBLACIO ho restringim a DAT<=31.12.2018]                           :filtre0
 C_NO_EXPOSATS<-LLEGIR.poblacio%>%filter(entrada<=20181231)%>%anti_join(C_EXPOSATS,by="idp")
 
 variable.names(C_NO_EXPOSATS)
@@ -285,16 +323,25 @@ C_NO_EXPOSATS_num<-length(C_NO_EXPOSATS$idp)
 
 # PREPARACIÓ ------------------
 
+######################################
+#iv)  [De la B.D POBLACIÓ , separem aquells que tinguin DIABETIS ]
+######################################
+
+######################################
+#v)   [DOS GRUPS: 
+#               EXPOSATS:   DIABETICS  
+#               NO EXPOSATS:NO DIABETIS
+######################################
 # Fusionar base de dades en dues : 
 dt_matching<-mutate(C_EXPOSATS,grup=1) %>% bind_rows(mutate(C_NO_EXPOSATS,grup=0))
 
 
+######################################
+#vi)  [DELS DOS GRUPS, 1.1.2006,no poden tenir mes de 100 anys, 31.12.2018, no menys de 35 anys]           :filtre3
+######################################
 
-
-#iii) FILTRE_3 : Els  EXPOSATS a DIABETIS TIPUS2 amb DIAiNDEX que tinguin <35 anys l'any 1/1/2018, quedaran FORA!, per tant hagin nascut l'any <=1984.
-
-# dt_matching$dnaix>19840101 # posteriors a 84 (Massa Joves)
-# dt_matching$dnaix<19060101 # posteriors al 1906 (Massa grans)
+#     dt_matching$dnaix>19840101 # posteriors a 84    (Massa Joves)
+#     dt_matching$dnaix<19060101 # posteriors al 1906 (Massa grans)
 
 Nexclosos_naixament<-dt_matching %>% filter(dt_matching$dnaix>19840101 | dt_matching$dnaix<19060101) %>% count()
 
@@ -304,9 +351,10 @@ dt_matching<-dt_matching%>%filter(dnaix<=19840101 & dnaix>=19060101)
 
 
 # Preparar matching i setriskmatching #
-dt_matching<-dt_matching %>% transmute(idp,dnaix,sexe,grup,dtevent=data_index,sortida) %>%
+dt_matching<-dt_matching %>% transmute(idp,dnaix,sexe,grup,dtevent=data_index,entrada,sortida) %>%
   left_join(LLEGIR.variables_geo_sanitaries,by="idp")
 #dt_matching
+
 
 
 #   5.2.1 Generar data de sortida (Data event / Data de censura)     -----------------
@@ -320,6 +368,9 @@ dt_matching<-dt_matching %>% mutate (dtindex_control=as.Date(as.character(sortid
 dt_matching<-dt_matching %>% mutate (
   any_naix=lubridate::year(lubridate::ymd(dnaix))) 
 
+######################################
+#vii) [ #### Parametres d'aparellament: llistaPS=c("sexe","any_naix","iddap")]
+######################################
 
 #birth (+/-1year), sex, and practice, 
 
@@ -336,6 +387,10 @@ gc()
 table(dt_matching$grup)
 
 
+
+######################################
+#viii)					[MATCHING 1:10]
+######################################
 
 # 5.4.1. Aplicar algoritme   -----------
 dades_match<-heaven::riskSetMatch(ptid="idp"                                # Unique patient identifier
@@ -374,17 +429,26 @@ table(dades_match$grup,dades_match$numControls)
 
 # ---------------------------------------------------------------------------------------------#
 # Preparo dt_index_match per
+
+######################################
+#ix)  [Tenim la DATINDEX pels 2 grups EXPOSATS(Diabetis), i NO EXPOSATS(No Diabetis)]
+######################################
   
-dt_index_match<-dades_match %>% transmute(idp,iddap,caseid,grup,dnaix,sexe,dtindex=dtindex_case,numControls)%>%as_tibble()
+dt_index_match<-dades_match %>% transmute(idp,iddap,caseid,grup,dnaix,sexe,dtindex=dtindex_case,numControls,entrada)%>%as_tibble()
 #
 bd_index<-dt_index_match %>% transmute(idp,dtindex=lubridate::as_date(dtindex))
 # Agrego problemes de Salut
+
+
 dt_agregada_agr<-agregar_problemes(select(dt_diagnostics_global,idp,cod,dat),
                                    bd.dindex = bd_index,
                                    dt.agregadors=select(dt_cataleg,cod,agr))
 
-#iV) FILTRE_4:  Si un dels elements del grup [caseid] és prevalent o càncer, tot el [caseid] anirà a FORA!!!
-#                Filtrar per exclusions (Eliminar prevalents i cancer)
+######################################
+#x)   [Eliminen TOTS aquells que hagin tingut abans  DATINDEX;[CANCER,CVD,KD,MET]   ]                      :filtre4
+######################################
+
+# 1. FILTRES DE ANTECEDENTS
 
 dt_index_match <-dt_index_match %>% 
   left_join(select(dt_agregada_agr,-dtindex),by="idp") %>% 
@@ -393,45 +457,87 @@ dt_index_match <-dt_index_match %>%
          exc_prev_KD=ifelse(is.na(DG.prevalent_KD),0,1),
          exc_prev_MET=ifelse(is.na(DG.prevalent_MET),0,1))
 
-# Faig copia per comptar exclusions 
-dt_index_global<-dt_index_match
 
+# 2. FILTRE DE RANDOM 1:5]
 
-# Eliminem exclosos i parelles respectives (Grups a risk): Apestats
-
-# Actualitzar apestats
-dt_index_global<-dt_index_global %>% 
-  mutate(exc_idp=ifelse(exc_cancer | exc_prev_CVD |  exc_prev_KD | exc_prev_MET ,1,0)) %>% 
-  group_by(caseid)%>%mutate(exc_caseid=max(exc_idp)) %>% ungroup() 
-
-# Aplicar filtre 
-dt_index_match<-dt_index_match %>% 
-  mutate(exc_idp=ifelse(exc_cancer | exc_prev_CVD |  exc_prev_KD | exc_prev_MET ,1,0)) %>% 
-  group_by(caseid)%>%mutate(exc_caseid=max(exc_idp)) %>% ungroup() %>% 
-  filter(exc_caseid==0) 
-
+######################################
+#xii) [Eliminem aleatoriament aquells controls superiors a 5][1:5]                                         :filtre6
+######################################
 
 # Seleccionar com a molt 5 No exposats ---------
 #---------------------------------------------------------------------------------------------#
 dt_index_match<-dt_index_match%>%group_by(caseid)%>%mutate(idp2 = row_number())%>%ungroup()
 dt_index_match<-dt_index_match%>%mutate(idp2=ifelse(grup==1,0,idp2))
-#---------------------------------------------------------------------------------------------#
+#-------------------------------------------------------------------
+
+dt_index_match<-dt_index_match%>%mutate(exc_rand_exclusion=ifelse(idp2>5,1,0)) 
 
 
-# Actualitzar info de exclusions de controls no seleccionats 
-dt_temp<-dt_index_match %>% mutate (exc_rand_exclusion=ifelse(idp2>5,1,0)) %>% select(idp,exc_rand_exclusion)
-dt_index_global<-
-  dt_index_global %>% left_join(dt_temp,by="idp") %>%  
-  mutate(exc_rand_exclusion=ifelse(is.na(exc_rand_exclusion) | exc_rand_exclusion==0,0,1)) 
+# 3. EDAT 
+# Apliquem filtre 
+dt_index_match<-dt_index_match %>% 
+  mutate(edat=(as_date(dtindex)-ymd(dnaix))/365.25, 
+         exc_edat=ifelse(edat>100 | edat<35,1,0))
+  
+
+# 4. data entrada > 1 any 
+dt_index_match<-dt_index_match %>% mutate(exc_anti=ifelse(as_date(dtindex) - ymd(entrada)<365,1,0))
+ 
+# Filtrar controls exclosos 
+dt_index_match %>% select (idp,idp2,caseid,numControls,exc_rand_exclusion) %>% filter(exc_rand_exclusion==0)
 
 # Aplico filtre
 dt_index_match<-dt_index_match%>%filter(idp2<=5)%>%as_tibble()
 #---------------------------------------------------------------------------------------------#
 dt_index_match<-dt_index_match %>% group_by(caseid) %>% mutate(numControls=n()-1) %>% ungroup() %>% select(-idp2)
-
 #---------------------------------------------------------------------------------------------#
 
+
+
+
+# Generar apestats
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Falta un criteri de d'exclusió 
+# Tenir mínim un any d’història clínica prèvia abans de DINDEX
+
+#??? jordi!
+#dt_index_match
+
+#falta apestats!!
+
+######################################
+#xv)  [Aquell EXPOSAT sense No Exposats, també serà ELIMINAT!]                                             :filtre9
+######################################
 # Pajaracos sense control eliminats ()
+
 dt_temp<-dt_index_match %>% mutate (exc_sensecontrol=ifelse(numControls==0,1,0)) %>% select(idp,exc_sensecontrol)
 dt_index_global<-
   dt_index_global %>% left_join(dt_temp,by="idp") %>% 
@@ -448,21 +554,9 @@ table(dt_index_match$numControls,dt_index_match$grup)
 #descrTable(grup~dnaix+sexe,data=dt_index_match)
 #descrTable(grup~dnaix+sexe,data=dt_matching)
 
-# Filtre edat 
-# Construir criteris edat data index 
-dt_temp<-dt_index_match %>% transmute(idp,edat=(as_date(dtindex)-ymd(dnaix))/365.25,
-                                   exc_edat=ifelse(edat>100 | edat<35,1,0)) %>% select(idp,exc_edat)
-dt_index_global<-
-  dt_index_global %>% left_join(dt_temp,by="idp") %>% 
-  mutate(exc_edat=ifelse(is.na(exc_edat) | exc_edat==0,0,1)) 
 
-# Apliquem filtre 
-dt_index_match<-dt_index_match %>% 
-  mutate(edat=(as_date(dtindex)-ymd(dnaix))/365.25) %>% 
-  filter(edat<=100 & edat>=35) 
 
-# Falta un criteri de d'exclusió 
-# Tenir mínim un any d’història clínica prèvia abans de DINDEX
+#OBSERVAR:[]--> 
 
 criteris_exclusio_diagrama(dt_index_global,"conductor_exclusions.xls",criteris = "exclusio",grups="grup",
                            etiquetes="lab_exclusio",
@@ -470,7 +564,7 @@ criteris_exclusio_diagrama(dt_index_global,"conductor_exclusions.xls",criteris =
                            pob_lab=c("Població generació:1906-1984","Mostra aparellada final"))
 
 
-
+#criteris_exclusio_diagrama
 
 
 # Agregar resta d'historics  -----------------
@@ -1183,6 +1277,11 @@ dev.off()
         #---------------------------------------------------------------------------#
         # M O D E L     P O I S S O N   G L M:Moratlitat=AGE*PERIODO*Diabetis       #
         #---------------------------------------------------------------------------#
+#-----------------#
+mean(dt_plana$agein2)
+#-----------------#
+
+#Edat mitjana de la Població que estudiem: [54.55175 --> 55 anys]
 
 #--------------------------------------------------------#
 dbs1 <- popEpi::splitMulti(LEXIS_dt_plana_Lex, age = seq(35,100,1), per= seq(2006,2018,1))
@@ -1203,9 +1302,9 @@ figura02_TOTAL2
 
 #grafica5.png
 #--------------------------------------------------------#
-#NO DIABÈTICS! MODEL producte mitjana:65 anys
+#NO DIABÈTICS! MODEL producte mitjana:55 anys
 #--------------------------------------------------------#
-nd00<- data.frame(per=2006:2018,grup=0,lex.dur=1000,age=65)
+nd00<- data.frame(per=2006:2018,grup=0,lex.dur=1000,age=55)
 #--------------------------------------------------------#
 #ci.pred(r0)
 
@@ -1215,7 +1314,7 @@ matplot( nd00$per,ci.pred(r02, newdata=nd00),
          lwd=c(3,1,1), 
          lty=1, col="black", 
          log="y",
-         ylab="Tasa de Mortalidad 2006-2018/ 65 años Edad  NO Diabéticos cada  1000 Personas-año ", 
+         ylab="Tasa de Mortalidad 2006-2018/ 55 años Edad  NO Diabéticos cada  1000 Personas-año ", 
          xlab="Periodo", 
          las=1, 
          ylim=c(1,1000) )
@@ -1223,9 +1322,9 @@ rug( p.kn0, lwd=2 )
 #--------------------------------------------------------#
 dev.off()
 #grafica6.png
-#DIABÈTICS! MODEL producte mitjana:65 anys
+#DIABÈTICS! MODEL producte mitjana:55 anys
 #--------------------------------------------------------#
-nd01<- data.frame(per=2006:2018,grup=1,lex.dur=1000,age=65)
+nd01<- data.frame(per=2006:2018,grup=1,lex.dur=1000,age=55)
 #--------------------------------------------------------#
 #ci.pred(r0)
 png("grafica6.png")
@@ -1234,7 +1333,7 @@ matplot( nd01$per,ci.pred(r02, newdata=nd01),
          lwd=c(3,1,1), 
          lty=1, col="black", 
          log="y",
-         ylab="Tasa de Mortalidad 2006-2018/ 65 años   Diabéticos cada  1000 Personas-año ", 
+         ylab="Tasa de Mortalidad 2006-2018/ 55 años   Diabéticos cada  1000 Personas-año ", 
          xlab="Periodo", 
          las=1, 
          ylim=c(1,1000) )
@@ -1263,9 +1362,9 @@ figura02_TOTAL3
 
 
 #--------------------------------------------------------#
-#NO DIABÈTICS! aditiu MODEL mitjana:65 anys
+#NO DIABÈTICS! aditiu MODEL mitjana:55 anys
 #--------------------------------------------------------#
-nd00<- data.frame(per=2006:2018,grup=0,lex.dur=1000,age=65)
+nd00<- data.frame(per=2006:2018,grup=0,lex.dur=1000,age=55)
 #--------------------------------------------------------#
 #ci.pred(r0)
 matplot( nd00$per,ci.pred(r03, newdata=nd00),
@@ -1273,15 +1372,15 @@ matplot( nd00$per,ci.pred(r03, newdata=nd00),
          lwd=c(3,1,1), 
          lty=1, col="black", 
          log="y",
-         ylab="Tasa de Mortalidad 2006-2018/ 65 años Edad  NO Diabéticos cada  1000 Personas-año ", 
+         ylab="Tasa de Mortalidad 2006-2018/ 55 años Edad  NO Diabéticos cada  1000 Personas-año ", 
          xlab="Periodo", 
          las=1, 
          ylim=c(1,1000) )
 rug( p.kn0, lwd=2 )
 #--------------------------------------------------------#
-#DIABÈTICS! aditiu MODEL  mitjana:65 anys
+#DIABÈTICS! aditiu MODEL  mitjana:55 anys
 #--------------------------------------------------------#
-nd01<- data.frame(per=2006:2018,grup=1,lex.dur=1000,age=65)
+nd01<- data.frame(per=2006:2018,grup=1,lex.dur=1000,age=55)
 #--------------------------------------------------------#
 #ci.pred(r0)
 matplot( nd01$per,ci.pred(r03, newdata=nd01),
@@ -1289,7 +1388,7 @@ matplot( nd01$per,ci.pred(r03, newdata=nd01),
          lwd=c(3,1,1), 
          lty=1, col="black", 
          log="y",
-         ylab="Tasa de Mortalidad 2006-2018/ 65 años   Diabéticos cada  1000 Personas-año ", 
+         ylab="Tasa de Mortalidad 2006-2018/ 55 años   Diabéticos cada  1000 Personas-año ", 
          xlab="Periodo", 
          las=1, 
          ylim=c(1,1000) )
