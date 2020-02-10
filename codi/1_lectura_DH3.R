@@ -2,54 +2,10 @@
 # D  A T A     H A R M O N I Z A T I O N   #
 ############################################
 
-
-# ●	Tenir 35 anys o més a DINDEX.
-# ●	Tenir mínim un any d’història clínica prèvia abans de DINDEX.
-
-
-# DATES dels fitxers --------------------        
-#-----------#
-#[10.02.2020]
-#[07.02.2020]
-#[06.02.2020]
-#[05.02.2020]
-#[04.02.2020]
-#[03.02.2020]
-#[31.01.2020]
-#[30.01.2020]
-#[29.01.2020]
-#[28.01.2020]
-#[27.01.2020]
-#[24.01.2020]
-#[23.01.2020]
-#[22.01.2020]
-#[21.01.2020]
-#[20.01.2020]
-#[17.01.2020]
-#[16.01.2020]
-#[15.01.2020]
-#[14.01.2020]
-#[13.01.2020]
-#[10.01.2020]
-#[13.01.2020]
-#[31.12.2019]
-#[30.12.2019]
-#[27.12.2019]
-#[24.12.2019]
-#[20.12.2019]
-#[19.12.2019]
-#[17.12.2019]
-#-----------#
-
-
-
-
 # Lectura de fitxers --------------------
 
-
-
 # 1. Lectura de fitxers 
-#memory.size(max=160685)
+
 memory.limit()
 #
 library(splines)
@@ -64,8 +20,11 @@ library(lubridate)
 library("LexisPlotR")
 library("Epi")
 library("lubridate")
-# library("xlsx")
 
+#--------------------------------------------------------------------------#
+link_source<-paste0("https://github.com/jrealgatius/Stat_codis/blob/master/funcions_propies.R","?raw=T")
+devtools::source_url(link_source)
+#--------------------------------------------------------------------------#
 
 # Parametres  --------------------------
 
@@ -73,114 +32,53 @@ library("lubridate")
 
 mostra<-T
 if (mostra) directori_dades<-"dades/sidiap/test" else directori_dades<-"dades/sidiap"
-directori_dades
 
 
-#--------------------------------------------------------------------------#
-link_source<-paste0("https://github.com/jrealgatius/Stat_codis/blob/master/funcions_propies.R","?raw=T")
-devtools::source_url(link_source)
-#--------------------------------------------------------------------------#
-
-# generar_mostra_fitxers()  ----------------------
-
-# Llegir tots els fitxers RDS dins d'un directori i generar una mostra aleatoria i salvar-lo en un directori "mostra"
-
-# LLEGIR.cmbdh_diagnostics_padris<-readRDS("dades/SIDIAP/test" ) without 
-
-#i        [cmbdh_diagnostics] mult
-
-# list.files(directori_dades)
-
+# Llegir fitxers --------
 LLEGIR.cmbdh_diagnostics_padris<-readRDS(directori_dades%>% here::here("DAPCRMM_entregable_cmbdh_diagnostics_padris_20190930_093320.rds")) %>% as_tibble()
 variable.names(LLEGIR.cmbdh_diagnostics_padris)
-#[1] "idp"    "cod"    "dat"    "dx_pos" "dalta"  "calta"  "agr" 
-#----------------------------------------------#
+
 #ii       [dianostics]  mult
 LLEGIR.diagnostics<-readRDS(directori_dades %>% here::here("DAPCRMM_entregable_diagnostics_20190926_103409.rds")) %>% as_tibble()
 variable.names(LLEGIR.diagnostics)
-#[1] "idp"    "cod"    "dat"    "dbaixa" "agr"   
-#----------------------------------------------#
+
 #iii      [farmacs_facturats] mult
 LLEGIR.farmacs_facturat<-readRDS(directori_dades %>% here::here("DAPCRMM_entregable_farmacs_facturats_20190926_103409.rds")) %>% as_tibble()
 variable.names(LLEGIR.farmacs_facturat)
-#[1]"idp" "cod" "dat" "agr" "env"
-#----------------------------------------------#
+
 #iv       [farmacs_prescrits] mult
 LLEGIR.farmacs_prescrits<-readRDS(directori_dades %>% here::here("DAPCRMM_entregable_farmacs_prescrits_20190926_103409.rds")) %>% as_tibble()
 variable.names(LLEGIR.farmacs_prescrits)
-#[1] "idp"    "cod"    "dat"    "dbaixa" "ics"    "ap"     "agr"
-#----------------------------------------------#
+
 #v        [població] unic
 LLEGIR.poblacio<-readRDS(directori_dades %>% here::here("DAPCRMM_entregable_poblacio_20190926_103409.rds")) %>% as_tibble()
 variable.names(LLEGIR.poblacio)
-#[1]  "idp"      "sexe"     "dnaix"    "entrada"  "sortida"  "situacio"
-#----------------------------------------------#
+
 #vi       [tabaquisme] unic
 LLEGIR.tabaquisme<-readRDS(directori_dades %>% here::here("DAPCRMM_entregable_tabaquisme_20190926_103409.rds")) %>% as_tibble()
 variable.names(LLEGIR.tabaquisme)
-#[1] "idp"    "val"    "dat"    "dbaixa"
-#----------------------------------------------#
+
 #vii      [analitiques] mult
 LLEGIR.variables_analitiques<-readRDS(directori_dades %>% here::here("DAPCRMM_entregable_variables_analitiques_20190926_103409.rds")) %>% as_tibble()
 variable.names(LLEGIR.variables_analitiques)
-#[1] "idp" "cod" "dat" "val" "agr"
-#----------------------------------------------#
+
 #viii     [variables_cliíniques] mult
 LLEGIR.variables_cliniques<-readRDS(directori_dades %>% here::here("DAPCRMM_entregable_variables_cliniques_20190926_103409.rds")) %>% as_tibble()
 variable.names(LLEGIR.variables_cliniques)
-#[1] "idp" "cod" "dat" "val" "agr"
-#----------------------------------------------#
+
 #ix       [variables geo_sanitàries] unic
 LLEGIR.variables_geo_sanitaries<-readRDS(directori_dades %>% here::here("DAPCRMM_entregable_variables_geo_sanitaries_20190926_103409.rds")) %>% as_tibble()
 variable.names(LLEGIR.variables_geo_sanitaries)
-#[1] "idp"     "idup"    "idabs"   "idrs"    "iddap"   "idambit"  
-#----------------------------------------------#  
+
 #x        [variables socioeconòmiques] unic
 LLEGIR.variables_socioeconomiques<-readRDS(directori_dades %>% here::here("DAPCRMM_entregable_variables_socioeconomiques_20190926_103409.rds")) %>% as_tibble()
 variable.names(LLEGIR.variables_socioeconomiques)
-#[1] "idp"       "qmedea"    "ruralitat"
-#----------------------------------------------#  
+
 #xi        [Catàleg]
 LLEGIR.variables_Cataleg<-readRDS("dades/SIDIAP/test" %>% here::here("DAPCRMM_entregable_cataleg_20190930_093320.rds")) %>% as_tibble()
 variable.names(LLEGIR.variables_Cataleg)
-#[1]  "domini" "cod"    "des"    "agr"   
-#----------------------------------------------#  
 
-#[COM HO FAREM:]
-
-#     [PART I]
-#----------------------------------------------#
-#0)   [De la B.D POBLACIO ho restringim a DAT<=31.12.2018]                                      :filtre0
-#i)   [De les dues B.D DIAGNOSTICS ---> AGAFEM DIABETIS[EXPOSED a l'excel(Spain_codes)]         :filtre1
-#ii)  [Dels DIABETIS escollits nomes agafem els que han entrat a  1.1.2006 --- 31.12.2018]      :filtre2 
-#iii) [agafem la data mínima , serà la DATINDEX]
-#iv)  [De la B.D POBLACIÓ , separem aquells que tinguin DIABETIS ]
-#v)   [DOS GRUPS: 
-#               EXPOSATS:   DIABETICS  
-#               NO EXPOSATS:NO DIABETIS
-#vi)  [DELS DOS GRUPS, 1.1.2006,no poden tenir mes de 100 anys, 31.12.2018, no menys de 35 anys]:filtre3
-#vii) [ #### Parametres d'aparellament: llistaPS=c("sexe","any_naix","iddap")]
-#viii)[MATCHING 1:10]
-#----------------------------------------------#
-
-#     [PART II]
-#----------------------------------------------#
-#ix)  [Tenim la DATINDEX pels 2 grups EXPOSATS(Diabetis), i NO EXPOSATS(No Diabetis)]
-#x)   [Eliminen TOTS aquells que hagin tingut abans  DATINDEX;[CANCER,CVD,KD,MET]   ]           :filtre4
-#xi)  [Si un dels grups 1_CAS/10_Controls hi ha un pacient eliminat , TOT EL GRUP ELIMINAT]     :filtre5
-#xii) [Eliminem aleatoriament aquells controls superiors a 5][1:5]                              :filtre6
-#xiii)[Eliminem aquells individus que la DATINDEX, tinguin menys de 35 anys i mes de 100 anys ] :filtre7
-#xiv) [Eliminem aquells individus que la DATINDEX ,tinguin un any o menys Història Clínica]     :filtre8
-#xv)  [Aquell EXPOSAT sense No Exposats, també serà ELIMINAT!]                                  :filtre9
-#----------------------------------------------#
-
-
-
-
-
-                                                  #####################
-                                                  #Cohort define steps#
-                                                  #####################
+# Passos a contruir la cohort ---------------
 
 #1.	  From the entire database (ED), extract T2DM cohort with any codes in sheet “exposed”; 
 #     then remove patients with any codes in sheet “exclude” before the end of the study (31/12/2018); 
@@ -221,28 +119,18 @@ variable.names(LLEGIR.variables_Cataleg)
 #     then remove patients with any codes in sheet “prevalent” or “cancer” appearing before the index date; 
 #     then keep a randomly selected 5 matched non-exposed patients 
 #     (good to set a seed to make the random selection replicable). This is the final non-exposed cohort (FNE).
-#--------------------------------------------------------------------------------------------------------
+
 #     De la cohort aparellada (MC), elimineu els pacients morts abans de la data de l’índex; 
 #     a continuació, elimineu els pacients amb qualsevol codi en el full "prevalent" o "càncer" 
 #     que aparegui abans de la data de l'índex; a continuació, 
 #     mantingueu a 5 pacients no exposats seleccionats aleatòriament
 #     (és bo establir una llavor perquè la selecció aleatòria sigui replicable). 
 #     Es tracta de la cohort final no exposada (FNE).
-#--------------------------------------------------------------------------------------------------------
 #6.	  The final study cohort is the combination of the exposed cohort (EC) and the final non-exposed cohort (FNE).
-#--------------------------------------------------------------------------------------------------------
 #     La cohort d'estudi final és la combinació de la cohorte exposada (EC) i la cohort final no exposada (FNE)
-#--------------------------------------------------------------------------------------------------------
 
-#----------------------------------------------#
-#i        [cmbdh_diagnostics]               mult
-#LLEGIR.cmbdh_diagnostics_padris.
-#----------------------------------------------#
-#ii       [dianostics]                      mult
-#LLEGIR.diagnostics 
-#----------------------------------------------#
 
-##################################################################################################
+
 # Generar data index -----------
 dt_diagnostics<-LLEGIR.cmbdh_diagnostics_padris %>% 
   transmute(idp,cod=as.character(cod),dat,agr) %>% 
@@ -251,115 +139,75 @@ dt_diagnostics<-LLEGIR.cmbdh_diagnostics_padris %>%
 dt_diagnostics_global<-LLEGIR.cmbdh_diagnostics_padris %>% 
   transmute(idp,cod=as.character(cod),dat,agr) %>% 
   bind_rows(select(LLEGIR.diagnostics,idp,cod,dat,agr))
-##################################################################################################
+
+# Llegeixo cataleg 
 dt_cataleg<-read_excel("Spain_codes.xls") %>% select(cod,agr,exposed)
-######################################
+
+# Guardo N mostra
 NUM_POBLACIO<-length(LLEGIR.poblacio$idp)
-#----------------------------------------------------------------------------
+
+# Captura de casos (DM incidents entre 2006-2018)   --------------- 
+
+# [De les dues B.D DIAGNOSTICS ---> AGAFEM DIABETIS[EXPOSED a l'excel(Spain_codes)]                  
+
+dt_diagnostics<-select(dt_diagnostics,-agr) %>% 
+  left_join(dt_cataleg,by="cod") %>% 
+  filter(exposed=="exposed") %>% 
+  group_by(idp)%>%mutate(data_index=min(dat,na.rm = TRUE))%>% slice(1) %>% ungroup()%>% 
+  filter(data_index>=20060101  & data_index<=20181231)
+
+# Data index (Primer diagnostic de DM entre 2006-2018)
+DINDEX<-dt_diagnostics %>% select(idp,data_index)
 
 
-# FILTRE C.INCLUSIÓ   --------------- 
+# Afegeixo info de població sobre exposats 
+C_EXPOSATS<-DINDEX %>% left_join(LLEGIR.poblacio,by="idp")
 
-
-######################################
-#
-#i)  FILTRE_1 : exposed=="exposed"
-#    [De les dues B.D DIAGNOSTICS ---> AGAFEM DIABETIS[EXPOSED a l'excel(Spain_codes)]                    :filtre1
-######################################
-
-
-dt_diagnostics<-dt_diagnostics %>% left_join(dt_cataleg,by="cod") %>% filter(exposed=="exposed") 
-
-
-######################################
-#ii) FILTRE_2 : Filtrem la base de dades 2006-2018 
-#   [Dels DIABETIS escollits nomes agafem els que han entrat a  1.1.2006 --- 31.12.2018]                  :filtre2 
-dt_diagnostics<-dt_diagnostics%>% filter(dat>=20060101  & dat<=20181231)
-######################################
-
-
-gc()
-
-#busquem la DATA ÍNDEX!:[]
-
-######################################
-#iii) [agafem la data mínima , serà la DATINDEX]
-######################################
-
-#data minima[data Índex!!!]#
-DINDEX<-dt_diagnostics%>% group_by(idp)%>%summarise(data_index=min(dat,na.rm = TRUE))%>%ungroup()
-#DINDEX
-
-
-#-----------------------------------------------------------------------------------------------------------------------#
-#[ Crearé una base de dades dels exposat( TOTS ELS DELS DINDEX!!), amb ANY DE NAIXAMENT+SEXE]
-#[[població]] 
-# C_EXPOSATS<-DINDEX%>%left_join(LLEGIR.poblacio,by="idp")%>%mutate(Edat=as.numeric(lubridate::ymd(data_index)-lubridate::ymd(dnaix))/365.25 )
-C_EXPOSATS<-DINDEX%>%left_join(LLEGIR.poblacio,by="idp")
-#C_EXPOSATS<-C_EXPOSATS%>%filter(entrada<=20181231) #Excluits entrada després de (31/12/2018)
-variable.names(C_EXPOSATS)
+# Guardo numero
 C_EXPOSATS_num<-length(C_EXPOSATS$idp)
-#C_EXPOSATS_num
 
-#[1] "idp"        "data_index" "sexe"       "dnaix"      "entrada"    "sortida"    "situacio"   "Edat"  
+# No exposats ----------------------
 
-#-----------------------------------------------------------------------------------------------------------------------#
-#[ Crearé una altre base de dades , que seran els No exposats,tots menys els exposats!!]
-#[#Excluits entrada:abans(01/01/2004) i  després de (31/12/2018)]
-# canvi a 2006!
-
-#0)  De la B.D POBLACIO ho restringim a DAT<=31.12.2018]                           :filtre0
+# Tots els que no son DM exposats 
 C_NO_EXPOSATS<-LLEGIR.poblacio%>%filter(entrada<=20181231)%>%anti_join(C_EXPOSATS,by="idp")
 
-variable.names(C_NO_EXPOSATS)
-#[1]  "idp"      "sexe"     "dnaix"    "entrada"  "sortida"  "situacio"
-#-----------------------------------------------------------------------------------------------------------------------#
-#min(LLEGIR.poblacio$entrada)-->[01.01.2006]
-#max(LLEGIR.poblacio$entrada)-->[19.12.2018]
+# Guardo numero 
 C_NO_EXPOSATS_num<-length(C_NO_EXPOSATS$idp)
-#C_NO_EXPOSATS_num
 
 
+# Formateig PRE matching  ------------------
 
-
-# PREPARACIÓ ------------------
-
-######################################
-#iv)  [De la B.D POBLACIÓ , separem aquells que tinguin DIABETIS ]
-######################################
-
-######################################
-#v)   [DOS GRUPS: 
-#               EXPOSATS:   DIABETICS  
-#               NO EXPOSATS:NO DIABETIS
-######################################
 # Fusionar base de dades en dues : 
 dt_matching<-mutate(C_EXPOSATS,grup=1) %>% bind_rows(mutate(C_NO_EXPOSATS,grup=0))
 
 
-######################################
-#vi)  [DELS DOS GRUPS, 1.1.2006,no poden tenir mes de 100 anys, 31.12.2018, no menys de 35 anys]           :filtre3
-######################################
+# Agregar per DG en data 20051231
+dt_problemes_2005<-agregar_problemes(select(dt_diagnostics_global,idp,cod,dat),
+                                   bd.dindex = "20051231",
+                                   dt.agregadors=select(dt_cataleg,cod,agr))
 
-#     dt_matching$dnaix>19840101 # posteriors a 84    (Massa Joves)
-#     dt_matching$dnaix<19060101 # posteriors al 1906 (Massa grans)
+
+dt_matching<-dt_matching %>% left_join(dt_problemes_2005)
+dt_matching<-dt_matching %>% mutate_at(vars(starts_with("DG.") ),funs(ifelse(.>20051231 | is.na(.) ,0,1))) %>% select(-dtindex)
+
+           
+# Filtre_pre matching 1: Elimino DM prevalents (Falta confirmar mes eliminacions?) ---------------------
+dt_matching<-dt_matching %>% mutate(filtre1_DMprev=ifelse(DG.DM2==0,0,1))
+
+N_PREMATCHING<-length(dt_matching[[1]])
+
+# Filtre_pre matching 2: per generació :# posteriors a 84    (Massa Joves) / anteriors al 1906 (Massa grans)   -------------
 
 Nexclosos_naixament<-dt_matching %>% filter(dt_matching$dnaix>19840101 | dt_matching$dnaix<19060101) %>% count()
 
-dt_matching<-dt_matching%>%filter(dnaix<=19840101 & dnaix>=19060101)
-
-# C_EXPOSATS2_num<-length(C_EXPOSATS$idp)
+dt_matching<-dt_matching%>%mutate(filtre2_generacio=if_else(dnaix<=19840101 & dnaix>=19060101,0,1))
 
 
-# Preparar matching i setriskmatching #
+# Preparar matching i setriskmatching  ----------------------------
 dt_matching<-dt_matching %>% transmute(idp,dnaix,sexe,grup,dtevent=data_index,entrada,sortida) %>%
   left_join(LLEGIR.variables_geo_sanitaries,by="idp")
-#dt_matching
 
-
-
-#   5.2.1 Generar data de sortida (Data event / Data de censura)     -----------------
-## dtindex_case 
+# Generar data de sortida (Data event / Data de censura)     -----------------
 dt_matching<-dt_matching %>% mutate(dtindex_case=ifelse(grup==1, as.Date(as.character(dtevent),format="%Y%m%d"),NA)) 
 
 ## dtindex_control
@@ -369,29 +217,16 @@ dt_matching<-dt_matching %>% mutate (dtindex_control=as.Date(as.character(sortid
 dt_matching<-dt_matching %>% mutate (
   any_naix=lubridate::year(lubridate::ymd(dnaix))) 
 
-######################################
-#vii) [ #### Parametres d'aparellament: llistaPS=c("sexe","any_naix","iddap")]
-######################################
-
-#birth (+/-1year), sex, and practice, 
+#vii [Parametres d'aparellament: llistaPS=c("sexe","any_naix","iddap")]  ---------------------
 
 #### Parametres d'aparellament
 llistaPS=c("sexe","any_naix","iddap")
 num_controls<-10
 llavor<-125
 set.seed(llavor)
-
 gc()
 
-#5188815
-
-table(dt_matching$grup)
-
-
-
-######################################
 #viii)					[MATCHING 1:10]
-######################################
 
 # 5.4.1. Aplicar algoritme   -----------
 dades_match<-heaven::riskSetMatch(ptid="idp"                                # Unique patient identifier
@@ -428,11 +263,21 @@ table(dades_match$grup,dades_match$numControls)
 #descrTable(grup~dnaix+any_naix+sexe,data=dades_match)
 
 
-
 # ---------------------------------------------------------------------------------------------#
 # Preparo dt_index_match per
 
 #[10.2.2020]
+
+
+
+
+
+
+
+
+
+
+
 
 
 
