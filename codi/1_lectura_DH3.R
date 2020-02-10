@@ -9,6 +9,7 @@
 
 # DATES dels fitxers --------------------        
 #-----------#
+#[10.02.2020]
 #[07.02.2020]
 #[06.02.2020]
 #[05.02.2020]
@@ -417,8 +418,9 @@ heaven::matchReport(dades_match, id="idp",case="grup",caseid="caseid")
 dades_match[,numControls:=.N,by=caseid]
 dades_match<- dades_match %>% mutate(numControls=numControls-1)
 
-
+# ---------------------------------------------------------------------------------------------#
 table(dades_match$grup,dades_match$numControls)
+# ---------------------------------------------------------------------------------------------#
 
 # Verificació d'aparellament per edad + sexe 
 
@@ -430,6 +432,14 @@ table(dades_match$grup,dades_match$numControls)
 # ---------------------------------------------------------------------------------------------#
 # Preparo dt_index_match per
 
+#[10.2.2020]
+
+
+
+
+
+
+
 ######################################
 #ix)  [Tenim la DATINDEX pels 2 grups EXPOSATS(Diabetis), i NO EXPOSATS(No Diabetis)]
 ######################################
@@ -440,15 +450,19 @@ bd_index<-dt_index_match %>% transmute(idp,dtindex=lubridate::as_date(dtindex))
 # Agrego problemes de Salut
 
 
+
+######################################
+#x)   [Eliminen TOTS aquells que hagin tingut abans  DATINDEX;[CANCER,CVD,KD,MET]   ]                   
+######################################
+
+#FILTRES DE ANTECEDENTS
+#[FILTRE1A : Antacedents de DG.Cancer,CVD,KD,MET =1]
+#[FILTRE1B : Aquells a on algun element del Grup(caseid) tingui Antecedents! ]
+
+
 dt_agregada_agr<-agregar_problemes(select(dt_diagnostics_global,idp,cod,dat),
                                    bd.dindex = bd_index,
                                    dt.agregadors=select(dt_cataleg,cod,agr))
-
-######################################
-#x)   [Eliminen TOTS aquells que hagin tingut abans  DATINDEX;[CANCER,CVD,KD,MET]   ]                      :filtre4
-######################################
-
-# 1. FILTRES DE ANTECEDENTS
 
 dt_index_match <-dt_index_match %>% 
   left_join(select(dt_agregada_agr,-dtindex),by="idp") %>% 
@@ -457,114 +471,182 @@ dt_index_match <-dt_index_match %>%
          exc_prev_KD=ifelse(is.na(DG.prevalent_KD),0,1),
          exc_prev_MET=ifelse(is.na(DG.prevalent_MET),0,1))
 
-
-# 2. FILTRE DE RANDOM 1:5]
+dt_index_match<-dt_index_match%>%mutate(FILTRE_EXC_1A=ifelse(exc_cancer==1  
+                                                        | exc_prev_CVD==1 
+                                                        | exc_prev_KD==1
+                                                        | exc_prev_MET==1 ,1,0)) 
+dt_index_match<-dt_index_match %>% group_by(caseid) %>% mutate(FILTRE_EXC_1B=max(FILTRE_EXC_1A))%>% ungroup()
+#
 
 ######################################
-#xii) [Eliminem aleatoriament aquells controls superiors a 5][1:5]                                         :filtre6
+#xi)  Filtre EDAT edat. 
+# Apliquem filtre :no agafarem edats superiors a 100 anys a dtindex , ni inferiors de 35 anys.
 ######################################
 
+dt_index_match<-dt_index_match %>% 
+  mutate(edat_dtindex=(as_date(dtindex)-ymd(dnaix))/365.25, 
+         FILTRE_EXC_2A=ifelse(edat_dtindex>100 | edat_dtindex<35,1,0))
+
+dt_index_match<-dt_index_match %>% group_by(caseid) %>% mutate(FILTRE_EXC_2B=max(FILTRE_EXC_2A))%>% ungroup()
+
+
+
+######################################
+#xii)  Filtre Entrada Clínicia. 
+# 4. data entrada > 1 any 
+dt_index_match<-dt_index_match %>% mutate( FILTRE_EXC_3A=ifelse(as_date(dtindex) - ymd(entrada)<365,1,0))
+dt_index_match<-dt_index_match %>% group_by(caseid) %>% mutate(FILTRE_EXC_3B=max(FILTRE_EXC_3A))%>% ungroup()
+
+
+######################################
+# xiii). FILTRE DE RANDOM 1:5]
+#[Eliminem aleatoriament aquells controls superiors a 5][1:5]             
 # Seleccionar com a molt 5 No exposats ---------
 #---------------------------------------------------------------------------------------------#
 dt_index_match<-dt_index_match%>%group_by(caseid)%>%mutate(idp2 = row_number())%>%ungroup()
 dt_index_match<-dt_index_match%>%mutate(idp2=ifelse(grup==1,0,idp2))
-#-------------------------------------------------------------------
-
-dt_index_match<-dt_index_match%>%mutate(exc_rand_exclusion=ifelse(idp2>5,1,0)) 
-
-
-# 3. EDAT 
-# Apliquem filtre 
-dt_index_match<-dt_index_match %>% 
-  mutate(edat=(as_date(dtindex)-ymd(dnaix))/365.25, 
-         exc_edat=ifelse(edat>100 | edat<35,1,0))
-  
-
-# 4. data entrada > 1 any 
-dt_index_match<-dt_index_match %>% mutate(exc_anti=ifelse(as_date(dtindex) - ymd(entrada)<365,1,0))
- 
-# Filtrar controls exclosos 
-dt_index_match %>% select (idp,idp2,caseid,numControls,exc_rand_exclusion) %>% filter(exc_rand_exclusion==0)
-
-# Aplico filtre
-dt_index_match<-dt_index_match%>%filter(idp2<=5)%>%as_tibble()
 #---------------------------------------------------------------------------------------------#
-dt_index_match<-dt_index_match %>% group_by(caseid) %>% mutate(numControls=n()-1) %>% ungroup() %>% select(-idp2)
+dt_index_match<-dt_index_match%>%mutate(FILTRE_EXC_4A=ifelse(idp2>5,1,0))
+
+# dt_index_match<-dt_index_match %>% group_by(caseid) %>% mutate(FILTRE_EXC_4B=max(FILTRE_EXC_4A))%>% ungroup()
 #---------------------------------------------------------------------------------------------#
 
+#---------------------------------------------------------------------------------------------#
+#Filtre_Normal!!!
+dt_index_match<-dt_index_match%>%mutate(FILTRE_FINAL=ifelse(FILTRE_EXC_1A==0 & 
+                                                            FILTRE_EXC_2A==0 &
+                                                            FILTRE_EXC_3A==0 &
+                                                            FILTRE_EXC_4A==0 ,1,0)) 
+#---------------------------------------------------------------------------------------------#
+#Filtre_Apestats!!!
+dt_index_match<-dt_index_match%>%mutate(FILTRE_FINAL2=ifelse(FILTRE_EXC_1B==0 & 
+                                                              FILTRE_EXC_2B==0 &
+                                                              FILTRE_EXC_3B==0
+                                                             ,1,0)) 
+
+#---------------------------------------------------------------------------------------------#
+
+criteris_exclusio_diagrama(dt_index_match,
+                           "conductor_exclusions2A.xls",
+                           criteris = "exclusio",grups="grup",
+                           etiquetes="lab_exclusio",
+                           ordre="ordre",sequencial = T,
+                           pob_lab=c("Població generació:1906-1984","Mostra aparellada final"))
+
+criteris_exclusio_diagrama(dt_index_match,
+                           "conductor_exclusions2B.xls",
+                           criteris = "exclusio",grups="grup",
+                           etiquetes="lab_exclusio",
+                           ordre="ordre",sequencial = T,
+                           pob_lab=c("Població generació Apestada:1906-1984","Mostra aparellada final"))
 
 
 
-# Generar apestats
 
 
 
+# Apliquem filtre1 
+dt_index_match<-dt_index_match %>% filter(FILTRE_FINAL==1)
 
 
+# Apliquem filtre2 
+#dt_index_match<-dt_index_match %>% filter(FILTRE_FINAL2==1)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Falta un criteri de d'exclusió 
-# Tenir mínim un any d’història clínica prèvia abans de DINDEX
-
-#??? jordi!
-#dt_index_match
-
-#falta apestats!!
 
 ######################################
-#xv)  [Aquell EXPOSAT sense No Exposats, també serà ELIMINAT!]                                             :filtre9
+#xiv)  [Aquell EXPOSAT sense No Exposats, també serà ELIMINAT!]                                             
 ######################################
 # Pajaracos sense control eliminats ()
 
-dt_temp<-dt_index_match %>% mutate (exc_sensecontrol=ifelse(numControls==0,1,0)) %>% select(idp,exc_sensecontrol)
-dt_index_global<-
-  dt_index_global %>% left_join(dt_temp,by="idp") %>% 
-  mutate(exc_sensecontrol=ifelse(is.na(exc_sensecontrol) | exc_sensecontrol==0,0,1)) 
+dt_temp<-dt_index_match %>%
+  mutate (grup2=ifelse(grup==0,2,1))%>%
+    group_by(caseid) %>%
+     mutate(cas_control=max(grup2))%>% 
+        ungroup()%>% 
+          select(idp,cas_control)
+
+dt_index_match<-dt_index_match %>% left_join(dt_temp,by="idp") %>% 
+  mutate(FILTRE_EXC_5A=ifelse(cas_control==1,1,0)) 
 
 
-# Apliquem filtre 
-dt_index_match<-dt_index_match %>% filter(numControls>=1)
 
-# Verifiquem num controls x cas 
-table(dt_index_match$numControls,dt_index_match$grup)
+#---------------------------------------------------------------------------------------------#
+# Apliquem filtre2 [Aquell EXPOSAT sense No Exposats, també serà ELIMINAT!]
+dt_index_match<-dt_index_match %>% filter(FILTRE_EXC_5A==0)
+#---------------------------------------------------------------------------------------------#
+
+dt_index_match<-dt_index_match%>%
+  group_by(caseid)%>%
+    mutate(num_controls2= row_number())%>%ungroup()
+
+dt_index_match<-dt_index_match%>%mutate(num_controls2=ifelse(grup==1,0,num_controls2))
+
+
+
+#abans
+# ---------------------------------------------------------------------------------------------#
+table(dades_match$grup,dades_match$numControls)
+# ---------------------------------------------------------------------------------------------#
+
+#després filtres!
+# ---------------------------------------------------------------------------------------------#
+table(dt_index_match$grup,dt_index_match$num_controls2)
+# ---------------------------------------------------------------------------------------------#
+table(dt_index_match$grup)
+# 
 
 # Verificació d'aparellament per edad + sexe 
 #descrTable(grup~dnaix+sexe,data=dt_index_match)
 #descrTable(grup~dnaix+sexe,data=dt_matching)
 
-
+#variable.names(dt_index_match)
 
 #OBSERVAR:[]--> 
 
-criteris_exclusio_diagrama(dt_index_global,"conductor_exclusions.xls",criteris = "exclusio",grups="grup",
-                           etiquetes="lab_exclusio",
-                           ordre="ordre",sequencial = T,
-                           pob_lab=c("Població generació:1906-1984","Mostra aparellada final"))
+   
+#"FILTRE_EXC_1A"    
+#"FILTRE_EXC_1B"
+#"FILTRE_EXC_2A"    
+#"FILTRE_EXC_2B"   
+#"FILTRE_EXC_3A"    
+#"FILTRE_EXC_3B"  
+#"FILTRE_EXC_4A"    
+#"FILTRE_EXC_4B"   
+#"FILTRE_FINAL"
+#FILTRE_EXC_5A"    
+#"num_controls2" 
+
+#criteris_exclusio_diagrama(dt_index_match,
+#                           "conductor_exclusions.xls",
+#                           criteris = "exclusio",grups="grup",
+#                           etiquetes="lab_exclusio",
+#                           ordre="ordre",sequencial = T,
+#                           pob_lab=c("Població generació:1906-1984","Mostra aparellada final"))
+
+
+# funciona!!!
 
 
 #criteris_exclusio_diagrama
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # Agregar resta d'historics  -----------------
