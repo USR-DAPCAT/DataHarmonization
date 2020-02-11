@@ -929,7 +929,7 @@ dev.off()
 #MODEL POISSON AGE*GRUP!
 #--------------------------------------------------------#
 dbs01 <- popEpi::splitMulti(LEXIS_dt_plana_Lex, age= seq(35,100,1))
-dbs01<-dbs01 %>%left_join(select(dt_total,idp,grup))
+dbs01<-dbs01 %>%left_join(select(dt_plana,idp,grup))
 #--------------------------------------------------------#
 a.kn <- with(subset(dbs01, lex.Xst==1), quantile(age+lex.dur,(1:5-0.5)/5))
 #--------------------------------------------------------#
