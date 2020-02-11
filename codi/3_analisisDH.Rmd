@@ -49,15 +49,15 @@ output:
 
 ## 1. Objectivos Principales
 
-- Análisis de las tendencias en mortalidad a lo largo del tiempo  de todas las causas entre el 01.01.2004 y la   captura más reciente del SIDIAP (31.12.2018) en personas con reciente diabetes tipo 2 y en comparación con 1 población control sin diabetes.
+- Análisis de las tendencias en mortalidad a lo largo del tiempo  de todas las causas entre el 01.01.2006 y la   captura más reciente del SIDIAP (31.12.2018) en personas con reciente diabetes tipo 2 y en comparación con 1 población control sin diabetes.
 
-- Análisis de las diferncias y las proporciones de las tasas  en mortalidad a lo largo del tiempo  de todas las causas entre el 01.01.2004 y la   captura más reciente del SIDIAP (31.12.2018) en personas con reciente diabetes tipo 2 y en comparación con 1 población control sin diabetes.
+- Análisis de las diferncias y las proporciones de las tasas  en mortalidad a lo largo del tiempo  de todas las causas entre el 01.01.2006 y la   captura más reciente del SIDIAP (31.12.2018) en personas con reciente diabetes tipo 2 y en comparación con 1 población control sin diabetes.
 
 ## 2. Objectivos Secundarios
 
-- Análisis de las tendencias en mortalidad cardiovascular a lo largo del tiempo entre el 01.01.2004 y la   captura más reciente del SIDIAP (31.12.2018) en personas con reciente diabetes tipo 2 y en comparación con 1 población control sin diabetes.
+- Análisis de las tendencias en mortalidad cardiovascular a lo largo del tiempo entre el 01.01.2006 y la   captura más reciente del SIDIAP (31.12.2018) en personas con reciente diabetes tipo 2 y en comparación con 1 población control sin diabetes.
 
-- Análisis de las diferncias y las proporciones de las tasas  en mortalidad  cardiovascular  a lo largo del tiempo  entre el 01.01.2004 y la   captura más reciente del SIDIAP (31.12.2018) en personas con reciente diabetes tipo 2 y en comparación con 1 población control sin diabetes.
+- Análisis de las diferncias y las proporciones de las tasas  en mortalidad  cardiovascular  a lo largo del tiempo  entre el 01.01.2006 y la   captura más reciente del SIDIAP (31.12.2018) en personas con reciente diabetes tipo 2 y en comparación con 1 población control sin diabetes.
 
 - Comparar las tendencias de las tasas de mortalidad y de ratio entre los diferentes países.
 
@@ -73,7 +73,7 @@ output:
 
 
 * Grupo de Casos (diabéticos incidentes):
-   + Tener un nuevo diagnóstico de DM2 no dado de baja registrado durante 2004-2018.La fecha del primer diagnóstico de DM2 pasará a ser la fecha de índice.[DINDEX].
+   + Tener un nuevo diagnóstico de DM2 no dado de baja registrado durante 2006-2018.La fecha del primer diagnóstico de DM2 pasará a ser la fecha de índice.[DINDEX].
    + Tener 35 años o más en índice.[DINDEX].
    + Tener mínimo un año de historia clínica previa antes de índice[DINDEX].
 
@@ -86,7 +86,7 @@ output:
    
 ## 4. Período de observación:
 
-* 1 de enero del 2004  a 31 de diciembre del 2018
+* 1 de enero del 2006  a 31 de diciembre del 2018
 
 ## 5. Análisis Estadístico
 
@@ -104,6 +104,7 @@ output:
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = FALSE, message=FALSE, warning=FALSE, include=F,size="huge")
+rm(list=ls())
 library(ggplot2)
 library(dplyr)
 # CArrego funcions -------------------
@@ -121,7 +122,7 @@ devtools::source_url(link_source)
 
 ```{r lectura, echo=FALSE, message=FALSE, warning=FALSE}
 # Carrega dades
-rm()
+
 ####  Llegir dades    #####
 load(here::here("DataHarmonization.Rdata"))
 
@@ -184,15 +185,10 @@ figura1
 
 ```
 
-![](grafica7.png)
 
-* Aplicamos un Diagrama de Lexis para el Grupo Caso(Diabético)(figura2a)
 
-![](figura2a.png)
 
-* Aplicamos un Diagrama de Lexis para el Grupo Control(figura2b).
 
-![](figura2b.png)
 
 
 
@@ -200,50 +196,16 @@ figura1
 
 'Modelo lineal generalizado para ajustar un modelo de regresión de Poisson de la Tasas de  todo tipo de Mortalidad ,[Periodo*Grupo](figura00_TOTAL)'
 
-figura00_TOTAL
+
 
 
 'Modelo lineal generalizado para ajustar un modelo de regresión de Poisson de la Tasas de  todo tipo de Mortalidad ,[Periodo*Edad*Grupo](figura02_TOTAL2)'
 
-figura02_TOTAL2
 
 'Modelo lineal generalizado para ajustar un modelo de regresión de Poisson de la Tasas de  todo tipo de Mortalidad ,[Periodo+Edad+Grupo](figura02_TOTAL3)'
 
-figura02_TOTAL3
-
-
 
 ```
-
-
-
-
-
-* Gráficas de Tasas de Mortalidad 2008, (Modelo Poisson)
-
-
-
-
-
-![](grafica1.png)
-
-
-
-
-![](grafica2.png)
-
-
-![](grafica3.png)
-
-
-![](grafica4.png)
-
-
-![](grafica5.png)
-
-
-![](grafica6.png)
-
 
 
 

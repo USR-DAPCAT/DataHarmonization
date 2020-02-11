@@ -32,7 +32,7 @@ devtools::source_url(link_source)
 
 # Si mostra = T llegeix MOSTRA (Altri llegeix població)
 
-mostra<-T
+mostra<-F
 if (mostra) directori_dades<-"dades/sidiap/test" else directori_dades<-"dades/sidiap"
 
 
@@ -175,12 +175,9 @@ flow_chart1<-criteris_exclusio_diagrama(dt=dt_matching,
                                         pob_lab=c("SIDIAP","Sample pre matching"))
 
 
-
 # Aplicar filtres 
 dt_matching_pre<-dt_matching
 dt_matching<-criteris_exclusio(dt_matching,taulavariables=conductor,criteris="exc_pre")
-
-
 
 
 # Preparar matching i setriskmatching  ----------------------------
@@ -225,6 +222,7 @@ dades_match<-heaven::riskSetMatch(ptid="idp"                                # Un
                                   ,dateterms=NULL               # character list of date variables
 )
 
+gc()
 
 # Número de controls per conjunt a risk  ------------
 heaven::matchReport(dades_match, id="idp",case="grup",caseid="caseid")
@@ -236,17 +234,13 @@ dades_match<- dades_match %>% mutate(numControls=numControls-1)
 table(dades_match$grup,dades_match$numControls)
 
 # Verificació d'aparellament per edad + sexe 
-descrTable(grup~dnaix+any_naix+sexe,data=dt_matching)
-descrTable(grup~dnaix+any_naix+sexe,data=dades_match)
-
-
+# descrTable(grup~dnaix+any_naix+sexe,data=dt_matching)
+# descrTable(grup~dnaix+any_naix+sexe,data=dades_match)
 
 # Flowchart 2 pre-post matching ----------------------
 dt_matching_pre<-dt_matching_pre %>% 
   left_join(transmute(dades_match,idp,exclusio3_match=0),by="idp") %>% 
   mutate(exclusio3_match=ifelse(is.na(exclusio3_match),1,0)) 
-
-
 
 
 # Generar flow_chart Prematching i aplicar criteris exclusions ------------
@@ -262,12 +256,8 @@ flow_chart2<-criteris_exclusio_diagrama(dt=dt_matching_pre,
 
 # Agregar base de dades aparellada i generar filtres d'exclusion POST MATCHING --------------------
 
-
 flow_chart1
 flow_chart2
-
-
-
 
 
 dt_index_match<-dades_match %>% transmute(idp,iddap,caseid,grup,dnaix,sexe,dtindex=dtindex_case,numControls,entrada)%>%as_tibble()
@@ -294,55 +284,29 @@ dt_index_match <-dt_index_match %>%
          exc_prev_MET=ifelse(is.na(DG.prevalent_MET),0,1))
 
 
+#xi) Filtre EDAT edat. ------------------
 
-
-#xi) Filtre EDAT edat. [Apliquem filtre :no agafarem edats superiors a 100 anys a dtindex , ni inferiors de 35 anys]
+# [Apliquem filtre :no agafarem edats superiors a 100 anys a dtindex , ni inferiors de 35 anys]
 
 dt_index_match<-dt_index_match %>% 
   mutate(edat_dtindex=(as_date(dtindex)-ymd(dnaix))/365.25, 
          exc_edat=ifelse(edat_dtindex>100 | edat_dtindex<35,1,0))
 
-
-
-
-######################################
-#xii)  Filtre Entrada Clínicia. 
+#xii)  Filtre Entrada Clínicia. ------
 # 4. data entrada > 1 any 
-dt_index_match<-dt_index_match %>% mutate( exc_antiguitat=ifelse(as_date(dtindex) - ymd(entrada)<365,1,0))
+dt_index_match<-dt_index_match %>% mutate(exc_antiguitat=ifelse(as_date(dtindex) - ymd(entrada)<365,1,0))
 
 
-######################################
-# xiii). FILTRE DE RANDOM 1:5]
+# xiii). FILTRE DE RANDOM 1:5] -----------
 #[Eliminem aleatoriament aquells controls superiors a 5][1:5]             
-# Seleccionar com a molt 5 No exposats ---------
-#---------------------------------------------------------------------------------------------#
-dt_index_match<-dt_index_match%>%group_by(caseid)%>%mutate(idp2 = row_number())%>%ungroup()
-dt_index_match<-dt_index_match%>%mutate(idp2=ifelse(grup==1,0,idp2))
-#---------------------------------------------------------------------------------------------#
-dt_index_match<-dt_index_match%>%mutate(exc_random=ifelse(idp2>5,1,0))
+
+dt_index_match<-dt_index_match%>%group_by(caseid)%>%mutate(idp2 = row_number()) %>% 
+  ungroup() %>% 
+  mutate(idp2=ifelse(grup==1,0,idp2)) %>%
+  mutate(exc_random=ifelse(idp2>5,1,0))
 
 
-
-
-
-#dt_index_match$exc_cancer
-#dt_index_match$exc_prev_CVD
-#dt_index_match$exc_prev_KD
-#dt_index_match$exc_prev_MET
-#dt_index_match$exc_edat
-#dt_index_match$exc_antiguitat
-#dt_index_match$exc_random
-
-
-
-
-
-
-
-
-
-# Generar exclusions apestats 
-
+# Generar exclusions apestats -------------
 dt_index_match<-dt_index_match%>%mutate(exc_apestat=ifelse(exc_cancer==1  
                                                            | exc_prev_CVD==1 
                                                            | exc_prev_KD==1
@@ -351,15 +315,9 @@ dt_index_match<-dt_index_match%>%mutate(exc_apestat=ifelse(exc_cancer==1
                                                            | exc_antiguitat==1
                                                              ,1,0))
 
-
 dt_index_match<-dt_index_match %>% group_by(caseid) %>% mutate(exc_apestat=max(exc_apestat))%>% ungroup()
 
-
-
-
 # Si es apestat però te la patologia no es apestat -----
-
-
 
 dt_index_match<-dt_index_match %>% mutate(exc_apestat=ifelse(exc_cancer==1  
                                                              | exc_prev_CVD==1 
@@ -371,6 +329,10 @@ dt_index_match<-dt_index_match %>% mutate(exc_apestat=ifelse(exc_cancer==1
 
 
 
+#xiv)  Casos sense controls 
+
+# Pajarracos sense control eliminats 
+dt_index_match<-dt_index_match %>% mutate(exc_0controls=ifelse(numControls==0,1,0))
 
 
 # Generar flow_chart Post_matching i aplicar criteris exclusions ------------
@@ -392,52 +354,9 @@ flow_chart3
 dt_post_matching<-criteris_exclusio(dt_index_match,taulavariables=conductor,criteris="exc_post")
 
 
+# Actualitzar numero de controls per grup ------------- 
 
-#xiv)  [Aquell EXPOSAT sense No Exposats, també serà ELIMINAT!]                                             
-
-# Pajaracos sense control eliminats ()
-
-dt_temp<-dt_post_matching %>%
-  mutate (grup2=ifelse(grup==0,2,1))%>%
-    group_by(caseid) %>%
-     mutate(cas_control=max(grup2))%>% 
-        ungroup()%>% 
-          select(idp,cas_control)
-
-
-dt_post_matching<-dt_post_matching %>% left_join(dt_temp,by="idp") %>% 
-  mutate(FILTRE_CAS_NOCONTROL=ifelse(cas_control==1,1,0)) 
-
-
-#---------------------------------------------------------------------------------------------#
-# Apliquem filtre2 [Aquell EXPOSAT sense No Exposats, també serà ELIMINAT!]
-dt_post_matching<-dt_post_matching%>% filter(FILTRE_CAS_NOCONTROL==0)
-#---------------------------------------------------------------------------------------------#
-
-dt_post_matching<-dt_post_matching%>%
-  group_by(caseid)%>%
-    mutate(num_controls2= row_number())%>%ungroup()
-
-dt_post_matching<-dt_post_matching%>%mutate(num_controls2=ifelse(grup==1,0,num_controls2))
-
-
-
-#abans
-# ---------------------------------------------------------------------------------------------#
-table(dades_match$grup,dades_match$numControls)
-# ---------------------------------------------------------------------------------------------#
-
-#després filtres!
-# ---------------------------------------------------------------------------------------------#
-table(dt_post_matching$grup,dt_post_matching$num_controls2)
-# ---------------------------------------------------------------------------------------------#
-table(dt_post_matching$grup)
-# 
-
-
-
-
-
+dt_post_matching<-dt_post_matching %>% group_by(caseid) %>% mutate(numControls=max(idp2)) %>% ungroup()
 
 
 # Agregar resta d'historics  -----------------
@@ -453,7 +372,7 @@ table(dt_post_matching$grup)
 # Agregar variables --------------
 dt_variables<-LLEGIR.variables_analitiques %>% bind_rows(LLEGIR.variables_cliniques) %>% 
   transmute(idp,cod=agr,dat,val)
-dt_temp<-dt_index_match %>% transmute(idp,dtindex=lubridate::as_date(dtindex))
+dt_temp<-dt_post_matching %>% transmute(idp,dtindex=lubridate::as_date(dtindex))
 dtagr_variables<-agregar_analitiques(dt=dt_variables,bd.dindex=dt_temp,finestra.dies = c(-365,0))
 
 
@@ -461,14 +380,9 @@ dtagr_variables<-agregar_analitiques(dt=dt_variables,bd.dindex=dt_temp,finestra.
 LLEGIR.tabaquisme<-LLEGIR.tabaquisme %>% transmute(idp,cod="tabac",dat,val)
 dtagr_tabac<-agregar_analitiques(dt=LLEGIR.tabaquisme,bd.dindex=dt_temp,finestra.dies = c(-Inf,0))
 
+# Prescripcions / Facturació pendent de CODIS / AGREGADORS  -------------------
 
-# ----------------------------------------------------------#
-# Prescripcions / Facturació pendent de CODIS / AGREGADORS 
-# ----------------------------------------------------------#
-
-
-# ----------------------------------------------------------#
-#iv   LLEGIR.farmacs_prescrits
+#iv   LLEGIR.farmacs_prescrits  ------------
 # Prescripcion de CODIS / AGREGADORS 
 LLEGIR.farmacs_prescrits<-LLEGIR.farmacs_prescrits %>% transmute(idp,cod,dat,dbaixa)
 #
@@ -480,24 +394,11 @@ dtagr_prescrip<-agregar_prescripcions(
   finestra.dies=c(-45,+45),
   camp_agregador="agr",
   agregar_data=F)
-#??????????????????????????????????????????????????????????????????????? ULL
-#dtagr_prescrip<-dtagr_prescrip%>%mutate(FP.ALFAGLUC=case_when(FP.ALFAGLUC>=1 ~ 1,TRUE~0))
-#dtagr_prescrip<-dtagr_prescrip%>%mutate(FP.ALT_GLUC=case_when(FP.ALT_GLUC>=1 ~ 1,TRUE~0))
-#dtagr_prescrip<-dtagr_prescrip%>%mutate(FP.BIGUANIDAS=case_when(FP.BIGUANIDAS>=1 ~ 1,TRUE~0))
-#dtagr_prescrip<-dtagr_prescrip%>%mutate(FP.COMB_GLUC=case_when(FP.COMB_GLUC>=1 ~ 1,TRUE~0))
-#dtagr_prescrip<-dtagr_prescrip%>%mutate(FP.DPP4 =case_when(FP.DPP4 >=1 ~ 1,TRUE~0))
-#dtagr_prescrip<-dtagr_prescrip%>%mutate(FP.GLINIDES=case_when(FP.GLINIDES>=1 ~ 1,TRUE~0))
-#dtagr_prescrip<-dtagr_prescrip%>%mutate(FP.GLP1=case_when(FP.GLP1>=1 ~ 1,TRUE~0))
-#dtagr_prescrip<-dtagr_prescrip%>%mutate(FP.INSULINAS=case_when(FP.INSULINAS>=1 ~ 1,TRUE~0))
-#dtagr_prescrip<-dtagr_prescrip%>%mutate(FP.SULFO=case_when(FP.SULFO  >=1 ~ 1,TRUE~0))
-# ----------------------------------------------------------#
-dtagr_prescrip<-mutate_at(dtagr_prescrip, vars( starts_with("FP.") ), funs( if_else(.==0  | is.na(.)  ,0,1)))
+
 
 #ULL HEM DE MIRAR ELS FÀRMACS PEL CONDUCTOR!
 
-
-# ----------------------------------------------------------#
-# v    LLEGIR.farmacs_facturat
+# v    LLEGIR.farmacs_facturat ------------------------
 # Facturació pendent de CODIS / AGREGADORS 
 LLEGIR.farmacs_facturat<-LLEGIR.farmacs_facturat %>% transmute(idp,cod,dat,env)
 #
@@ -508,24 +409,10 @@ dtagr_facturat<-agregar_facturacio(
   prefix="FF.",
   camp_agregador="agr",
   agregar_data=F)
-#dtagr_facturat<-dtagr_facturat%>%mutate(FF.ALFAGLUC=case_when(FF.ALFAGLUC>=1 ~ 1,TRUE~0))
-#dtagr_facturat<-dtagr_facturat%>%mutate(FF.ALT_GLUC =case_when(FF.ALT_GLUC >=1 ~ 1,TRUE~0))
-#dtagr_facturat<-dtagr_facturat%>%mutate(FF.BIGUANIDAS=case_when(FF.BIGUANIDAS>=1 ~ 1,TRUE~0))
-#dtagr_facturat<-dtagr_facturat%>%mutate(FF.COMB_GLUC=case_when(FF.COMB_GLUC>=1 ~ 1,TRUE~0))
-#dtagr_facturat<-dtagr_facturat%>%mutate(FF.DPP4  =case_when(FF.DPP4  >=1 ~ 1,TRUE~0))
-#dtagr_facturat<-dtagr_facturat%>%mutate(FF.GLINIDES=case_when(FF.GLINIDES>=1 ~ 1,TRUE~0))
-#dtagr_facturat<-dtagr_facturat%>%mutate(FF.GLP1 =case_when(FF.GLP1 >=1 ~ 1,TRUE~0))
-#dtagr_facturat<-dtagr_facturat%>%mutate(FF.INSULINAS =case_when(FF.INSULINAS>=1 ~ 1,TRUE~0))
-#dtagr_facturat<-dtagr_facturat%>%mutate(FF.SGLT2  =case_when(FF.SGLT2 >=1 ~ 1,TRUE~0))
-#dtagr_facturat<-dtagr_facturat%>%mutate(FF.SULFO  =case_when(FF.SULFO  >=1 ~ 1,TRUE~0))
-#dtagr_facturat<-dtagr_facturat%>%mutate(FF.TIAZO  =case_when(FF.TIAZO  >=1 ~ 1,TRUE~0))
-dtagr_facturat<-mutate_at(dtagr_facturat, vars( starts_with("FF.") ), funs( if_else(.==0  | is.na(.)  ,0,1)))
+
+
 
 #ULL HEM DE MIRAR ELS FÀRMACS PEL CONDUCTOR!
-
-
-
-# ----------------------------------------------------------#
 
 #i    LLEGIR.variables_analitiques
 #ii   LLEGIR.variables_cliniques
@@ -546,6 +433,7 @@ dtagr_facturat<-mutate_at(dtagr_facturat, vars( starts_with("FF.") ), funs( if_e
 
 #dt_index_match 
 #LLEGIR.poblacio
+
 dtagr_variables  <-dtagr_variables   %>%select(-dtindex )
 dtagr_tabac      <-dtagr_tabac       %>%select(-dtindex )
 dtagr_prescrip   <-dtagr_prescrip    %>%select(-dtindex )
@@ -569,8 +457,9 @@ dt_plana<-dt_post_matching %>%
                 left_join(dt_sociodemo ,by="idp")
   
 
-#canvis :[]
-  
+# RECODES / CALCULS      -----------------------
+
+
 dt_plana<-dt_plana%>%mutate(dtindex=as_date(dtindex))
 dt_plana<-dt_plana %>% mutate(any_index=lubridate::year(lubridate::as_date(dtindex)))
 dt_plana<-dt_plana %>% mutate(agein=(as_date(dtindex)-ymd(dnaix))/365.25)
@@ -597,7 +486,9 @@ dt_plana<-dt_plana%>%mutate(IMC.valor2=case_when(   IMC.valor   <15~ 1,
 
 
 
-
+# Farmacs 
+dt_plana<-mutate_at(dt_plana, vars( starts_with("FF.") ), funs( if_else(.==0  | is.na(.)  ,0,1)))
+dt_plana<-mutate_at(dt_plana, vars( starts_with("FP.") ), funs( if_else(.==0  | is.na(.)  ,0,1)))
 
 
 
@@ -606,7 +497,6 @@ dt_plana<-dt_plana%>%mutate(IMC.valor2=case_when(   IMC.valor   <15~ 1,
 #-------------------------------------------------------#
 #                                   A  N A L I S I S    #
 #-------------------------------------------------------#
-
 
 #This is a retrospective cohort study. 
 #All people diagnosed with diabetes 
@@ -633,10 +523,6 @@ conductor_variables<-"conductor_DataHarmonization.xls"
 #------------------------------------------------------------------#
 dt_plana<-recodificar(dt_plana,taulavariables = conductor_variables,"recode",missings = T)
 variable.names(dt_plana)
-#dt_total2$agein2
-#------------------------------------------------------------------#
-
-#variable.names(dt_plana)
 
 
 #apliquem esl conductor!:[ull!]
@@ -652,8 +538,6 @@ dt_plana2<-etiquetar(d=dt_plana2,taulavariables=conductor_variables)
 
 
 
-
-
 #i
 #-------------------------------------------------------#
 formula_taula00<-formula_compare("taula00",y="grup",taulavariables = conductor_variables)
@@ -664,61 +548,19 @@ T00<-descrTable(formula_taula00,
                 max.xlev = 100, 
                 show.p.overall=FALSE,
                 show.n = T,
-                hide.no="No")
+                hide.no="No",simplify=F)
+
+
+
                 
 #-------------------------------------------------------#
 T00
 #-------------------------------------------------------#
 
 
- 
-
-#-------------------------------------------------------#
-# FLOWCHART.
-#-------------------------------------------------------#
-
-#paràmetres per fer el Flowchart!:
-#-------------------------------------------------------#
-pob=NUM_POBLACIO
-pob_lab=c("Mortalidad en personas Diabéticas Tipo 2 en comparación en Población Control[MUESTRA]")
-C_EXPOSATS_MATCHED_num<-dt_plana%>%filter(grup==1)
-C_EXPOSATS_MATCHED_num<-length(C_EXPOSATS_MATCHED_num$idp)
-C_NO_EXPOSATS_MATCHED_num<-dt_plana%>%filter(grup==0)
-C_NO_EXPOSATS_MATCHED_num<-length(C_NO_EXPOSATS_MATCHED_num$idp)
-pob1=c(C_EXPOSATS_num,C_EXPOSATS_MATCHED_num)
-pob2=c(C_NO_EXPOSATS_num,C_NO_EXPOSATS_MATCHED_num)
-pob_lab1=c("Población Diabética íncidente anterior del Matched [01/01/2006 - 31.12.2018]","Matched:[Sexo-Año de Nacimiento-Iddap] 1:5")
-pob_lab2=c("Población No Diabética íncidente anterior del Matched [01/01/2006 - 31.12.2018]","Matched:[Sexo-Año de Nacimiento-Iddap] 1:5")
-exc1=c(C_EXPOSATS2_num)
-exc_lab1=c('Edad>=35 años')
-exc2=c(C_NO_EXPOSATS_num)
-exc_lab2=c('Edad>=35 años')
-colors=c('grey','orange')
-forma=c('box','box')
-dt_plana_num<-length(dt_plana$grup)
-#-------------------------------------------------------##
-flowchart<-diagramaFlowchart(
-      grups=2,
-      pob=pob,
-      pob_lab=pob_lab,
-      pob1=pob1,
-      pob_lab1=pob_lab1,
-      exc1=exc1,
-      exc_lab1=exc_lab1,
-      pob2=pob2,
-      pob_lab2=pob_lab2,
-      exc2=exc2,
-      exc_lab2=exc_lab2,
-      colors=colors,
-      forma=forma)
-#-------------------------------------------------#
-flowchart
-#-------------------------------------------------#
-
 
 #iii)
 #Tasa de Mortalitat amb  Kaplan-Meier [diabetic/ no-diabètics]
-
 
 
 rescox<-coxph(Surv(temps_FU,exitus)~grup,data=dt_plana)    
@@ -1271,8 +1113,6 @@ par( mfrow=c(1,1) )
 
 
 
-
-
 #[prediccions taxes producte triple!]
                          
 #-------------------------------------------------------------------------------------------#
@@ -1321,16 +1161,16 @@ write.csv2(res_MORTALITY_SUMA, file="res_MORTALITY_SUMA.csv")
 #https://rstudio-pubs-static.s3.amazonaws.com/369387_b8a63ee7e039483e896cb91f442bc72f.html
 #http://bendixcarstensen.com/SDC/EPJmort/MortT2.pdf
 
-save(flowchart,
+save(dt_plana,
+     flow_chart1,
+     flow_chart2,
+     flow_chart3,
      T00,
      taula_events,
      taula_events2,
      table_rate,
      figura1,
      figura00_TOTAL,
-     figura00_TOTAL2,
-     figura02_TOTAL2,
-     figura02_TOTAL3,
      cox_lexis_out,
      cox_lexis_out2,
      cox_lexis_out3,
