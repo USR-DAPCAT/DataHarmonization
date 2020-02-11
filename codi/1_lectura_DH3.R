@@ -34,6 +34,8 @@ mostra<-T
 if (mostra) directori_dades<-"dades/sidiap/test" else directori_dades<-"dades/sidiap"
 
 
+conductor<-"conductor_DataHarmonization.xls"
+
 # Llegir fitxers --------
 LLEGIR.cmbdh_diagnostics_padris<-readRDS(directori_dades%>% here::here("DAPCRMM_entregable_cmbdh_diagnostics_padris_20190930_093320.rds")) %>% as_tibble()
 variable.names(LLEGIR.cmbdh_diagnostics_padris)
@@ -78,58 +80,6 @@ variable.names(LLEGIR.variables_socioeconomiques)
 LLEGIR.variables_Cataleg<-readRDS("dades/SIDIAP/test" %>% here::here("DAPCRMM_entregable_cataleg_20190930_093320.rds")) %>% as_tibble()
 variable.names(LLEGIR.variables_Cataleg)
 
-# Passos a contruir la cohort ---------------
-
-#1.	  From the entire database (ED), extract T2DM cohort with any codes in sheet “exposed”; 
-#     then remove patients with any codes in sheet “exclude” before the end of the study (31/12/2018); 
-#     use the first appearance diagnosis code of T2DM as the index date for exposed patient cohort (T2C).
-
-#1.   De tota la base de dades (ED), extreu la cohort T2DM amb els codis del full "exposat"; 
-#     després elimineu els pacients amb els codis del full "excloure" abans de finalitzar l'estudi (31/12/2018);
-#     utilitzeu el codi de diagnòstic de primera aparició de T2DM com a data índex de la cohort del pacient exposada (T2C). 
-
-
-#2.	  From this cohort (T2C), 
-#     remove patients with any codes in sheet “prevalent” or “cancer” appearing before the index date; 
-#     this is the exposed cohort (EC).
-#
-#     D’aquesta cohort (T2C), traieu els pacients amb els codis del full “prevalent” o “càncer” 
-#     que apareixin abans de la data de l’índex; es tracta de la cohort exposada (CE). 
-#
-
-#3.	  From the entire database (ED), 
-#     remove patients with any codes in sheet “non-exposed pool” before the end of the study (31/12/2018), 
-#     to get the candidate non-exposed patients (CNE).
-#
-#     De tota la base de dades (ED), elimineu els pacients amb els codis del full "piscina no exposada" 
-#     abans de finalitzar l'estudi (31/12/2018) per obtenir els pacients candidats no exposats (CNE). 
-#
-#4.	  Exact matching the exposed cohort (EC) to the candidate non-exposed patients (CNE) with a ratio 1:10 (EC:CNE)
-#     by year of birth (+/-1year), sex, and practice, 
-#     without replacement (each candidate non-exposed patient can be only matched once). 
-#     This is the matched cohort (MC), and the index date is the same as the matched exposed patient.
-#
-#     Correspondre exactament a la cohort exposada (CE)
-#     als pacients candidats no exposats (CNE) amb una proporció 1:10 (EC: CNE) 
-#     per any de naixement (+/- 1 any), sexe i pràctica, sense substitució 
-#     ( cada pacient candidat no exposat només es pot combinar una vegada). Aquesta és la cohort coincident (MC)
-#     i la data de l’índex és la mateixa que el pacient exposat igualat. 
-#
-#5.	  From the matched cohort (MC), remove patients died before the index date; 
-#     then remove patients with any codes in sheet “prevalent” or “cancer” appearing before the index date; 
-#     then keep a randomly selected 5 matched non-exposed patients 
-#     (good to set a seed to make the random selection replicable). This is the final non-exposed cohort (FNE).
-
-#     De la cohort aparellada (MC), elimineu els pacients morts abans de la data de l’índex; 
-#     a continuació, elimineu els pacients amb qualsevol codi en el full "prevalent" o "càncer" 
-#     que aparegui abans de la data de l'índex; a continuació, 
-#     mantingueu a 5 pacients no exposats seleccionats aleatòriament
-#     (és bo establir una llavor perquè la selecció aleatòria sigui replicable). 
-#     Es tracta de la cohort final no exposada (FNE).
-#6.	  The final study cohort is the combination of the exposed cohort (EC) and the final non-exposed cohort (FNE).
-#     La cohort d'estudi final és la combinació de la cohorte exposada (EC) i la cohort final no exposada (FNE)
-
-
 
 # Generar data index -----------
 dt_diagnostics<-LLEGIR.cmbdh_diagnostics_padris %>% 
@@ -154,54 +104,70 @@ dt_diagnostics<-select(dt_diagnostics,-agr) %>%
   left_join(dt_cataleg,by="cod") %>% 
   filter(exposed=="exposed") %>% 
   group_by(idp)%>%mutate(data_index=min(dat,na.rm = TRUE))%>% slice(1) %>% ungroup()%>% 
-  filter(data_index>=20060101  & data_index<=20181231)
+  filter(data_index>=20060101  & data_index<=20181231) 
+  
 
-# Data index (Primer diagnostic de DM entre 2006-2018)
+# Capturos primera data index (Primer diagnostic de DM entre 2006-2018)
 DINDEX<-dt_diagnostics %>% select(idp,data_index)
 
-
 # Afegeixo info de població sobre exposats 
-C_EXPOSATS<-DINDEX %>% left_join(LLEGIR.poblacio,by="idp")
+C_EXPOSATS<-DINDEX %>% left_join(LLEGIR.poblacio,by="idp") %>% filter(entrada<=20181231)
 
 # Guardo numero
 C_EXPOSATS_num<-length(C_EXPOSATS$idp)
 
 # No exposats ----------------------
 
-# Tots els que no son DM exposats 
-C_NO_EXPOSATS<-LLEGIR.poblacio%>%filter(entrada<=20181231)%>%anti_join(C_EXPOSATS,by="idp")
+# Tots els No DM exposats 
+C_NO_EXPOSATS<-LLEGIR.poblacio %>% filter(entrada<=20181231) %>% anti_join(C_EXPOSATS,by="idp")
 
 # Guardo numero 
 C_NO_EXPOSATS_num<-length(C_NO_EXPOSATS$idp)
 
 
 # Formateig PRE matching  ------------------
-
 # Fusionar base de dades en dues : 
 dt_matching<-mutate(C_EXPOSATS,grup=1) %>% bind_rows(mutate(C_NO_EXPOSATS,grup=0))
 
 
-# Agregar per DG en data 20051231
+# Agregar Diagnostics en data 20051231
 dt_problemes_2005<-agregar_problemes(select(dt_diagnostics_global,idp,cod,dat),
                                    bd.dindex = "20051231",
-                                   dt.agregadors=select(dt_cataleg,cod,agr))
+                                   dt.agregadors=select(dt_cataleg,cod,agr),
+                                   finestra.dies=c(-Inf,0),prefix = "DG05.") 
+
+# Fusiono diagnostics agregats a 2005 i recodifico 0/1
+dt_matching<-dt_matching %>% left_join(dt_problemes_2005) %>% 
+  select(-dtindex) %>% 
+  mutate_at(vars(starts_with("DG05.") ),funs(ifelse(is.na(.),0,1))) 
 
 
-dt_matching<-dt_matching %>% left_join(dt_problemes_2005)
-dt_matching<-dt_matching %>% mutate_at(vars(starts_with("DG.") ),funs(ifelse(.>20051231 | is.na(.) ,0,1))) %>% select(-dtindex)
+# Genero filtres inicials  -------------------
 
-           
-# Filtre_pre matching 1: Elimino DM prevalents (Falta confirmar mes eliminacions?) ---------------------
-dt_matching<-dt_matching %>% mutate(filtre1_DMprev=ifelse(DG.DM2==0,0,1))
+# Excloc difunts anteriors a 20060101 
+dt_matching<-dt_matching %>% filter(!(situacio=="D" & sortida <20060101)) 
 
-N_PREMATCHING<-length(dt_matching[[1]])
+# Filtre_pre matching 1: DM prevalents (Falta confirmar mes eliminacions?) ---------------------
+dt_matching<-dt_matching %>% mutate(exclusio1_DMprev=ifelse(DG05.DM2==0 & DG05.exclude==0,0,1)) 
 
-# Filtre_pre matching 2: per generació :# posteriors a 84    (Massa Joves) / anteriors al 1906 (Massa grans)   -------------
+# Filtre_pre matching 2: per generacions :# posteriors a 84   (Massa Joves) / anteriors al 1906 (Massa grans)   -------------
+dt_matching<-dt_matching %>% mutate(exclusio2_generacio=if_else(dnaix>19840101 | dnaix<19060101,1,0)) 
 
 Nexclosos_naixament<-dt_matching %>% filter(dt_matching$dnaix>19840101 | dt_matching$dnaix<19060101) %>% count()
 
-dt_matching<-dt_matching%>%mutate(filtre2_generacio=if_else(dnaix<=19840101 & dnaix>=19060101,0,1))
+# Generar flow_chart Prematching i aplicar criteris exclusions ------------
+flow_chart1<-criteris_exclusio_diagrama(dt=dt_matching,
+                                        taulavariables=conductor,
+                                        criteris = "exc_pre",
+                                        ordre="exc_ordre",
+                                        grups="grup",
+                                        etiquetes="descripcio",
+                                        sequencial = T,
+                                        pob_lab=c("SIDIAP","Sample pre matching"))
 
+# Aplicar filtres 
+dt_matching_pre<-dt_matching
+dt_matching<-criteris_exclusio(dt_matching,taulavariables=conductor,criteris="exc_pre")
 
 # Preparar matching i setriskmatching  ----------------------------
 dt_matching<-dt_matching %>% transmute(idp,dnaix,sexe,grup,dtevent=data_index,entrada,sortida) %>%
@@ -253,57 +219,43 @@ heaven::matchReport(dades_match, id="idp",case="grup",caseid="caseid")
 dades_match[,numControls:=.N,by=caseid]
 dades_match<- dades_match %>% mutate(numControls=numControls-1)
 
-# ---------------------------------------------------------------------------------------------#
 table(dades_match$grup,dades_match$numControls)
-# ---------------------------------------------------------------------------------------------#
 
 # Verificació d'aparellament per edad + sexe 
-
-#descrTable(grup~dnaix+any_naix+sexe,data=dt_matching)
-#descrTable(grup~dnaix+any_naix+sexe,data=dades_match)
-
-
-# ---------------------------------------------------------------------------------------------#
-# Preparo dt_index_match per
-
-#[10.2.2020]
+descrTable(grup~dnaix+any_naix+sexe,data=dt_matching)
+descrTable(grup~dnaix+any_naix+sexe,data=dades_match)
 
 
+# Flowchart 2 pre-post matching ----------------------
+dt_matching_pre<-dt_matching_pre %>% 
+  left_join(transmute(dades_match,idp,exclusio3_match=0),by="idp") %>% 
+  mutate(exclusio3_match=ifelse(is.na(exclusio3_match),1,0)) 
 
 
+# Generar flow_chart Prematching i aplicar criteris exclusions ------------
+flow_chart2<-criteris_exclusio_diagrama(dt=dt_matching_pre,
+                                        taulavariables=conductor,
+                                        criteris = "exc_pre2",
+                                        ordre="exc_ordre",
+                                        grups="grup",
+                                        etiquetes="descripcio",
+                                        sequencial = T,
+                                        pob_lab=c("SIDIAP","Sample pre matching"))
 
 
+# Agregar base de dades aparellada i generar filtres d'exclusion POST MATCHING --------------------
 
-
-
-
-
-
-
-
-
-
-
-
-######################################
-#ix)  [Tenim la DATINDEX pels 2 grups EXPOSATS(Diabetis), i NO EXPOSATS(No Diabetis)]
-######################################
-  
 dt_index_match<-dades_match %>% transmute(idp,iddap,caseid,grup,dnaix,sexe,dtindex=dtindex_case,numControls,entrada)%>%as_tibble()
 #
 bd_index<-dt_index_match %>% transmute(idp,dtindex=lubridate::as_date(dtindex))
-# Agrego problemes de Salut
 
+# AgregaR  problemes de Salut -----------------
 
-
-######################################
 #x)   [Eliminen TOTS aquells que hagin tingut abans  DATINDEX;[CANCER,CVD,KD,MET]   ]                   
-######################################
 
 #FILTRES DE ANTECEDENTS
 #[FILTRE1A : Antacedents de DG.Cancer,CVD,KD,MET =1]
 #[FILTRE1B : Aquells a on algun element del Grup(caseid) tingui Antecedents! ]
-
 
 dt_agregada_agr<-agregar_problemes(select(dt_diagnostics_global,idp,cod,dat),
                                    bd.dindex = bd_index,
@@ -316,11 +268,53 @@ dt_index_match <-dt_index_match %>%
          exc_prev_KD=ifelse(is.na(DG.prevalent_KD),0,1),
          exc_prev_MET=ifelse(is.na(DG.prevalent_MET),0,1))
 
-dt_index_match<-dt_index_match%>%mutate(FILTRE_EXC_1A=ifelse(exc_cancer==1  
+# Generar exclusions apestats 
+
+dt_index_match<-dt_index_match%>%mutate(exc_apestat=ifelse(exc_cancer==1  
                                                         | exc_prev_CVD==1 
                                                         | exc_prev_KD==1
-                                                        | exc_prev_MET==1 ,1,0)) 
-dt_index_match<-dt_index_match %>% group_by(caseid) %>% mutate(FILTRE_EXC_1B=max(FILTRE_EXC_1A))%>% ungroup()
+                                                        | exc_prev_MET==1 ,1,0))
+  
+dt_index_match<-dt_index_match %>% group_by(caseid) %>% mutate(exc_apestat=max(exc_apestat))%>% ungroup()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Si es apestat però te la patologia no es apestat -----
+dt_index_match<-dt_index_match %>% mutate(exc_apestat=ifelse(exc_apestat==1 & 
+                                             (exc_cancer==1 
+                                             | exc_prev_CVD==1 
+                                             | exc_prev_KD==1
+                                             | exc_prev_MET==1),0,exc_apestat)) 
+ 
 #
 
 ######################################
