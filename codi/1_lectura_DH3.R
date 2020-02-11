@@ -2,6 +2,8 @@
 # D  A T A     H A R M O N I Z A T I O N   #
 ############################################
 
+#[11.01.2020]
+
 # Lectura de fitxers --------------------
 
 # 1. Lectura de fitxers 
@@ -130,6 +132,9 @@ C_NO_EXPOSATS_num<-length(C_NO_EXPOSATS$idp)
 dt_matching<-mutate(C_EXPOSATS,grup=1) %>% bind_rows(mutate(C_NO_EXPOSATS,grup=0))
 
 
+
+
+
 # Agregar Diagnostics en data 20051231
 dt_problemes_2005<-agregar_problemes(select(dt_diagnostics_global,idp,cod,dat),
                                    bd.dindex = "20051231",
@@ -155,6 +160,10 @@ dt_matching<-dt_matching %>% mutate(exclusio2_generacio=if_else(dnaix>19840101 |
 
 Nexclosos_naixament<-dt_matching %>% filter(dt_matching$dnaix>19840101 | dt_matching$dnaix<19060101) %>% count()
 
+
+
+
+
 # Generar flow_chart Prematching i aplicar criteris exclusions ------------
 flow_chart1<-criteris_exclusio_diagrama(dt=dt_matching,
                                         taulavariables=conductor,
@@ -165,9 +174,14 @@ flow_chart1<-criteris_exclusio_diagrama(dt=dt_matching,
                                         sequencial = T,
                                         pob_lab=c("SIDIAP","Sample pre matching"))
 
+
+
 # Aplicar filtres 
 dt_matching_pre<-dt_matching
 dt_matching<-criteris_exclusio(dt_matching,taulavariables=conductor,criteris="exc_pre")
+
+
+
 
 # Preparar matching i setriskmatching  ----------------------------
 dt_matching<-dt_matching %>% transmute(idp,dnaix,sexe,grup,dtevent=data_index,entrada,sortida) %>%
@@ -226,10 +240,13 @@ descrTable(grup~dnaix+any_naix+sexe,data=dt_matching)
 descrTable(grup~dnaix+any_naix+sexe,data=dades_match)
 
 
+
 # Flowchart 2 pre-post matching ----------------------
 dt_matching_pre<-dt_matching_pre %>% 
   left_join(transmute(dades_match,idp,exclusio3_match=0),by="idp") %>% 
   mutate(exclusio3_match=ifelse(is.na(exclusio3_match),1,0)) 
+
+
 
 
 # Generar flow_chart Prematching i aplicar criteris exclusions ------------
@@ -244,6 +261,14 @@ flow_chart2<-criteris_exclusio_diagrama(dt=dt_matching_pre,
 
 
 # Agregar base de dades aparellada i generar filtres d'exclusion POST MATCHING --------------------
+
+
+flow_chart1
+flow_chart2
+
+
+
+
 
 dt_index_match<-dades_match %>% transmute(idp,iddap,caseid,grup,dnaix,sexe,dtindex=dtindex_case,numControls,entrada)%>%as_tibble()
 #
@@ -268,73 +293,22 @@ dt_index_match <-dt_index_match %>%
          exc_prev_KD=ifelse(is.na(DG.prevalent_KD),0,1),
          exc_prev_MET=ifelse(is.na(DG.prevalent_MET),0,1))
 
-# Generar exclusions apestats 
-
-dt_index_match<-dt_index_match%>%mutate(exc_apestat=ifelse(exc_cancer==1  
-                                                        | exc_prev_CVD==1 
-                                                        | exc_prev_KD==1
-                                                        | exc_prev_MET==1 ,1,0))
-  
-dt_index_match<-dt_index_match %>% group_by(caseid) %>% mutate(exc_apestat=max(exc_apestat))%>% ungroup()
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Si es apestat però te la patologia no es apestat -----
-dt_index_match<-dt_index_match %>% mutate(exc_apestat=ifelse(exc_apestat==1 & 
-                                             (exc_cancer==1 
-                                             | exc_prev_CVD==1 
-                                             | exc_prev_KD==1
-                                             | exc_prev_MET==1),0,exc_apestat)) 
- 
-#
-
-######################################
-#xi)  Filtre EDAT edat. 
-# Apliquem filtre :no agafarem edats superiors a 100 anys a dtindex , ni inferiors de 35 anys.
-######################################
+#xi) Filtre EDAT edat. [Apliquem filtre :no agafarem edats superiors a 100 anys a dtindex , ni inferiors de 35 anys]
 
 dt_index_match<-dt_index_match %>% 
   mutate(edat_dtindex=(as_date(dtindex)-ymd(dnaix))/365.25, 
-         FILTRE_EXC_2A=ifelse(edat_dtindex>100 | edat_dtindex<35,1,0))
+         exc_edat=ifelse(edat_dtindex>100 | edat_dtindex<35,1,0))
 
-dt_index_match<-dt_index_match %>% group_by(caseid) %>% mutate(FILTRE_EXC_2B=max(FILTRE_EXC_2A))%>% ungroup()
 
 
 
 ######################################
 #xii)  Filtre Entrada Clínicia. 
 # 4. data entrada > 1 any 
-dt_index_match<-dt_index_match %>% mutate( FILTRE_EXC_3A=ifelse(as_date(dtindex) - ymd(entrada)<365,1,0))
-dt_index_match<-dt_index_match %>% group_by(caseid) %>% mutate(FILTRE_EXC_3B=max(FILTRE_EXC_3A))%>% ungroup()
+dt_index_match<-dt_index_match %>% mutate( exc_antiguitat=ifelse(as_date(dtindex) - ymd(entrada)<365,1,0))
 
 
 ######################################
@@ -345,80 +319,106 @@ dt_index_match<-dt_index_match %>% group_by(caseid) %>% mutate(FILTRE_EXC_3B=max
 dt_index_match<-dt_index_match%>%group_by(caseid)%>%mutate(idp2 = row_number())%>%ungroup()
 dt_index_match<-dt_index_match%>%mutate(idp2=ifelse(grup==1,0,idp2))
 #---------------------------------------------------------------------------------------------#
-dt_index_match<-dt_index_match%>%mutate(FILTRE_EXC_4A=ifelse(idp2>5,1,0))
+dt_index_match<-dt_index_match%>%mutate(exc_random=ifelse(idp2>5,1,0))
 
-# dt_index_match<-dt_index_match %>% group_by(caseid) %>% mutate(FILTRE_EXC_4B=max(FILTRE_EXC_4A))%>% ungroup()
-#---------------------------------------------------------------------------------------------#
 
-#---------------------------------------------------------------------------------------------#
-#Filtre_Normal!!!
-dt_index_match<-dt_index_match%>%mutate(FILTRE_FINAL=ifelse(FILTRE_EXC_1A==0 & 
-                                                            FILTRE_EXC_2A==0 &
-                                                            FILTRE_EXC_3A==0 &
-                                                            FILTRE_EXC_4A==0 ,1,0)) 
-#---------------------------------------------------------------------------------------------#
-#Filtre_Apestats!!!
-dt_index_match<-dt_index_match%>%mutate(FILTRE_FINAL2=ifelse(FILTRE_EXC_1B==0 & 
-                                                              FILTRE_EXC_2B==0 &
-                                                              FILTRE_EXC_3B==0
-                                                             ,1,0)) 
 
-#---------------------------------------------------------------------------------------------#
 
-criteris_exclusio_diagrama(dt_index_match,
-                           "conductor_exclusions2A.xls",
-                           criteris = "exclusio",grups="grup",
-                           etiquetes="lab_exclusio",
-                           ordre="ordre",sequencial = T,
-                           pob_lab=c("Població generació:1906-1984","Mostra aparellada final"))
 
-criteris_exclusio_diagrama(dt_index_match,
-                           "conductor_exclusions2B.xls",
-                           criteris = "exclusio",grups="grup",
-                           etiquetes="lab_exclusio",
-                           ordre="ordre",sequencial = T,
-                           pob_lab=c("Població generació Apestada:1906-1984","Mostra aparellada final"))
+#dt_index_match$exc_cancer
+#dt_index_match$exc_prev_CVD
+#dt_index_match$exc_prev_KD
+#dt_index_match$exc_prev_MET
+#dt_index_match$exc_edat
+#dt_index_match$exc_antiguitat
+#dt_index_match$exc_random
 
 
 
 
 
 
-# Apliquem filtre1 
-dt_index_match<-dt_index_match %>% filter(FILTRE_FINAL==1)
 
 
-# Apliquem filtre2 
-#dt_index_match<-dt_index_match %>% filter(FILTRE_FINAL2==1)
+
+# Generar exclusions apestats 
+
+dt_index_match<-dt_index_match%>%mutate(exc_apestat=ifelse(exc_cancer==1  
+                                                           | exc_prev_CVD==1 
+                                                           | exc_prev_KD==1
+                                                           | exc_prev_MET==1
+                                                           | exc_edat==1 
+                                                           | exc_antiguitat==1
+                                                             ,1,0))
 
 
-######################################
+dt_index_match<-dt_index_match %>% group_by(caseid) %>% mutate(exc_apestat=max(exc_apestat))%>% ungroup()
+
+
+
+
+# Si es apestat però te la patologia no es apestat -----
+
+
+
+dt_index_match<-dt_index_match %>% mutate(exc_apestat=ifelse(exc_cancer==1  
+                                                             | exc_prev_CVD==1 
+                                                             | exc_prev_KD==1
+                                                             | exc_prev_MET==1
+                                                             | exc_edat==1 
+                                                             | exc_antiguitat==1 
+                                                             ,0,exc_apestat)) 
+
+
+
+
+
+# Generar flow_chart Post_matching i aplicar criteris exclusions ------------
+
+flow_chart3<-criteris_exclusio_diagrama(dt=dt_index_match,
+                                        taulavariables=conductor,
+                                        criteris = "exc_post",
+                                        ordre="exc_ordre",
+                                        grups="grup",
+                                        etiquetes="descripcio",
+                                        sequencial = T,
+                                        pob_lab=c("SIDIAP","Sample post matching"))
+
+
+flow_chart3
+
+
+
+dt_post_matching<-criteris_exclusio(dt_index_match,taulavariables=conductor,criteris="exc_post")
+
+
+
 #xiv)  [Aquell EXPOSAT sense No Exposats, també serà ELIMINAT!]                                             
-######################################
+
 # Pajaracos sense control eliminats ()
 
-dt_temp<-dt_index_match %>%
+dt_temp<-dt_post_matching %>%
   mutate (grup2=ifelse(grup==0,2,1))%>%
     group_by(caseid) %>%
      mutate(cas_control=max(grup2))%>% 
         ungroup()%>% 
           select(idp,cas_control)
 
-dt_index_match<-dt_index_match %>% left_join(dt_temp,by="idp") %>% 
-  mutate(FILTRE_EXC_5A=ifelse(cas_control==1,1,0)) 
 
+dt_post_matching<-dt_post_matching %>% left_join(dt_temp,by="idp") %>% 
+  mutate(FILTRE_CAS_NOCONTROL=ifelse(cas_control==1,1,0)) 
 
 
 #---------------------------------------------------------------------------------------------#
 # Apliquem filtre2 [Aquell EXPOSAT sense No Exposats, també serà ELIMINAT!]
-dt_index_match<-dt_index_match %>% filter(FILTRE_EXC_5A==0)
+dt_post_matching<-dt_post_matching%>% filter(FILTRE_CAS_NOCONTROL==0)
 #---------------------------------------------------------------------------------------------#
 
-dt_index_match<-dt_index_match%>%
+dt_post_matching<-dt_post_matching%>%
   group_by(caseid)%>%
     mutate(num_controls2= row_number())%>%ungroup()
 
-dt_index_match<-dt_index_match%>%mutate(num_controls2=ifelse(grup==1,0,num_controls2))
+dt_post_matching<-dt_post_matching%>%mutate(num_controls2=ifelse(grup==1,0,num_controls2))
 
 
 
@@ -429,58 +429,10 @@ table(dades_match$grup,dades_match$numControls)
 
 #després filtres!
 # ---------------------------------------------------------------------------------------------#
-table(dt_index_match$grup,dt_index_match$num_controls2)
+table(dt_post_matching$grup,dt_post_matching$num_controls2)
 # ---------------------------------------------------------------------------------------------#
-table(dt_index_match$grup)
+table(dt_post_matching$grup)
 # 
-
-# Verificació d'aparellament per edad + sexe 
-#descrTable(grup~dnaix+sexe,data=dt_index_match)
-#descrTable(grup~dnaix+sexe,data=dt_matching)
-
-#variable.names(dt_index_match)
-
-#OBSERVAR:[]--> 
-
-   
-#"FILTRE_EXC_1A"    
-#"FILTRE_EXC_1B"
-#"FILTRE_EXC_2A"    
-#"FILTRE_EXC_2B"   
-#"FILTRE_EXC_3A"    
-#"FILTRE_EXC_3B"  
-#"FILTRE_EXC_4A"    
-#"FILTRE_EXC_4B"   
-#"FILTRE_FINAL"
-#FILTRE_EXC_5A"    
-#"num_controls2" 
-
-#criteris_exclusio_diagrama(dt_index_match,
-#                           "conductor_exclusions.xls",
-#                           criteris = "exclusio",grups="grup",
-#                           etiquetes="lab_exclusio",
-#                           ordre="ordre",sequencial = T,
-#                           pob_lab=c("Població generació:1906-1984","Mostra aparellada final"))
-
-
-# funciona!!!
-
-
-#criteris_exclusio_diagrama
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -608,7 +560,7 @@ dt_sociodemo<-LLEGIR.variables_socioeconomiques
 #Fem la Taula Final:[PLana]
 
 
-dt_plana<-dt_index_match %>% 
+dt_plana<-dt_post_matching %>% 
   left_join(select(LLEGIR.poblacio,idp,sortida,situacio))%>% 
     left_join(dtagr_variables,by="idp")%>%
       left_join(dtagr_tabac,by="idp")%>%
