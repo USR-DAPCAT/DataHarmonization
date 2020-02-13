@@ -1,5 +1,7 @@
 # Lectura de fitxers --------------------
 
+rm(list = ls())
+
 # 13.2.2020
 #
 # 1. Lectura de fitxers 
@@ -30,14 +32,11 @@ devtools::source_url(link_source)
 #--------------------------------------------------------------------------#
 
 
-
-
-
 # Parametres  --------------------------
 
 # Si mostra = T llegeix MOSTRA (Altri llegeix població)
 
-mostra<-T
+mostra<-F
 if (mostra) directori_dades<-"dades/sidiap/test" else directori_dades<-"dades/sidiap"
 
 
@@ -442,7 +441,7 @@ dtagr_prescrip<-agregar_prescripcions(
   bd.dindex=dt_temp,
   dt.agregadors=select(dt_cataleg,cod,agr),
   prefix="FP.",
-  finestra.dies=c(-45,+45),
+  finestra.dies=c(0,0),
   camp_agregador="agr",
   agregar_data=F)
 
@@ -455,7 +454,8 @@ LLEGIR.farmacs_facturat<-LLEGIR.farmacs_facturat %>% transmute(idp,cod,dat,env)
 #
 dtagr_facturat<-agregar_facturacio(
   dt=LLEGIR.farmacs_facturat,
-  finestra.dies=c(-365,0),
+  finestra.dies=c(0,30),
+  bd.dindex=dt_temp,
   dt.agregadors=select(dt_cataleg,cod,agr),
   prefix="FF.",
   camp_agregador="agr",
@@ -1078,7 +1078,7 @@ dev.off()
 
 #DIABÈTICS! aditiu MODEL  mitjana
 nd01<- data.frame(per=2006:2018,grup=1,lex.dur=1000,age=mean(dt_plana$agein2))
-ng("grafica8.png")
+png("grafica8.png")
 matplot( nd01$per,ci.pred(r03, newdata=nd01),
          type="l",
          lwd=c(3,1,1), 
@@ -1223,9 +1223,5 @@ save(dt_plana,
 
 
 
-#Correcció:
 
 
-#-------------------------------#
-lint("codi/1_lectura_DH4.R")
-#-------------------------------#
