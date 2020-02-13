@@ -1,22 +1,14 @@
-#[12-01-2020]
-# D  A T A     H A R M O N I Z A T I O N   #
-
-
-
-
-
 # Lectura de fitxers --------------------
 
+# 13.2.2020
+#
 # 1. Lectura de fitxers 
-
 memory.limit()
 #
 library(dplyr)
 library(magrittr)
 library(mschart)
 library(officer)
-
-
 library(lintr)
 library(splines)
 library(stats)
@@ -24,12 +16,13 @@ library(graphics)
 library("LexisPlotR")
 library(Epi)
 library(lubridate)
-#
-# Directori Font     ==============================  
-
 library("LexisPlotR")
 library("Epi")
 library("lubridate")
+#
+# Directori Font 
+
+#install.packages("ps")+
 
 #--------------------------------------------------------------------------#
 link_source<-paste0("https://github.com/jrealgatius/Stat_codis/blob/master/funcions_propies.R","?raw=T")
@@ -95,6 +88,7 @@ LLEGIR.variables_Cataleg<-readRDS("dades/SIDIAP/test" %>% here::here("DAPCRMM_en
 variable.names(LLEGIR.variables_Cataleg)
 
 
+
 # Generar data index -----------
 dt_diagnostics<-LLEGIR.cmbdh_diagnostics_padris %>% 
   transmute(idp,cod=as.character(cod),dat,agr) %>% 
@@ -108,27 +102,73 @@ dt_diagnostics_global<-LLEGIR.cmbdh_diagnostics_padris %>%
 dt_cataleg<-read_excel("Spain_codes.xls") %>% select(cod,agr,exposed)
 
 # Guardo N mostra
-NUM_POBLACIO<-length(LLEGIR.poblacio$idp)
+# NUM_POBLACIO<-length(LLEGIR.poblacio$idp)
+
+
 
 # Captura de casos (DM incidents entre 2006-2018)   --------------- 
 
 # [De les dues B.D DIAGNOSTICS ---> AGAFEM DIABETIS[EXPOSED a l'excel(Spain_codes)]                  
 
+
+#  LLEGIR.farmacs_prescrits 
+#  Prescripcion de CODIS / AGREGADORS 
+LLEGIR.farmacs_prescrits<-LLEGIR.farmacs_prescrits %>% transmute(idp,cod,dat,dbaixa)
+#
+LLEGIR.variables_Cataleg
+
+cataleg_antidiab<-LLEGIR.variables_Cataleg %>% filter(domini=="farmacs_facturats") %>% transmute(cod,agr="AD")
+
+
+dtagr_prescrip_DIABET<-agregar_prescripcions(
+  dt=LLEGIR.farmacs_prescrits,
+  dt.agregadors=select(cataleg_antidiab,cod,agr),
+  prefix="FP.",
+  bd.dindex=20181231,
+  finestra.dies=c(-Inf,0),
+  camp_agregador="agr",
+  agregar_data=T) %>% 
+  transmute(idp,data_index=data.to.string(FP.AD) %>% as.numeric())
+dtagr_prescrip_DIABET
+#----------------------------
+# LLEGIR.farmacs_facturat 
+# Facturació pendent de CODIS / AGREGADORS 
+LLEGIR.farmacs_facturat<-LLEGIR.farmacs_facturat %>% transmute(idp,cod,dat,env)
+#
+dtagr_facturat_DIABET<-agregar_facturacio(
+  dt=LLEGIR.farmacs_facturat,
+  bd.dindex="20181231",
+  finestra.dies=c(-Inf,0),
+  dt.agregadors=select(cataleg_antidiab,cod,agr),
+  prefix="FF.",
+  camp_agregador="agr",
+  agregar_data=T) %>% 
+  transmute(idp,data_index=data.to.string(FF.AD) %>% as.numeric())
+dtagr_facturat_DIABET
+#----------------------------
+
 dt_diagnostics<-select(dt_diagnostics,-agr) %>% 
   left_join(dt_cataleg,by="cod") %>% 
   filter(exposed=="exposed") %>% 
-  group_by(idp)%>%mutate(data_index=min(dat,na.rm = TRUE))%>% slice(1) %>% ungroup()%>% 
-  filter(data_index>=20060101  & data_index<=20181231) 
-  
+  group_by(idp)%>%mutate(data_index=min(dat,na.rm = TRUE))%>% slice(1) %>% ungroup() %>% 
+  transmute(idp,data_index)
 
-# Capturos primera data index (Primer diagnostic de DM entre 2006-2018)
-DINDEX<-dt_diagnostics %>% select(idp,data_index)
+# Fusiono les tres i agafo data minima 
+dt_diagnostics<-
+  dtagr_prescrip_DIABET %>% 
+  rbind(dtagr_facturat_DIABET) %>% 
+  rbind(dt_diagnostics) %>% group_by(idp) %>% 
+  summarise(data_index=min(data_index))
+
+DINDEX<-dt_diagnostics %>% 
+  mutate(DM_pre2005=ifelse(data_index<20060101,1,0)) # Filtre per data d'entrada dels Casos
+
 
 # Afegeixo info de població sobre exposats 
 C_EXPOSATS<-DINDEX %>% left_join(LLEGIR.poblacio,by="idp") %>% filter(entrada<=20181231)
 
 # Guardo numero
-C_EXPOSATS_num<-length(C_EXPOSATS$idp)
+# C_EXPOSATS_num<-length(C_EXPOSATS$idp)
 
 # No exposats ----------------------
 
@@ -136,15 +176,14 @@ C_EXPOSATS_num<-length(C_EXPOSATS$idp)
 C_NO_EXPOSATS<-LLEGIR.poblacio %>% filter(entrada<=20181231) %>% anti_join(C_EXPOSATS,by="idp")
 
 # Guardo numero 
-C_NO_EXPOSATS_num<-length(C_NO_EXPOSATS$idp)
+# C_NO_EXPOSATS_num<-length(C_NO_EXPOSATS$idp)
 
+# Elimino els DIABETICS prevalents 
+C_EXPOSATS<-C_EXPOSATS %>% filter(DM_pre2005==0)
 
 # Formateig PRE matching  ------------------
 # Fusionar base de dades en dues : 
 dt_matching<-mutate(C_EXPOSATS,grup=1) %>% bind_rows(mutate(C_NO_EXPOSATS,grup=0))
-
-
-
 
 
 # Agregar Diagnostics en data 20051231
@@ -268,8 +307,8 @@ flow_chart2<-criteris_exclusio_diagrama(dt=dt_matching_pre,
 
 # Agregar base de dades aparellada i generar filtres d'exclusion POST MATCHING --------------------
 
-flow_chart1
-flow_chart2
+#flow_chart1
+#flow_chart2
 
 
 dt_index_match<-dades_match %>% transmute(idp,iddap,caseid,grup,dnaix,sexe,dtindex=dtindex_case,numControls,entrada)%>%as_tibble()
@@ -359,7 +398,7 @@ flow_chart3<-criteris_exclusio_diagrama(dt=dt_index_match,
                                         pob_lab=c("SIDIAP","Sample post matching"))
 
 
-flow_chart3
+#flow_chart3
 
 
 
@@ -408,7 +447,7 @@ dtagr_prescrip<-agregar_prescripcions(
   agregar_data=F)
 
 
-#ULL HEM DE MIRAR ELS FÀRMACS PEL CONDUCTOR!
+#ULL HEM DE MIRAR ELS FÀRMACS PEL CONDUCTOR!?
 
 # v    LLEGIR.farmacs_facturat ------------------------
 # Facturació pendent de CODIS / AGREGADORS 
@@ -701,22 +740,23 @@ table_rate<-table_rate %>% as.data.frame() %>% unite(kk,"grup","Var3") %>% sprea
 
 variable.names(table_rate)
 
-colnames(table_rate)[1] <- "AÑO"
+colnames(table_rate)[1] <- "ANY"
 colnames(table_rate)[2] <- "Mort_No_Diabet"
-colnames(table_rate)[3] <- "Tasa_de_Mort_1000_Personas_Año_No_Diabet"
-colnames(table_rate)[4] <- "Per_Año_No_Diabet"
+colnames(table_rate)[3] <- "Tasa_de_Mort_1000_Personas_ANY_No_Diabet"
+colnames(table_rate)[4] <- "Per_ANY_No_Diabet"
 colnames(table_rate)[5] <- "Mort_Diabet"
-colnames(table_rate)[6] <- "Tasa_de_Mort_1000_Personas_Año_Diabet"
-colnames(table_rate)[7] <- "Per_Año_Diabet"
+colnames(table_rate)[6] <- "Tasa_de_Mort_1000_Personas_ANY_Diabet"
+colnames(table_rate)[7] <- "Per_ANY_Diabet"
 # ordenar..
+
 variable.names(table_rate)
-table_rate<- table_rate%>%select(AÑO,
+table_rate<- table_rate%>%select(ANY,
                                  Mort_Diabet,
-                                 Per_Año_Diabet,
-                                 Tasa_de_Mort_1000_Personas_Año_Diabet,
+                                 Per_ANY_Diabet,
+                                 Tasa_de_Mort_1000_Personas_ANY_Diabet,
                                  Mort_No_Diabet,
-                                 Per_Año_No_Diabet,
-                                 Tasa_de_Mort_1000_Personas_Año_No_Diabet)%>% tibble() 
+                                 Per_ANY_No_Diabet,
+                                 Tasa_de_Mort_1000_Personas_ANY_No_Diabet)%>% tibble() 
 
 #table_rate
 
@@ -1183,16 +1223,9 @@ save(dt_plana,
 
 
 
+#Correcció:
 
 
-
-
-
-
-
-
-
-
-
-
-
+#-------------------------------#
+lint("codi/1_lectura_DH4.R")
+#-------------------------------#

@@ -1,5 +1,5 @@
 ---
-title: "Análisis Descriptivo. Mortalidad en personas Diabéticas Tipo 2 en comparación en Población Control"
+title: "Análisis Descriptivo.Mortalidad en personas Diabéticas Tipo 2 en comparación en Población Control"
 author: "Jordi Real & Rai Puig"
 website: "https://github.com/USR-DAPCAT/"
 
