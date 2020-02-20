@@ -299,7 +299,7 @@ dt_matching<-dt_matching %>% left_join(dt_problemes_2005) %>%
 
 
 
-# Excloc difunts anteriors a 20060101 ???
+# Excloc difunts anteriors a 20060101
 dt_matching<-dt_matching %>% filter(!(situacio=="D" & sortida <20060101)) 
 
 
