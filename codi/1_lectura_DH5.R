@@ -21,7 +21,7 @@ library(lubridate)
 library("LexisPlotR")
 library("Epi")
 library("lubridate")
-library("arsenal")
+# library("arsenal")
 
 
 #
@@ -40,7 +40,7 @@ devtools::source_url(link_source)
 
 # Si mostra = T llegeix MOSTRA (Altri llegeix població)
 
-mostra<-T
+mostra<-F
 if (mostra) directori_dades<-"dades/sidiap/test" else directori_dades<-"dades/sidiap"
 
 
@@ -698,7 +698,11 @@ dt_plana2<-convertir_dates(d=dt_plana2,taulavariables=conductor_variables)
 dt_plana2<-etiquetar_valors(dt=dt_plana2,variables_factors=conductor_variables,fulla="etiquetes",camp_etiqueta="etiqueta2")
 dt_plana2<-etiquetar(d=dt_plana2,taulavariables=conductor_variables)
 
-formula_taula00<-formula_compare("taula00",y="grup",taulavariables = conductor_variables)
+
+variables_noconductuals<-extreure.variables("taula00",taulavariables = conductor_variables)[!extreure.variables("taula00",taulavariables = conductor_variables)%in%names(dt_plana2)]
+
+formula_taula00<-formula.text("taula00",y="grup",taulavariables = conductor_variables,
+             elimina = variables_noconductuals)
 
 T00<-descrTable(formula_taula00,
                 method = c(IMC.valor=2,temps_FU = 2,temps_FU2 = 2,agein=2,any_index=2),
@@ -707,8 +711,6 @@ T00<-descrTable(formula_taula00,
                 show.p.overall=FALSE,
                 show.n = T,
                 hide.no="No",simplify=F)
-
-
 
 
 #iii)
@@ -818,7 +820,10 @@ LEXIS_dt_plana_Lex_grup1<- Lexis(
   exit.status  =     fail,
   data         =     dt_plana_Lex_grup1 )
 #gravem la figura!
-png('figura2a.png')
+
+
+
+png(here::here('images','figura2a.png'))
 plot(LEXIS_dt_plana_Lex_grup1, grid=0:20*5, col="black", xaxs="i", yaxs="i",xlim=c(2006,2018), ylim=c(35,100), lwd=1, las=1 )
 points(LEXIS_dt_plana_Lex_grup1, pch=c(NA,16)[LEXIS_dt_plana_Lex_grup1$fail+1] )
 dev.off()

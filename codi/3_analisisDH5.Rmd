@@ -1,0 +1,290 @@
+---
+title: "Análisis Descriptivo.Mortalidad en personas Diabéticas Tipo 2 en comparación en Población Control"
+author: "Jordi Real & Rai Puig"
+website: "https://github.com/USR-DAPCAT/"
+
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+
+output:
+  html_document:
+    df_print: paged
+    toc: true
+    fig_caption: true
+  pdf_document: default
+  word_document: default
+
+---
+
+&nbsp;
+<script>
+   $(document).ready(function() {
+     $head = $('#header');
+     $head.prepend('<img src=\"logoIDIAP.png\" style=\"float: right ;width: 130px;\"/>')
+     $head.prepend('<img src=\"logo_bio.jpg\" style=\"margin-left:25% ;width: 80px;\"/>')
+     $head.prepend('<img src=\"logoDAP_Cat.png\" style=\"float: left:1;width: 185px;\"/>')
+   });
+</script>
+
+****
+
+## 0. Estado:
+
+**Últimas actualizaciones** 
+
+&check; Análisis Descriptivo.  <br/>
+&check; Gráfica Lexis.  <br/>
+&check; Modelo de Poisson Tasas de Mortalidad.  <br/>
+
+
+**Realizado**
+
+&check; Análisis Descriptivo  <br/>
+&check; Gráfica Lexis         <br/>
+&check; Modelo de Poisson Tasas de Mortalidad.  <br/>
+
+**Pendiente**
+
+* Revisión  y depuración de errores 
+* Edición de tablas 
+
+## 1. Objectivos Principales
+
+- Análisis de las tendencias en mortalidad a lo largo del tiempo  de todas las causas entre el 01.01.2006 y la   captura más reciente del SIDIAP (31.12.2018) en personas con reciente diabetes tipo 2 y en comparación con 1 población control sin diabetes.
+
+- Análisis de las diferncias y las proporciones de las tasas  en mortalidad a lo largo del tiempo  de todas las causas entre el 01.01.2006 y la   captura más reciente del SIDIAP (31.12.2018) en personas con reciente diabetes tipo 2 y en comparación con 1 población control sin diabetes.
+
+## 2. Objectivos Secundarios
+
+- Análisis de las tendencias en mortalidad cardiovascular a lo largo del tiempo entre el 01.01.2006 y la   captura más reciente del SIDIAP (31.12.2018) en personas con reciente diabetes tipo 2 y en comparación con 1 población control sin diabetes.
+
+- Análisis de las diferncias y las proporciones de las tasas  en mortalidad  cardiovascular  a lo largo del tiempo  entre el 01.01.2006 y la   captura más reciente del SIDIAP (31.12.2018) en personas con reciente diabetes tipo 2 y en comparación con 1 población control sin diabetes.
+
+- Comparar las tendencias de las tasas de mortalidad y de ratio entre los diferentes países.
+
+- Análisis de las tendencias del tiempo en condiciones renales cardiometabòliques.
+
+
+## 3. Métodes
+
+* Tipo de estudio:
+  + Estudio Observacional Retrospectivo de 2 Cohortes Apareadas 1:5 (Sexo,Año de nacimiento,Zona Geográfica)
+  + Cohorte-Grupo de Casos:Población Diabética íncidente(1)   
+  + Cohorte-Grupo de Controles:Población No Diabética íncidente(5)
+
+
+* Grupo de Casos (diabéticos incidentes):
+   + Tener un nuevo diagnóstico de DM2 no dado de baja registrado durante 2006-2018.La fecha del primer diagnóstico de DM2 pasará a ser la fecha de índice.[DINDEX].
+   + Tener 35 años o más en índice.[DINDEX].
+   + Tener mínimo un año de historia clínica previa antes de índice[DINDEX].
+
+
+* Grupo de Controles potenciales(Los Controles heretan la fecha de índice[DINDEX]de su Caso,cumpliendo las siguientes condiciones:)
+   + Tener 35 años o más en índice.[DINDEX].
+   + Estar asignados al SIDIAP en índice.[DINDEX].
+   + Tener mínimo un año de historia clínica previa antes de la fecha índice[DINDEX].
+   
+   
+## 4. Período de observación:
+
+* 1 de enero del 2006  a 31 de diciembre del 2018
+
+## 5. Análisis Estadístico
+
+* Se describe el perfil demográfico y clínico del Grupo Caso(Diabético) incluidos, empreando los estadísticos más adecuados en cada caso, en función del tipo de variable. 
+
+* Se describe el perfil demográfico y clínico del Grupo Control incluidos.  empreando los estadísticos más adecuados en cada caso, en función del tipo de variable.
+
+* Generamos una curva de supervivencia, con el método Kaplan-Meier para ara el Grupo Caso(Diabético) y Grupo Control.(figura1)
+
+* Aplicamos un Diagrama de Lexis para el Grupo Caso(Diabético) y Grupo Control.(figura2)
+
+* Modelo lineal generalizado para ajustar una regresión de Poisson de la Tasas de  todo tipo de Mortalidad ,para el Grupo Caso(Diabético) y Grupo Control.(figura3)
+
+
+
+
+```{r setup, include = FALSE}
+
+library(knitr)
+library(processx)
+knitr::opts_chunk$set(echo = FALSE, message=FALSE, warning=FALSE, include=F,size="huge")
+
+library(ggplot2)
+library(dplyr)
+
+# CArrego funcions -------------------
+link_source<-paste0("https://github.com/jrealgatius/Stat_codis/blob/master/funcions_propies.R","?raw=T")
+devtools::source_url(link_source)
+
+#   template: template.html
+```
+
+
+```{r lectura, echo=FALSE, message=FALSE, warning=FALSE}
+# Carrega dades
+
+####  Llegir dades    #####
+load(here::here("DataHarmonization.Rdata"))
+
+
+
+```
+
+
+```{r preparacio,include=F}
+
+
+```
+
+## 6.1. Diagramas de flujo1
+
+* Partíamos de toda población SIDIAP:
+ + Excluidos DM prevalentes fecha  01.01.2006
+ + Excluidos por generación (mas grandes de 100 años 01.01.2006 y menores de 35 años al 31.12.2018)
+
+```{r, message=FALSE, warning=FALSE, include=T, echo=FALSE,size="huge"}
+
+flow_chart1
+
+```
+
+
+## 6.2. Diagramas de flujo2
+
+* Cohortes Apareadas 1:10 (Sexo,Año de nacimiento,Zona Geográfica).
+* Se buscan controles (1:10) apareados con los DM incidentes durante periodo 2006-2018 en fecha de diagnóstico.
+
+
+```{r, message=FALSE, warning=FALSE, include=T, echo=FALSE,size="huge"}
+
+
+flow_chart2
+
+
+```
+
+## 6.3. Diagramas de flujo3
+
+* Una vez apareados, y con su fecha índice :
+
+* Excluyremos aquellos individuos  que antes de su  fecha índice tengan:
+ + Cancer.
+ + Patologías Cardiovasculares. 
+ + Patologías Renales .
+
+* Excluyremos aquellos individuos que en su fecha índice  tengan mas de 100 años y  menos de 35 años.
+
+*  Excluyeroms  aquellos individuos  que tengan  menos de un año de historia clínica previa antes de su fecha índice
+
+* Escogemos aleatoriament 1 : 5 controles
+
+* Todos aquellos Controles que su grupo tenga alguna exclusión anterior , también serán excluidos.'
+
+
+```{r, message=FALSE, warning=FALSE, include=T, echo=FALSE,size="huge"}
+
+
+flow_chart3
+
+
+
+```
+
+# Descriptivo de la muestra 
+
+```{r, message=FALSE, warning=FALSE, include=T, echo=FALSE,size="huge"}
+
+
+export2md(T00,caption="**Perfil demográfico y clínico del Grupo Caso(Diabético) y Grupo Control**")
+
+
+
+```
+
+
+```{r, message=FALSE, warning=FALSE, include=T, echo=FALSE,size="huge"}
+
+kable(taula_events2, digits = 2, caption="Tasa de Moratlidad por cada 1000 perosnas-año") %>% kableExtra::kable_styling()
+
+#Taula0
+kable(taula_events, digits = 2, caption="Tasa de Moratlidad por cada 1000 perosnas-año/Sexe") %>% kableExtra::kable_styling()
+
+```
+
+
+
+
+Curva de Supervivencia, con el método Kaplan-Meier para ara el Grupo Caso(Diabético) y Grupo Control(figura1)
+```{r, message=FALSE, warning=FALSE, include=T, echo=FALSE,size="huge"}
+figura1
+```
+
+
+
+
+
+
+
+
+```{r, message=FALSE, warning=FALSE, include=T, echo=FALSE,size="huge"}
+
+'Modelo lineal generalizado para ajustar un modelo de regresión de Poisson de la Tasas de  todo tipo de Mortalidad [Tasa de Moratlitat=Periodo*Grupo]'
+
+figura00_TOTAL
+
+
+'Modelo lineal generalizado para ajustar un modelo de regresión de Poisson de la Tasas de  todo tipo de Mortalidad
+ Tasa de Moratlitat=EDAD+PERIODO+GRUPO    '
+
+figura02_TOTAL3
+
+
+'Modelo lineal generalizado para ajustar un modelo de regresión de Poisson de la Tasas de  todo tipo de Mortalidad
+ Tasa de Moratlitat=EDAD*PERIODO*GRUPO    '
+
+figura02_TOTAL2
+
+
+```
+
+
+
+
+
+```{r, message=FALSE, warning=FALSE, include=T, echo=FALSE,size="huge"}
+
+'Modelo de Regresión de COX de la Tasas de  todo tipo de Mortalidad ,para el Grupo Caso(Diabético).(figura3)'
+par(mfrow=c(2,2))
+
+cox_lexis_out
+
+cox_lexis_out3
+
+```
+
+
+
+
+*Tasa de Mortalidad=[PERIODO*EDAD*GRUPO] 2006-2018/ Edad media  NO Diabéticos cada  1000 Personas-año 
+![](../images/grafica5.png)
+
+
+
+*Tasa de Mortalidad=[PERIODO*EDAD*GRUPO] 2006-2018/ Edad media  Diabéticos cada  1000 Personas-año 
+![](../images/grafica6.png)
+
+
+
+
+
+
+```
+
+&nbsp;
+<hr />
+<p style="text-align: center;">A work by $Jordi Real$ </a></p>
+<p style="text-align: center;"><span style="color: #808080;"><em><https://github.com/USR-DAPCAT/></em></span></p>
+
+
+
+
