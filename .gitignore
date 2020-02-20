@@ -20,6 +20,7 @@
 # Directoris a iognorar
 /docs
 /dades
+/images
 
 # Example code in package build process
 *-Ex.R
