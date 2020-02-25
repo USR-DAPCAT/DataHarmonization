@@ -64,7 +64,7 @@ output:
 - Análisis de las tendencias del tiempo en condiciones renales cardiometabòliques.
 
 
-## 3. Métodes
+## 3a. Métodes 1
 
 * Tipo de estudio:
   + Estudio Observacional Retrospectivo de 2 Cohortes Apareadas 1:5 (Sexo,Año de nacimiento,Zona Geográfica)
@@ -73,7 +73,8 @@ output:
 
 
 * Grupo de Casos (diabéticos incidentes):
-   + Tener un nuevo diagnóstico de DM2 no dado de baja registrado durante 2006-2018.La fecha del primer diagnóstico de DM2 pasará a ser la fecha de índice.[DINDEX].
+   + Tener un nuevo diagnóstico de DM2 no dado de baja registrado durante 2006-2018.
+   La fecha del primer diagnóstico de DM2 pasará a ser la fecha de índice.[DINDEX].
    + Tener 35 años o más en índice.[DINDEX].
    + Tener mínimo un año de historia clínica previa antes de índice[DINDEX].
 
@@ -82,6 +83,20 @@ output:
    + Tener 35 años o más en índice.[DINDEX].
    + Estar asignados al SIDIAP en índice.[DINDEX].
    + Tener mínimo un año de historia clínica previa antes de la fecha índice[DINDEX].
+
+## 3b. Construcción del Matching.
+
+* 1. De toda la base de datos (DE), extraiga la cohorte T2DM con cualquier código en la hoja "expuesto"; luego retire a los pacientes con cualquier código en la hoja "excluir" antes del final del estudio (31/12/2018); utilice el primer código de diagnóstico de aparición de DM2 como fecha índice para la cohorte de pacientes expuestos (T2C).
+
+* 2. De esta cohorte (T2C), retire a los pacientes con cualquier código en la hoja "prevalente" o "cáncer" que aparece antes de la fecha índice; Esta es la cohorte expuesta (CE).
+
+* 3. De toda la base de datos (DE), elimine a los pacientes con cualquier código en la hoja “grupo no expuesto” antes del final del estudio (31/12/2018), para obtener los pacientes candidatos no expuestos (CNE).
+
+* 4. Coincidencia exacta de la cohorte expuesta (EC) con los pacientes candidatos no expuestos (CNE) con una proporción de 1:10 (EC: CNE) por año de nacimiento (+/- 1 año), sexo y práctica, sin reemplazo ( cada paciente candidato no expuesto solo puede ser emparejado una vez). Esta es la cohorte emparejada (MC), y la fecha índice es la misma que la del paciente expuesto emparejado.
+
+* 5. De la cohorte emparejada (MC), eliminar pacientes fallecieron antes de la fecha índice; luego elimine a los pacientes con cualquier código en la hoja "prevalente" o "cáncer" que aparece antes de la fecha índice; luego mantenga a 5 pacientes no expuestos coincidentes seleccionados al azar (es bueno establecer una semilla para que la selección aleatoria sea replicable). Esta es la cohorte final no expuesta (FNE).
+
+* 6. La cohorte final del estudio es la combinación de la cohorte expuesta (EC) y la cohorte final no expuesta (FNE).
    
    
 ## 4. Período de observación:
@@ -145,7 +160,8 @@ load(here::here("DataHarmonization.Rdata"))
  + Cancer.
  + Patologías Cardiovasculares. 
  + Patologías Renales .
- 
+ + Edades inferior 35 años y superior a 100.
+ + Antes del 2018 cualquier código en la hoja "excluir" tipos didferntes de Diabtes.
 
 ```{r, message=FALSE, warning=FALSE, include=T, echo=FALSE,size="huge"}
 
@@ -177,9 +193,9 @@ flow_chart2
  + Patologías Cardiovasculares. 
  + Patologías Renales .
 
-* Excluyremos aquellos individuos   que en su fecha índice  tengan mas de 100 años y  menos de 35 años.
+* Excluyremos aquellos individuos NO EXPUESTOS  que en su fecha índice  tengan mas de 100 años y  menos de 35 años.
 
-*  Excluyeroms  aquellos individuos  que tengan  menos de un año de historia clínica previa antes de su fecha índice
+* Excluyeroms  aquellos individuos  que tengan  menos de un año de historia clínica previa antes de su fecha índice
 
 * Escogemos aleatoriament 1 : 5 controles
 
