@@ -1080,7 +1080,7 @@ LEXIS_dt_plana_Lex_grup0<- Lexis(
   exit         =     list(per=exit,age=exit-birth ),
   exit.status  =     fail,
   data         =    dt_plana_Lex_grup0 )
-png('figura2b.png')
+png(here::here("images",'figura2b.png'))
 plot(LEXIS_dt_plana_Lex_grup0, grid=0:20*5, col="black", xaxs="i", yaxs="i",xlim=c(2006,2018), ylim=c(35,100), lwd=1, las=1 )
 points(LEXIS_dt_plana_Lex_grup0, pch=c(NA,16)[LEXIS_dt_plana_Lex_grup0$fail+1] )
 dev.off()
@@ -1139,7 +1139,7 @@ table_rate<- table_rate%>%select(ANY,
 
 #[Taxa Bruta.png]:-> Taxa Bruta
 
-png("Taxa_Bruta.png")
+png(here::here("images","Taxa_Bruta.png"))
 matplot(as.numeric(dimnames(YDrate)[[1]]), 
          log="y",
          las=1,
@@ -1249,7 +1249,8 @@ figura00_TOTAL<-summary(r00)
 
 nd00<- data.frame(per=2006:2018,grup=0,lex.dur=1000)
 
-png("grafica1.png")
+
+png(here::here("images","grafica1.png"))
 matplot( nd00$per,ci.pred(r00, newdata=nd00),
          type="l",
          lwd=c(3,1,1), 
@@ -1268,7 +1269,7 @@ dev.off()
 
 nd01<- data.frame(per=2006:2018,grup=1,lex.dur=1000)
 
-png("grafica2.png")
+png(here::here("images","grafica2.png"))
 matplot( nd01$per,ci.pred(r00, newdata=nd01),
          type="l",
          lwd=c(3,1,1), 
@@ -1314,7 +1315,7 @@ figura00_TOTAL2<-summary(r01)
 
 nd00<- data.frame(age=35:100,grup=0,lex.dur=1000)
 
-png("grafica3.png")
+png(here::here("images","grafica3.png"))
 matplot( nd00$age,ci.pred(r01, newdata=nd00),
          type="l",
          lwd=c(3,1,1), 
@@ -1333,8 +1334,7 @@ dev.off()
 nd00<- data.frame(age=35:100,grup=1,lex.dur=1000)
 
 #ci.pred(r0)
-
-png("grafica4.png")
+png(here::here("images","grafica4.png"))
 matplot( nd00$age,ci.pred(r01, newdata=nd00),
          type="l",
          lwd=c(3,1,1), 
@@ -1385,7 +1385,7 @@ figura02_TOTAL2
 #Tasa_Mortlidad=PERIODO*EDAD*GRUPO  [GRUPO=NO Diabetis,EDAD=MEDIA POB]
 nd00<- data.frame(per=2006:2018,grup=0,lex.dur=1000,age=mean(dt_plana$agein2))
 
-png("grafica5.png")
+png(here::here("images","grafica5.png"))
 matplot( nd00$per,ci.pred(r02, newdata=nd00),
          type="l",
          lwd=c(3,1,1), 
@@ -1401,7 +1401,8 @@ dev.off()
 #grafica6.png
 #Tasa_Mortlidad=PERIODO*EDAD*GRUPO  [GRUPO=Diabetis,EDAD=MEDIA POB]
 nd01<- data.frame(per=2006:2018,grup=1,lex.dur=1000,age=mean(dt_plana$agein2))
-png("grafica6.png")
+
+png(here::here("images","grafica6.png"))
 matplot( nd01$per,ci.pred(r02, newdata=nd01),
          type="l",
          lwd=c(3,1,1), 
@@ -1436,7 +1437,8 @@ figura02_TOTAL3<-summary(r03)
 
 #NO DIABÈTICS! aditiu MODEL mitjana
 nd00<- data.frame(per=2006:2018,grup=0,lex.dur=1000,age=mean(dt_plana$agein2))
-png("grafica7.png")
+
+png(here::here("images","grafica7.png"))
 matplot( nd00$per,ci.pred(r03, newdata=nd00),
          type="l",
          lwd=c(3,1,1), 
@@ -1453,7 +1455,7 @@ dev.off()
 
 #DIABÈTICS! aditiu MODEL  mitjana
 nd01<- data.frame(per=2006:2018,grup=1,lex.dur=1000,age=mean(dt_plana$agein2))
-png("grafica8.png")
+png(here::here("images","grafica8.png"))
 matplot( nd01$per,ci.pred(r03, newdata=nd01),
          type="l",
          lwd=c(3,1,1), 

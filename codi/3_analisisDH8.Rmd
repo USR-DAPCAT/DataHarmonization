@@ -330,13 +330,13 @@ cox_lexis_out3
 
 *Tasa de Mortalidad=[PERIODO*EDAD*GRUPO] 2006-2018/ Edad media  NO Diabéticos cada  1000 Personas-año 
 
-![](grafica5.png)
+![](../images/grafica5.png)
 
 
 
 *Tasa de Mortalidad=[PERIODO*EDAD*GRUPO] 2006-2018/ Edad media  Diabéticos cada  1000 Personas-año 
 
-![](grafica6.png)
+![](../images/grafica6.png)
 
 
 
