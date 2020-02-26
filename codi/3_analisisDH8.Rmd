@@ -27,17 +27,19 @@ output:
 
 ****
 
-## 0. Estado:
+## 0  Estado:
 
 **Últimas actualizaciones** 
 
-&check; Análisis Descriptivo.  <br/>
-&check; Gráfica Lexis.  <br/>
 &check; Modelo de Poisson Tasas de Mortalidad.  <br/>
 
 
 **Realizado**
 
+&check; Construcción del Matching  <br/>
+&check; Diagramas de flujo1 <br/>
+&check; Diagramas de flujo2 <br/>
+&check; Diagramas de flujo3 <br/>
 &check; Análisis Descriptivo  <br/>
 &check; Gráfica Lexis         <br/>
 &check; Modelo de Poisson Tasas de Mortalidad.  <br/>
@@ -46,14 +48,15 @@ output:
 
 * Revisión  y depuración de errores 
 * Edición de tablas 
+* Nuevos Modelo de Poisson Tasas de Mortalidad
 
-## 1. Objectivos Principales
+## 1  Objectivos Principales
 
 - Análisis de las tendencias en mortalidad a lo largo del tiempo  de todas las causas entre el 01.01.2006 y la   captura más reciente del SIDIAP (31.12.2018) en personas con reciente diabetes tipo 2 y en comparación con 1 población control sin diabetes.
 
 - Análisis de las diferncias y las proporciones de las tasas  en mortalidad a lo largo del tiempo  de todas las causas entre el 01.01.2006 y la   captura más reciente del SIDIAP (31.12.2018) en personas con reciente diabetes tipo 2 y en comparación con 1 población control sin diabetes.
 
-## 2. Objectivos Secundarios
+## 2  Objectivos Secundarios
 
 - Análisis de las tendencias en mortalidad cardiovascular a lo largo del tiempo entre el 01.01.2006 y la   captura más reciente del SIDIAP (31.12.2018) en personas con reciente diabetes tipo 2 y en comparación con 1 población control sin diabetes.
 
@@ -64,56 +67,74 @@ output:
 - Análisis de las tendencias del tiempo en condiciones renales cardiometabòliques.
 
 
-## 3a. Métodes 1
+## 3  Métodes 
 
-* Tipo de estudio:
+#### Tipo de estudio:
+
   + Estudio Observacional Retrospectivo de 2 Cohortes Apareadas 1:5 (Sexo,Año de nacimiento,Zona Geográfica)
+  
   + Cohorte-Grupo de Casos:Población Diabética íncidente(1)   
+  
   + Cohorte-Grupo de Controles:Población No Diabética íncidente(5)
 
 
-* Grupo de Casos (diabéticos incidentes):
-   + Tener un nuevo diagnóstico de DM2 no dado de baja registrado durante 2006-2018.
-   La fecha del primer diagnóstico de DM2 pasará a ser la fecha de índice.[DINDEX].
+
+#### Grupo de Casos (diabéticos incidentes):
+
+   + Tener un nuevo diagnóstico de DM2 no dado de baja registrado durante 2006-2018.La fecha del primer diagnóstico de DM2 pasará a ser la fecha de índice.[DINDEX].
+   
    + Tener 35 años o más en índice.[DINDEX].
+   
    + Tener mínimo un año de historia clínica previa antes de índice[DINDEX].
 
 
-* Grupo de Controles potenciales(Los Controles heretan la fecha de índice[DINDEX]de su Caso,cumpliendo las siguientes condiciones:)
+
+#### Grupo de Controles potenciales(Los Controles heretan la fecha de índice[DINDEX]de su Caso,cumpliendo las siguientes condiciones:)
+ 
    + Tener 35 años o más en índice.[DINDEX].
+   
    + Estar asignados al SIDIAP en índice.[DINDEX].
+   
    + Tener mínimo un año de historia clínica previa antes de la fecha índice[DINDEX].
 
-## 3b. Construcción del Matching.
 
-* 1. De toda la base de datos (DE), extraiga la cohorte T2DM con cualquier código en la hoja "expuesto"; luego retire a los pacientes con cualquier código en la hoja "excluir" antes del final del estudio (31/12/2018); utilice el primer código de diagnóstico de aparición de DM2 como fecha índice para la cohorte de pacientes expuestos (T2C).
 
-* 2. De esta cohorte (T2C), retire a los pacientes con cualquier código en la hoja "prevalente" o "cáncer" que aparece antes de la fecha índice; Esta es la cohorte expuesta (CE).
+## 4  Construcción del Matching.
 
-* 3. De toda la base de datos (DE), elimine a los pacientes con cualquier código en la hoja “grupo no expuesto” antes del final del estudio (31/12/2018), para obtener los pacientes candidatos no expuestos (CNE).
+###### 1. De toda la base de datos (DE), extraiga la cohorte T2DM con cualquier código en la hoja "expuesto"; luego retire a los pacientes con cualquier código en la hoja "excluir"        antes del final del estudio (31/12/2018); utilice el primer código de diagnóstico de aparición de DM2 como fecha índice para la cohorte de pacientes expuestos (T2C).
 
-* 4. Coincidencia exacta de la cohorte expuesta (EC) con los pacientes candidatos no expuestos (CNE) con una proporción de 1:10 (EC: CNE) por año de nacimiento (+/- 1 año), sexo y práctica, sin reemplazo ( cada paciente candidato no expuesto solo puede ser emparejado una vez). Esta es la cohorte emparejada (MC), y la fecha índice es la misma que la del paciente expuesto emparejado.
 
-* 5. De la cohorte emparejada (MC), eliminar pacientes fallecieron antes de la fecha índice; luego elimine a los pacientes con cualquier código en la hoja "prevalente" o "cáncer" que aparece antes de la fecha índice; luego mantenga a 5 pacientes no expuestos coincidentes seleccionados al azar (es bueno establecer una semilla para que la selección aleatoria sea replicable). Esta es la cohorte final no expuesta (FNE).
+###### 2. De esta cohorte (T2C), retire a los pacientes con cualquier código en la hoja "prevalente" o "cáncer" que aparece antes de la fecha índice; Esta es la cohorte expuesta (CE).
 
-* 6. La cohorte final del estudio es la combinación de la cohorte expuesta (EC) y la cohorte final no expuesta (FNE).
+
+###### 3. De toda la base de datos (DE), elimine a los pacientes con cualquier código en la hoja “grupo no expuesto” antes del final del estudio (31/12/2018), para obtener los pacientes candidatos no expuestos (CNE).
+
+
+###### 4. Coincidencia exacta de la cohorte expuesta (EC) con los pacientes candidatos no expuestos (CNE) con una proporción de 1:10 (EC: CNE) por año de nacimiento (+/- 1 año), sexo y práctica, sin reemplazo ( cada paciente candidato no expuesto solo puede ser emparejado una vez). Esta es la cohorte emparejada (MC), y la fecha índice es la misma que la del paciente expuesto emparejado.
+
+
+###### 5. De la cohorte emparejada (MC), eliminar pacientes fallecieron antes de la fecha índice; luego elimine a los pacientes con cualquier código en la hoja "prevalente" o "cáncer" que aparece antes de la fecha índice; luego mantenga a 5 pacientes no expuestos coincidentes seleccionados al azar (es bueno establecer una semilla para que la selección aleatoria sea replicable). Esta es la cohorte final no expuesta (FNE).
+
+
+###### 6. La cohorte final del estudio es la combinación de la cohorte expuesta (EC) y la cohorte final no expuesta (FNE).
+
    
    
-## 4. Período de observación:
+## 5  Período de observación:
 
-* 1 de enero del 2006  a 31 de diciembre del 2018
+##### 1 de enero del 2006  a 31 de diciembre del 2018
 
-## 5. Análisis Estadístico
+## 6  Análisis Estadístico
 
-* Se describe el perfil demográfico y clínico del Grupo Caso(Diabético) incluidos, empreando los estadísticos más adecuados en cada caso, en función del tipo de variable. 
+  + Se describe el perfil demográfico y clínico del Grupo Caso(Diabético) incluidos, empreando los estadísticos más adecuados en cada caso, en función del tipo de variable. 
 
-* Se describe el perfil demográfico y clínico del Grupo Control incluidos.  empreando los estadísticos más adecuados en cada caso, en función del tipo de variable.
+  + Se describe el perfil demográfico y clínico del Grupo Control incluidos.  empreando los estadísticos más adecuados en cada caso, en función del tipo de variable.
 
-* Generamos una curva de supervivencia, con el método Kaplan-Meier para ara el Grupo Caso(Diabético) y Grupo Control.(figura1)
+  + Generamos una curva de supervivencia, con el método Kaplan-Meier para ara el Grupo Caso(Diabético) y Grupo Control.(figura1)
 
-* Aplicamos un Diagrama de Lexis para el Grupo Caso(Diabético) y Grupo Control.(figura2)
+  + Aplicamos un Diagrama de Lexis para el Grupo Caso(Diabético) y Grupo Control.(figura2)
 
-* Modelo lineal generalizado para ajustar una regresión de Poisson de la Tasas de  todo tipo de Mortalidad ,para el Grupo Caso(Diabético) y Grupo Control.(figura3)
+  + Modelo lineal generalizado para ajustar una regresión de Poisson de la Tasas de  todo tipo de Mortalidad ,para el Grupo Caso(Diabético) y Grupo Control.(figura3)
 
 
 
@@ -150,30 +171,52 @@ load(here::here("DataHarmonization.Rdata"))
 
 ```
 
-## 6.1. Diagramas de flujo1
+## 7.0 Exlusiones anteriores als Diagramas de flujo.
 
-* Partíamos de toda población SIDIAP:
- + Excluidos DM prevalentes fecha  01.01.2006
- + Excluidos por generación (mas grandes de 100 años 01.01.2006 y menores de 35 años al 31.12.2018)
+#### Partíamos de toda población SIDIAP hasta 2018:
 
-* Excluyremos aquellos individuos EXPUESTOS  que antes de su  fecha índice tengan:
- + Cancer.
- + Patologías Cardiovasculares. 
- + Patologías Renales .
- + Edades inferior 35 años y superior a 100.
- + Antes del 2018 cualquier código en la hoja "excluir" tipos didferntes de Diabtes.
+#### Antes del Flow-chart 1 :
+
+##### Excluyremos todos los pacientes Expuestos a diabetes que:
+ 
+ + La fecha índice[DINDEX], sea inferior al 2006.
+ + La entrada de los pacientes sea superior a 2018.
+ + Pacientes antes del 2018 tengan la etiqueta "Exclude" : Diabetis tipo , etc.
+ + La edad en [DINDEX] sea superior a 100 años y menor a 35 años. 
+
+##### Excluyremos todos los pacientes No Expuestos a diabetes que:
+ 
+ + La entrada de los pacientes sea superior a 2018.
+ + Pacientes antes del 2018 tengan la etiqueta código en la hoja “grupo no expuesto”.
+
+
+
+
+## 7.1 Diagramas de flujo1
+
+#### Flow-chart 1 :
+
+* Flow-chart: una vez eliminado los pacientes anteriores,también excluiremos aquellos que:
+
+ + Los Expuestos tengan la fecha de CANCER/CVD/KD/MET antes  de e la [DINDEX].
+ + Excluidos por generación de los No Expuestos (mas grandes de 100 años 01.01.2006 y menores de 35 años al 31.12.2018)
+
 
 ```{r, message=FALSE, warning=FALSE, include=T, echo=FALSE,size="huge"}
 
+
 flow_chart1
+
 
 ```
 
 
-## 6.2. Diagramas de flujo2
+## 7.2  Diagramas de flujo2
 
-* Cohortes Apareadas 1:10 (Sexo,Año de nacimiento,Zona Geográfica).
-* Se buscan controles (1:10) apareados con los DM incidentes durante periodo 2006-2018 en fecha de diagnóstico.
+#### Flow-chart 2 :
+
+ + Cohortes Apareadas 1:10 (Sexo,Año de nacimiento,Zona Geográfica).
+ + Se buscan controles (1:10) apareados con los DM incidentes durante periodo 2006-2018 en fecha de diagnóstico.
 
 
 ```{r, message=FALSE, warning=FALSE, include=T, echo=FALSE,size="huge"}
@@ -184,22 +227,27 @@ flow_chart2
 
 ```
 
-## 6.3. Diagramas de flujo3
+## 7.3  Diagramas de flujo3
 
-* Una vez apareados, y con su fecha índice :
+#### Flow-chart 3 :
 
-* Excluyremos aquellos individuos NO EXPUESTOS  que antes de su  fecha índice tengan:
+#### Una vez apareados, y con su fecha índice :
+
+
+##### Excluyremos aquellos individuos NO EXPUESTOS  que antes de su  fecha índice tengan:
+
  + Cancer.
- + Patologías Cardiovasculares. 
- + Patologías Renales .
+ + Patologías Cardiovasculares[CVD]. 
+ + Patologías Renales[KD] .
 
-* Excluyremos aquellos individuos NO EXPUESTOS  que en su fecha índice  tengan mas de 100 años y  menos de 35 años.
+##### Excluyremos aquellos individuos NO EXPUESTOS  que en su fecha índice  tengan mas de 100 años y  menos de 35 años.
 
-* Excluyeroms  aquellos individuos  que tengan  menos de un año de historia clínica previa antes de su fecha índice
+##### Excluyeroms  aquellos individuos  que tengan  menos de un año de historia clínica previa antes de su fecha índice
 
-* Escogemos aleatoriament 1 : 5 controles
+##### Escogemos aleatoriament 1 : 5 controles
 
-* Todos aquellos Controles que su grupo tenga alguna exclusión anterior , también serán excluidos.'
+
+
 
 
 ```{r, message=FALSE, warning=FALSE, include=T, echo=FALSE,size="huge"}
@@ -211,7 +259,7 @@ flow_chart3
 
 ```
 
-# Descriptivo de la muestra 
+## 8  Análisis Descriptivo
 
 ```{r, message=FALSE, warning=FALSE, include=T, echo=FALSE,size="huge"}
 
@@ -221,7 +269,6 @@ export2md(T00,caption="**Perfil demográfico y clínico del Grupo Caso(Diabétic
 
 
 ```
-
 
 ```{r, message=FALSE, warning=FALSE, include=T, echo=FALSE,size="huge"}
 
@@ -240,12 +287,7 @@ Curva de Supervivencia, con el método Kaplan-Meier para ara el Grupo Caso(Diab�
 figura1
 ```
 
-
-
-
-
-
-
+## 9  Análisis de Modelos de Tasas 
 
 ```{r, message=FALSE, warning=FALSE, include=T, echo=FALSE,size="huge"}
 
@@ -287,11 +329,13 @@ cox_lexis_out3
 
 
 *Tasa de Mortalidad=[PERIODO*EDAD*GRUPO] 2006-2018/ Edad media  NO Diabéticos cada  1000 Personas-año 
+
 ![](grafica5.png)
 
 
 
 *Tasa de Mortalidad=[PERIODO*EDAD*GRUPO] 2006-2018/ Edad media  Diabéticos cada  1000 Personas-año 
+
 ![](grafica6.png)
 
 
