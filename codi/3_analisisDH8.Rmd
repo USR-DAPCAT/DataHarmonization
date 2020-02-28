@@ -67,11 +67,11 @@ output:
 - Análisis de las tendencias del tiempo en condiciones renales cardiometabòliques.
 
 
-## 3  Métodes 
+## 3  Métodos 
 
 #### Tipo de estudio:
 
-  + Estudio Observacional Retrospectivo de 2 Cohortes Apareadas 1:5 (Sexo,Año de nacimiento,Zona Geográfica)
+  + Estudio Observacional Retrospectivo de 2 Cohortes Apareadas 1:5 (Sexo,Año de nacimiento, (Zona Geográfica o ABS))
   
   + Cohorte-Grupo de Casos:Población Diabética íncidente(1)   
   
