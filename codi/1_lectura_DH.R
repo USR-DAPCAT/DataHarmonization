@@ -966,24 +966,27 @@ dt_plana<-mutate_at(dt_plana, vars( starts_with("FP.") ), funs( if_else(.==0  | 
 #flow_chart3
 
 
+
+
+
+
 #ii)
 
-conductor_variables<-"conductor_DataHarmonization.xls"
-dt_plana<-recodificar(dt_plana,taulavariables = conductor_variables,"recode",missings = T)
+
+dt_plana<-recodificar(dt_plana,taulavariables =conductor,"recode",missings = T)
 variable.names(dt_plana)
 dt_plana2<-dt_plana
 
 ###
 
-dt_plana2<-convertir_dates(d=dt_plana2,taulavariables=conductor_variables)
-dt_plana2<-etiquetar_valors(dt=dt_plana2,variables_factors=conductor_variables,fulla="etiquetes",camp_etiqueta="etiqueta2")
-dt_plana2<-etiquetar(d=dt_plana2,taulavariables=conductor_variables)
+dt_plana2<-convertir_dates(d=dt_plana2,taulavariables=conductor)
+dt_plana2<-etiquetar_valors(dt=dt_plana2,variables_factors=conductor,fulla="etiquetes",camp_etiqueta="etiqueta2")
+dt_plana2<-etiquetar(d=dt_plana2,taulavariables=conductor)
 
 
-variables_noconductuals<-extreure.variables("taula00",taulavariables = conductor_variables)[!extreure.variables("taula00",taulavariables = conductor_variables)%in%names(dt_plana2)]
+variables_noconductuals<-extreure.variables("taula00",taulavariables = conductor)[!extreure.variables("taula00",taulavariables = conductor)%in%names(dt_plana2)]
 
-formula_taula00<-formula.text("taula00",y="grup",taulavariables = conductor_variables,
-             elimina = variables_noconductuals)
+formula_taula00<-formula.text("taula00",y="grup",taulavariables = conductor,elimina = variables_noconductuals)
 
 T00<-descrTable(formula_taula00,
                 method = c(IMC.valor=2,temps_FU = 2,temps_FU2 = 2,agein=2,any_index=2),
@@ -1025,7 +1028,7 @@ taula_events<-dt_plana %>% group_by(grup,sexe) %>% summarise(
 #taula_events
 
 
-taula_events<-etiquetar_valors(dt=taula_events,variables_factors=conductor_variables,fulla="etiquetes",camp_etiqueta="etiqueta2")
+taula_events<-etiquetar_valors(dt=taula_events,variables_factors=conductor,fulla="etiquetes",camp_etiqueta="etiqueta2")
 
 
 taula_events2<-dt_plana%>% group_by(grup) %>% summarise(
@@ -1038,7 +1041,7 @@ taula_events2<-dt_plana%>% group_by(grup) %>% summarise(
 
 
 
-taula_events2<-etiquetar_valors(dt=taula_events2,variables_factors=conductor_variables,fulla="etiquetes",camp_etiqueta="etiqueta2")
+taula_events2<-etiquetar_valors(dt=taula_events2,variables_factors=conductor,fulla="etiquetes",camp_etiqueta="etiqueta2")
 
 #[Taula de TAXES!]#
 taula_events
@@ -1582,8 +1585,7 @@ write.csv2(res_MORTALITY_SUMA, file="res_MORTALITY_SUMA.csv")
 #https://rstudio-pubs-static.s3.amazonaws.com/369387_b8a63ee7e039483e896cb91f442bc72f.html
 #http://bendixcarstensen.com/SDC/EPJmort/MortT2.pdf
 
-save(dt_plana,
-     flow_chart1,
+save(flow_chart1,
      flow_chart2,
      flow_chart3,
      T00,
