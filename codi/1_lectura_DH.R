@@ -1,5 +1,7 @@
+#Falta repassar!.
+
 ########################################
-# 03.2.2020
+# 04.2.2020
 # Lectura de fitxers --------------------
 
 # rm(list = ls())
@@ -72,7 +74,7 @@ library("lubridate")
 if (exists("parametres_conductuals")==FALSE) {
   rm(list = ls())
   mostra<-T
-  conductor<-"conductor_DataHarmonization3.xls"
+  conductor<-"conductor_DataHarmonization.xls"
   }
 
 
@@ -171,7 +173,7 @@ LLEGIR.variables_analitiques<-readRDS(directori_dades %>% here::here("DAPCRMM_en
 LLEGIR.variables_cliniques<-readRDS(directori_dades %>% here::here("DAPCRMM_entregable_variables_cliniques_20190926_103409.rds")) %>% as_tibble()
 #variable.names(LLEGIR.variables_cliniques)
 
-min(LLEGIR.variables_cliniques$dat)
+#min(LLEGIR.variables_cliniques$dat)
 #03.01.2005
 #max(LLEGIR.variables_cliniques$dat)
 #31.12.2018
@@ -221,9 +223,11 @@ LLEGIR.variables_Cataleg<-readRDS("dades/SIDIAP/test" %>% here::here("DAPCRMM_en
 #   use the first appearance diagnosis code of T2DM as the index date for exposed patient cohort (T2C).
 
 
-
 # Llegeixo cataleg 
 dt_cataleg<-read_excel("Spain_codes.xls") %>% select(cod,agr,exposed)
+
+#the candidate non-exposed patients (CNE) 
+dt_non_exposed_pool<-read_excel("Spain_codes.xls",sheet ="non-exposed pool" )%>%select(cod,agr)
 
 
 # [De les dues B.D DIAGNOSTICS ---> AGAFEM DIABETIS[EXPOSED a l'excel(Spain_codes)]                  
@@ -258,6 +262,9 @@ dt_diagnostics_global<-LLEGIR.cmbdh_diagnostics_padris %>%
 
 
 
+
+
+
 # Exclusions d'inici   --------------------------------------------
 
 # Agrego a 2005 per excloure a inici
@@ -268,6 +275,8 @@ dt_problemes_2005<-agregar_problemes(select(dt_diagnostics_global,idp,cod,dat),
 # Exclosos d'inici
 exclosos_inici<-
   dt_problemes_2005 %>% filter(DG05.cancer>0 | DG05.DM2>0 | DG05.prevalent_CVD>0 | DG05.prevalent_KD>0 | DG05.prevalent_MET>0) %>% select(idp)
+
+
 
 #*****************************
 LLEGIR.poblacio                <-LLEGIR.poblacio %>% anti_join(exclosos_inici,by="idp")
@@ -361,6 +370,13 @@ dt_problemes_2018<-agregar_problemes(select(dt_diagnostics_global,idp,cod,dat),
                                      finestra.dies=c(-Inf,0),prefix = "DG18.") 
 
 
+#the candidate non-exposed patients (CNE) 2018
+dt_problemes_POOL_2018<-agregar_problemes(select(dt_diagnostics_global,idp,cod,dat),
+                                          bd.dindex = "20181231",
+                                          dt.agregadors=select(dt_non_exposed_pool,cod,agr),
+                                          finestra.dies=c(-Inf,0),prefix = "DG18.") 
+
+
 # Fusiono diagnostics agregats a 2018 i recodifico 0/1
 C_EXPOSATS<-C_EXPOSATS%>% left_join(dt_problemes_2018,by="idp") %>% 
   select(-dtindex)
@@ -380,6 +396,9 @@ dt_agregada_agr1<-agregar_problemes(select(dt_diagnostics_global,idp,cod,dat),
                                     dt.agregadors=select(dt_cataleg,cod,agr),
                                     finestra.dies = c(-Inf,0),prefix = "DG.") 
 
+
+
+
 # filtres dels prevalents i cancer abans de la data Index pels Exposats!
 C_EXPOSATS<-C_EXPOSATS %>% 
   left_join(dt_agregada_agr1,by="idp") %>% select(-dtindex) %>% 
@@ -397,14 +416,16 @@ C_EXPOSATS<-C_EXPOSATS %>% mutate(
 C_NO_EXPOSATS<-LLEGIR.poblacio %>% filter(entrada<=20181231) %>% anti_join(C_EXPOSATS,by="idp")
 
 # Fusiono diagnostics agregats a 2018 i recodifico 0/1
-C_NO_EXPOSATS<-C_NO_EXPOSATS %>%left_join(dt_problemes_2018,by="idp") %>% select(-dtindex)
-
+C_NO_EXPOSATS<-C_NO_EXPOSATS %>%left_join(dt_problemes_POOL_2018,by="idp") %>% select(-dtindex)
 C_NO_EXPOSATS<-C_NO_EXPOSATS %>% 
   mutate_at(vars(starts_with("DG18.") ),funs(ifelse(is.na(.),0,1))) 
 
+
 # [Filtre 1]: NO EXPOSED EXCLUENTS abans del 31.12.2018
-C_NO_EXPOSATS<-C_NO_EXPOSATS %>% mutate(exclusio1_prev_2018=ifelse(DG18.DM2==0 & DG18.exclude==0 & DG18.prevalent_MET==0 ,0,1)) 
+C_NO_EXPOSATS<-C_NO_EXPOSATS %>% mutate(exclusio1_prev_2018=ifelse(DG18.pool==0,0,1)) 
 C_NO_EXPOSATS <- C_NO_EXPOSATS %>% select(idp, sexe,dnaix, entrada, sortida, situacio, any_entrada, exclusio1_prev_2018)
+
+
 
 
 # ull mirar-ho al Excel! :[]
@@ -511,7 +532,7 @@ flow_chart1<-criteris_exclusio_diagrama(dt=dt_matching,
                                         sequencial = T,
                                         pob_lab=c("SIDIAP","Sample pre matching"),
                                         colors=c("white","grey"),
-                                        forma=c("box","box"))
+                                        forma=c("ellipse","box"))
 
 
 
@@ -558,7 +579,7 @@ dt_matching<-dt_matching %>% mutate (
 # llistaPS=c("sexe","any_naix","iddap")
 llistaPS=extreure.variables("matching",conductor)
 
-llistaPS
+#llistaPS
 
 num_controls<-10
 llavor<-125
@@ -617,7 +638,7 @@ flow_chart2<-criteris_exclusio_diagrama(dt=dt_matching_pre,
                                         sequencial = T,
                                         pob_lab=c("SIDIAP","Sample pre matching"),
                                         colors=c("white","grey"),
-                                        forma=c("ellipse","ellipse"))
+                                        forma=c("ellipse","box"))
 
 
 
@@ -805,9 +826,9 @@ dt_variables<-LLEGIR.variables_analitiques %>% bind_rows(LLEGIR.variables_cliniq
 dt_temp<-dt_post_matching %>% transmute(idp,dtindex=lubridate::as_date(dtindex))
 dtagr_variables<-agregar_analitiques(dt=dt_variables,bd.dindex=dt_temp,finestra.dies = c(-365,0))
 
-min(dt_variables$dat)
+#min(dt_variables$dat)
 #03.01.2005
-max(dt_variables$dat)
+#max(dt_variables$dat)
 #31.12.2018
 
 
@@ -974,7 +995,9 @@ dt_plana<-mutate_at(dt_plana, vars( starts_with("FP.") ), funs( if_else(.==0  | 
 
 
 dt_plana<-recodificar(dt_plana,taulavariables =conductor,"recode",missings = T)
-variable.names(dt_plana)
+
+#variable.names(dt_plana)
+
 dt_plana2<-dt_plana
 
 ###
@@ -1044,8 +1067,8 @@ taula_events2<-dt_plana%>% group_by(grup) %>% summarise(
 taula_events2<-etiquetar_valors(dt=taula_events2,variables_factors=conductor,fulla="etiquetes",camp_etiqueta="etiqueta2")
 
 #[Taula de TAXES!]#
-taula_events
-taula_events2
+#taula_events
+#taula_events2
 
 
 
@@ -1148,12 +1171,12 @@ YDrate <- array( NA, dimnames=dnam, dim=sapply(dnam,length) )
 YDrate[,,1:3] <- TAULA
 
 YDrate[,,3] <- YDrate[,,2]/YDrate[,,1]*1000
+#YDrate[,,3]
 
-YDrate[,,3]
 table_rate<-round(ftable( YDrate, row.vars=1 ), 1 ) 
 table_rate<-table_rate %>% as.data.frame() %>% unite(kk,"grup","Var3") %>% spread(kk,"Freq") 
 
-variable.names(table_rate)
+#variable.names(table_rate)
 
 colnames(table_rate)[1] <- "ANY"
 colnames(table_rate)[2] <- "Mort_No_Diabet"
@@ -1400,7 +1423,6 @@ dev.off()
 
 
 
-mean(dt_plana$agein2)
 
 
 #Edat mitjana de la Població 
@@ -1417,7 +1439,7 @@ r02 <- glm((lex.Xst==1)~Ns(age, knots = a.kn)*Ns(per, knots = p.kn)*grup,
           offset = log(lex.dur),
           data   = dbs1 )
 figura02_TOTAL2<-summary(r02)
-figura02_TOTAL2
+#figura02_TOTAL2
 
 
 
@@ -1485,7 +1507,6 @@ matplot( nd00$per,ci.pred(r03, newdata=nd00),
          las=1, 
          ylim=c(1,1000) )
 rug( p.kn0, lwd=2 )
-
 dev.off()
 
 
