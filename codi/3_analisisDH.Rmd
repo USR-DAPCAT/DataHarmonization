@@ -347,7 +347,7 @@ cox_lexis_out3
 
 &nbsp;
 <hr />
-<p style="text-align: center;">A work by $Jordi Real$ </a></p>
+<p style="text-align: center;">A work by $Jordi Real  Rai Puig$ </a></p>
 <p style="text-align: center;"><span style="color: #808080;"><em><https://github.com/USR-DAPCAT/></em></span></p>
 
 
