@@ -719,12 +719,24 @@ dt_index_match<-dt_index_match %>% mutate(exc_antiguitat=ifelse(as_date(dtindex)
 
 
 # xiii). FILTRE DE RANDOM 1:5] 
-#[Eliminem aleatoriament aquells controls superiors a 5][1:5]             
+#[agafarem els 5 primers Controls més pròxims a la data de naixament del Cas, la resta els Exclourem!][1:5]             
 
-dt_index_match<-dt_index_match%>%group_by(caseid)%>%mutate(idp2 = row_number()) %>% 
+
+temp<-dt_index_match %>% filter(grup==1) %>% select(caseid,dnaix_grup=dnaix)
+
+dt_index_match<-dt_index_match %>% 
+  left_join(temp,by="caseid") %>% 
+  mutate(distancia_cas=abs(dnaix-dnaix_grup))
+  
+dt_index_match<-dt_index_match%>%group_by(caseid)%>% 
+  arrange(grup,distancia_cas) %>% # Ordena de menor
+  mutate(idp2 = row_number()) %>% 
   ungroup() %>% 
   mutate(idp2=ifelse(grup==1,0,idp2)) %>%
   mutate(exc_random=ifelse(idp2>5,1,0))
+
+# Netejar variables transitoris
+dt_index_match$distancia_cas=NULL
 
 
 # EL xiv i xv  , no l'aplicarem!
