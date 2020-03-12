@@ -2,18 +2,23 @@ gc()
 rm(list = ls())
 
 # Funció parametritzal (Per defecte agafa mostra y conductor natural)
+
 parametres_conductuals<-function(mostra=F,conductor="conductor_DataHarmonization.xls"){
   list(mostra=mostra,conductor=conductor)}
 
 
-####  Escenari 1  (No s'exclou per antiguitat )---------------
+####  Escenari 1 (No s'exclou per antiguitat) -----
 # Generar informe global
 parametres<-parametres_conductuals()
 mostra<-parametres$mostra
 conductor<-parametres$conductor
 
-source(here::here("codi","1_lectura_DH8.R"))
-rmarkdown::render(here::here("codi","3_analisisDH8.Rmd"),output_file="Informe1_DH")
+source(here::here("codi","1_lectura_DH.R"))
+rmarkdown::render(here::here("codi","3_analisisDH.Rmd"),output_file="Informe1_DH")
+
+
+
+
 
 
 ####  Escenari 2  (Excloent exposats sense control ) --------------
