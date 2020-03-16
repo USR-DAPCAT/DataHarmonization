@@ -1,6 +1,6 @@
 
 ########################################
-# 10.2.2020
+# 16.03.2020
 # Lectura de fitxers --------------------
 
 # rm(list = ls())
@@ -838,6 +838,7 @@ flow_chart4<-criteris_exclusio_diagrama(dt=dt_post_matching,
                                         pob_lab=c("SIDIAP","Sample post matching2"))
 
 
+flow_chart4
 
 dt_post_matching<-criteris_exclusio(dt_post_matching,taulavariables=conductor,criteris="exc_post2")
 
