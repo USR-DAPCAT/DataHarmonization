@@ -815,11 +815,42 @@ flow_chart3
 
 dt_post_matching<-criteris_exclusio(dt_index_match,taulavariables=conductor,criteris="exc_post")
 
+#dt_post_matching <-dt_post_matching %>% filter(exc_0controls==0)
+
+table(dt_post_matching$exc_0controls)
+table(dt_post_matching$numControls)
+
+# Actualitzar numero de controls per grup  
+dt_post_matching<-dt_post_matching %>% group_by(caseid) %>% mutate(numControls=max(idp2)) %>% ungroup()
+dt_post_matching<-dt_post_matching %>% mutate(exc_0controls=ifelse(numControls==0,1,0))
+
+table(dt_post_matching$exc_0controls)
+table(dt_post_matching$numControls)
+
+
+flow_chart4<-criteris_exclusio_diagrama(dt=dt_post_matching,
+                                        taulavariables=conductor,
+                                        criteris = "exc_post2",
+                                        ordre="exc_ordre",
+                                        grups="grup",
+                                        etiquetes="descripcio",
+                                        sequencial = T,
+                                        pob_lab=c("SIDIAP","Sample post matching2"))
+
+
+
+dt_post_matching<-criteris_exclusio(dt_post_matching,taulavariables=conductor,criteris="exc_post2")
+
+
+table(dt_post_matching$exc_0controls)
+table(dt_post_matching$numControls)
 
 # Actualitzar numero de controls per grup  
 
 dt_post_matching<-dt_post_matching %>% group_by(caseid) %>% mutate(numControls=max(idp2)) %>% ungroup()
 
+table(dt_post_matching$exc_0controls)
+table(dt_post_matching$grup,dt_post_matching$numControls)
 
 
 # Agregar resta d'historics   
@@ -971,7 +1002,7 @@ dt_plana<-mutate_at(dt_plana, vars( starts_with("FP.") ), funs( if_else(.==0  | 
 
 
 
-
+#table(dt_plana$exc_0controls)
 
 
 # ANALISIS  --------------
@@ -1010,6 +1041,8 @@ dt_plana<-recodificar(dt_plana,taulavariables =conductor,"recode",missings = T)
 #variable.names(dt_plana)
 
 dt_plana2<-dt_plana
+
+table(dt_plana2$exc_0controls,dt_plana2$grup)
 
 ###
 
