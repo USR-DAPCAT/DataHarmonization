@@ -1,32 +1,52 @@
-
 ########################################
-# 16.03.2020
+# 23.03.2020[sant josep]
 # Lectura de fitxers --------------------
 
-# rm(list = ls())
+#PACKRAT(tema versions)
+
+rm(list = ls())
 
 #
 ########################################
+
+# he de mirar el Diagrammer!!! falla exclusions?? jordi.
+
+
+#githubinstall("heaven",ref="964bbbd",force=T) # "2018.8.9"
+#https://cran.r-project.org/web/packages/githubinstall/vignettes/githubinstall.html
 
 #
 # 1. Lectura de fitxers 
 memory.limit()
 #
-library(dplyr)
-library(magrittr)
-library(mschart)
-library(officer)
-library(lintr)
-library(splines)
-library(stats)
-library(graphics)
+
+# package ‘magrittr’ successfully unpacked and MD5 sums checked
+# Error in install.packages : ERROR: failed to lock directory ‘C:\ProgramFiles\R\R-3.6.1\library’ for modifying
+# Try removing ‘C:\ProgramFiles\R\R-3.6.1\library/00LOCK
+
+#################################################################
+library("dplyr")
+library("magrittr")
+library("mschart")
+library("officer")
+library("lintr")
+library("splines")
+library("Epi")
+library("stats")
+library("graphics")
 library("LexisPlotR")
-library(Epi)
-library(lubridate)
+library("lubridate")
 library("LexisPlotR")
 library("Epi")
 library("lubridate")
-# library("arsenal")
+library("arsenal")
+library("devtools")
+library("pander")
+library("here")
+library("githubinstall")
+library("popEpi")
+#-----------------------------#
+
 
 
 # Cohort define steps --------------------
@@ -65,7 +85,7 @@ library("lubridate")
 #
 # Directori Font 
 
-#install.packages("ps")+
+
 
 # Parametres  --------------------------
 
@@ -73,7 +93,7 @@ library("lubridate")
 if (exists("parametres_conductuals")==FALSE) {
   rm(list = ls())
   mostra<-T
-  conductor<-"conductor_DataHarmonization.xls"
+  conductor<-"conductor_DataHarmonization.xlsx"
   }
 
 
@@ -82,11 +102,19 @@ link_source<-paste0("https://github.com/jrealgatius/Stat_codis/blob/master/funci
 devtools::source_url(link_source)
 #--------------------------------------------------------------------------#
 
-#load(".Rdata")
+##########################
+#load(".Rdata") ERROR!
+##########################
+
+
+
+#devtools::install_version("igraph", version = "1.2.4.2")
+#devtools::install_version("DiagrammeR", version = "1.0.1")
 
 
 # mostra<-F
 if (mostra) directori_dades<-"dades/sidiap/test" else directori_dades<-"dades/sidiap"
+
 
 
 # conductor<-"conductor_DataHarmonization.xls"
@@ -223,7 +251,7 @@ LLEGIR.variables_Cataleg<-readRDS("dades/SIDIAP/test" %>% here::here("DAPCRMM_en
 
 
 # Llegeixo cataleg 
-dt_cataleg<-read_excel("Spain_codes.xls") %>% select(cod,agr,exposed)
+dt_cataleg<-read_excel("Spain_codes.xlsx") %>% select(cod,agr,exposed)
 
 #the candidate non-exposed patients (CNE) 
 dt_non_exposed_pool<-read_excel("Spain_codes.xls",sheet ="non-exposed pool" )%>%select(cod,agr)
@@ -517,10 +545,6 @@ dt_matching<-dt_matching %>% mutate(exclusio2_generacio=if_else(dnaix>19840101 |
 
 
 
-
-
-
-
 # Generar flow_chart Prematching i aplicar criteris exclusions
 flow_chart1<-criteris_exclusio_diagrama(dt=dt_matching,
                                         taulavariables=conductor,
@@ -543,6 +567,7 @@ flow_chart1
 # Aplicar filtres 
 dt_matching_pre<-dt_matching
 dt_matching<-criteris_exclusio(dt_matching,taulavariables=conductor,criteris="exc_pre")
+
 
 
 # 4. Preparar matching i setriskmatching  ----------------------------
@@ -587,6 +612,8 @@ gc()
 
 
 # viii)					[MATCHING 1:10]   -----------
+
+#heaven::riskSetMatch
 
 # Aplicar algoritme  
 dades_match<-heaven::riskSetMatch(ptid="idp"                   # Unique patient identifier
@@ -1609,6 +1636,10 @@ write.csv2(res_MORTALITY_SUMA, file="res_MORTALITY_SUMA.csv")
 
 
 
+
+# fer elnou model :[diabetic/ control    .(periodo,edat,sexe)]
+
+
 # figures  --------------
 
 
@@ -1651,9 +1682,195 @@ write.csv2(res_MORTALITY_SUMA, file="res_MORTALITY_SUMA.csv")
 #https://rstudio-pubs-static.s3.amazonaws.com/369387_b8a63ee7e039483e896cb91f442bc72f.html
 #http://bendixcarstensen.com/SDC/EPJmort/MortT2.pdf
 
+
+#DILLUNS [23.3.2020]
+
+#feina a fer: model interccions , per Diabetis i No diabetis, PERIODE,EDAT i SEXE! 
+
+#Tasa de Mortalidad=[PERIODOEDADGRUPO] 2006-2018/ Edad media NO Diabéticos cada 1000 Personas-año
+
+# GRAFICA i   CONTROL  +  H
+# GRAFICA ii  CONTROL  +  D
+# GRAFICA iii DIABETIS +  H
+# GRAFICA iv  DIABETIS +  D
+
+
+# a posterior mirar:
+
+#dateterms	
+#c(....) A list of variable neames (character) 
+#in "dat" specifying dates of conditions. 
+#When a list is specified it is not only checked that the caseIndex is not after controlIndex,
+#but also that for all variables in the list either both control/case dates are missing, both prior to case index,
+#both after case index - or missing for case and with control date after case index.
+
+
+#upadate:[]
+
+
+#shinydashboard!
+
+#USR
+
+
+
+
+
+
+#--------------------------------------------------------------------------------------------#
+#[23.3.2020]:
+#--------------------------------------------------------------------------------------------#
+dt_plana_Lex2<-dt_plana%>%select(idp,dtindex,dnaix,sortida,exitus,sexe,caseid,grup)
+dt_plana_Lex2<-dt_plana_Lex2%>%mutate(birth =dnaix)
+dt_plana_Lex2<-dt_plana_Lex2%>%mutate(entry =dtindex)
+dt_plana_Lex2<-dt_plana_Lex2%>%mutate(exit =sortida)
+dt_plana_Lex2<-dt_plana_Lex2%>%mutate(fail =exitus)
+dt_plana_Lex2<-dt_plana_Lex2%>%select(idp,birth,entry,exit,fail,sexe,caseid,grup)
+#D:0
+#H:1
+#dt_plana_Lex2<-dt_plana_Lex2%>% mutate(sexe=ifelse(sexe=="D",0,1)) 
+dt_plana_Lex2<-structure(dt_plana_Lex2,class = "data.frame")
+dt_plana_Lex2 <- cal.yr(dt_plana_Lex2, format="%y-%m-%d", wh=2:4 )
+#-------------------------------------------------------------------------------------------#
+dt_plana_Lex2_grup0<-dt_plana_Lex2 %>% filter(grup==0)
+dt_plana_Lex2_grup1<-dt_plana_Lex2 %>% filter(grup==1)
+#-------------------------------------------------------------------------------------------#
+#grup0 (NO_DIABETIS)
+# Define a Lexis object with timescales calendar time and age
+LEXIS_dt_plana2_Lex_grup0<- Lexis( 
+  entry        =     list(per=entry),
+  exit         =     list(per=exit,age=exit-birth ),
+  exit.status  =     fail,
+  data         =     dt_plana_Lex2_grup0 )
+#-------------------------------------------------------------------------------------------#
+#grup1 (DIABETIS)
+# Define a Lexis object with timescales calendar time and age
+LEXIS_dt_plana2_Lex_grup1<- Lexis( 
+  entry        =     list(per=entry),
+  exit         =     list(per=exit,age=exit-birth ),
+  exit.status  =     fail,
+  data         =     dt_plana_Lex2_grup1 )
+#-------------------------------------------------------------------------------------------#
+LEXIS_dt_plana2_Lex_grup0
+LEXIS_dt_plana2_Lex_grup1
+#-------------------------------------------------------------------------------------------#
+#variable.names(dt_plana)
+
+# M O D E L     P O I S S O N   G L M:                              #
+
+#            Tasa de Moratlitat=EDAD*PERIODO*SEXE                   #
+
+
+#NO DIABÈTIC
+LEXIS_dt_plana2_Lex_grup0
+dbs0 <- popEpi::splitMulti(LEXIS_dt_plana2_Lex_grup0, age = seq(35,100,1), per= seq(2006,2018,1))
+a.kn0 <- with(subset(dbs0, lex.Xst==1), quantile(age+lex.dur,(1:5-0.5)/5))
+p.kn0 <- with(subset(dbs0, lex.Xst==1), quantile(per+lex.dur,(1:5-0.5)/5))
+#-------------------------------------------------------------------------------------------#
+r_supin_0 <- glm((lex.Xst==1)~Ns(age, knots = a.kn0)*Ns(per, knots = p.kn0)*sexe,
+           family = poisson,
+           offset = log(lex.dur),
+           data   = dbs0 )
+figura_no_diabetic_supin<-summary(r_supin_0)
+figura_no_diabetic_supin
+#-------------------------------------------------------------------------------------------#
+
+
+#SI DIABÈTIC
+LEXIS_dt_plana2_Lex_grup1
+dbs1 <- popEpi::splitMulti(LEXIS_dt_plana2_Lex_grup1, age = seq(35,100,1), per= seq(2006,2018,1))
+a.kn1 <- with(subset(dbs1, lex.Xst==1), quantile(age+lex.dur,(1:5-0.5)/5))
+p.kn1 <- with(subset(dbs1, lex.Xst==1), quantile(per+lex.dur,(1:5-0.5)/5))
+#-------------------------------------------------------------------------------------------#
+r_supin_1 <- glm((lex.Xst==1)~Ns(age, knots = a.kn1)*Ns(per, knots = p.kn1)*sexe,
+                 family = poisson,
+                 offset = log(lex.dur),
+                 data   = dbs1 )
+figura_diabetic_supin<-summary(r_supin_1)
+figura_diabetic_supin
+#-------------------------------------------------------------------------------------------#
+
+
+
+# GRÀFIQUES:[]
+
+
+
+
+
+
+#-------------------------------------------------------------------------------------------#
+#grafica_supin_0H
+#Tasa_Mortlidad=PERIODO*EDAD*GRUPO  [GRUPO=NO Diabetis,EDAD=MEDIA POB]
+nd0h<- data.frame(per=2006:2018,sexe="H",lex.dur=1000,age=mean(dt_plana$agein2))
+png(here::here("images","grafica_supin_0h.png"))
+matplot( nd0h$per,ci.pred(r_supin_0, newdata=nd0h),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad 2006-2018/ Edad media  NO Diabéticos Hombres, cada  1000 Personas-año ", 
+         xlab="Periodo", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( p.kn0, lwd=2 )
+dev.off()
+#-------------------------------------------------------------------------------------------#
+#grafica_supin_0D
+#Tasa_Mortlidad=PERIODO*EDAD*GRUPO  [GRUPO=NO Diabetis,EDAD=MEDIA POB]
+nd0d<- data.frame(per=2006:2018,sexe="D",lex.dur=1000,age=mean(dt_plana$agein2))
+png(here::here("images","grafica_supin_0d.png"))
+matplot( nd0h$per,ci.pred(r_supin_0, newdata=nd0d),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad 2006-2018/ Edad media  NO Diabéticos Mujeres, cada  1000 Personas-año ", 
+         xlab="Periodo", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( p.kn0, lwd=2 )
+dev.off()
+#-------------------------------------------------------------------------------------------#
+#grafica_supin_1H
+#Tasa_Mortlidad=PERIODO*EDAD*GRUPO  [GRUPO=Diabetis,EDAD=MEDIA POB]
+nd1h<- data.frame(per=2006:2018,sexe="H",lex.dur=1000,age=mean(dt_plana$agein2))
+png(here::here("images","grafica_supin_1h.png"))
+matplot( nd1h$per,ci.pred(r_supin_1, newdata=nd1h),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad 2006-2018/ Edad media Diabéticos Hombres, cada  1000 Personas-año ", 
+         xlab="Periodo", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( p.kn1, lwd=2 )
+par( mfrow=c(1,1) )
+dev.off()
+#-------------------------------------------------------------------------------------------#
+#grafica_supin_1D
+#Tasa_Mortlidad=PERIODO*EDAD*GRUPO  [GRUPO=Diabetis,EDAD=MEDIA POB]
+nd1d<- data.frame(per=2006:2018,sexe="D",lex.dur=1000,age=mean(dt_plana$agein2))
+png(here::here("images","grafica_supin_1d.png"))
+matplot( nd1d$per,ci.pred(r_supin_1, newdata=nd1d),
+         type="l",
+         lwd=c(3,1,1), 
+         lty=1, col="black", 
+         log="y",
+         ylab="Tasa de Mortalidad 2006-2018/ Edad media Diabéticos Mujeres, cada  1000 Personas-año ", 
+         xlab="Periodo", 
+         las=1, 
+         ylim=c(1,1000) )
+rug( p.kn1, lwd=2 )
+par( mfrow=c(1,1) )
+dev.off()
+#-------------------------------------------------------------------------------------------#
+
 save(flow_chart1,
      flow_chart2,
      flow_chart3,
+     flow_chart4,
      T00,
      taula_events,
      taula_events2,
@@ -1667,9 +1884,5 @@ save(flow_chart1,
      figura00_TOTAL2,
      figura02_TOTAL3,
      figura02_TOTAL2,
-        file="DataHarmonization.Rdata")
-
-
-
-
+      file="DataHarmonization.Rdata")
 
