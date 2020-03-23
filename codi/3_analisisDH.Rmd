@@ -314,22 +314,13 @@ figura1
 
 ```{r, message=FALSE, warning=FALSE, include=T, echo=FALSE,size="huge"}
 
-'Modelo lineal generalizado para ajustar un modelo de regresión de Poisson de la Tasas de  todo tipo de Mortalidad [Tasa de Moratlitat=Periodo*Grupo]'
+'Modelo lineal generalizado para ajustar un modelo de regresión de Poisson de la Tasas de  todo tipo de Mortalidad,en población no diabética [Tasa de Moratlitat=EDAD*PERIODO*SEXO]    '
 
-figura00_TOTAL
+figura_no_diabetic_supin
 
+'Modelo lineal generalizado para ajustar un modelo de regresión de Poisson de la Tasas de  todo tipo de Mortalidad,en población diabética [Tasa de Moratlitat=EDAD*PERIODO*SEXO]    '
 
-'Modelo lineal generalizado para ajustar un modelo de regresión de Poisson de la Tasas de  todo tipo de Mortalidad
- Tasa de Moratlitat=EDAD+PERIODO+GRUPO    '
-
-figura02_TOTAL3
-
-
-'Modelo lineal generalizado para ajustar un modelo de regresión de Poisson de la Tasas de  todo tipo de Mortalidad
- Tasa de Moratlitat=EDAD*PERIODO*GRUPO    '
-
-figura02_TOTAL2
-
+figura_diabetic_supin
 
 ```
 
@@ -348,30 +339,25 @@ cox_lexis_out3
 
 ```
 
-
-
-
-
-
-
-
-
-
-*Tasa de Mortalidad Hombres No Diabéticos=[MOD:PERIODO X EDAD X SEXO] 2006-2018/ Edad media  Diabéticos cada  1000 Personas-año 
+*Tasa de Mortalidad en hombres no Diabéticos con edad media poblacional  entre  2006-2018 cada  1000 Personas-año 
+*[Modelo de Poisson:PERIODO X EDAD X SEXO]
 
 ![](../images/grafica_supin_0h.png)
 
 
-*Tasa de Mortalidad Hombres Diabéticos=[MOD:PERIODO X EDAD X SEXO] 2006-2018/ Edad media  Diabéticos cada  1000 Personas-año 
+*Tasa de Mortalidad Hombres Diabéticos con edad media poblacional entre 2006-2018 cada  1000 Personas-año 
+*[MOD:PERIODO X EDAD X SEXO]
 
 ![](../images/grafica_supin_1h.png)
 
-*Tasa de Mortalidad Mujeres No Diabéticos=[MOD:PERIODO X EDAD X SEXO] 2006-2018/ Edad media  Diabéticos cada  1000 Personas-año 
+*Tasa de Mortalidad Mujeres No Diabéticas con edad media poblacional entre 2006-2018 cada  1000 Personas-año 
+*[M:PERIODO X EDAD X SEXO]
 
 ![](../images/grafica_supin_0d.png)
 
 
-*Tasa de Mortalidad Mujeres Diabéticos=[MOD:PERIODO X EDAD X SEXO] 2006-2018/ Edad media  Diabéticos cada  1000 Personas-año 
+*Tasa de Mortalidad Mujeres Diabéticas con edad media poblacional entre 2006-2018 cada  1000 Personas-año 
+*[MOD:PERIODO X EDAD X SEXO]
 
 ![](../images/grafica_supin_1d.png)
 
