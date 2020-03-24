@@ -103,7 +103,8 @@ devtools::source_url(link_source)
 #--------------------------------------------------------------------------#
 
 ##########################
-#load(".Rdata") ERROR!
+#load(".Rdata") 
+#Quan hi ha ERRORS D'INTERNET!
 ##########################
 
 
@@ -1602,6 +1603,8 @@ dev.off()
 
 
 
+
+
 #[prediccions taxes producte triple!]
                          
 # figura02_TOTAL2
@@ -1718,7 +1721,7 @@ write.csv2(res_MORTALITY_SUMA, file="res_MORTALITY_SUMA.csv")
 
 
 #--------------------------------------------------------------------------------------------#
-#[23.3.2020]:
+#[24.3.2020]:
 #--------------------------------------------------------------------------------------------#
 dt_plana_Lex2<-dt_plana%>%select(idp,dtindex,dnaix,sortida,exitus,sexe,caseid,grup)
 dt_plana_Lex2<-dt_plana_Lex2%>%mutate(birth =dnaix)
@@ -1728,7 +1731,7 @@ dt_plana_Lex2<-dt_plana_Lex2%>%mutate(fail =exitus)
 dt_plana_Lex2<-dt_plana_Lex2%>%select(idp,birth,entry,exit,fail,sexe,caseid,grup)
 #D:0
 #H:1
-#dt_plana_Lex2<-dt_plana_Lex2%>% mutate(sexe=ifelse(sexe=="D",0,1)) 
+
 dt_plana_Lex2<-structure(dt_plana_Lex2,class = "data.frame")
 dt_plana_Lex2 <- cal.yr(dt_plana_Lex2, format="%y-%m-%d", wh=2:4 )
 #-------------------------------------------------------------------------------------------#
@@ -1756,13 +1759,16 @@ LEXIS_dt_plana2_Lex_grup1
 #-------------------------------------------------------------------------------------------#
 #variable.names(dt_plana)
 
+
+
 # M O D E L     P O I S S O N   G L M:                              #
 
 #            Tasa de Moratlitat=EDAD*PERIODO*SEXE                   #
 
 
 #NO DIABÈTIC
-LEXIS_dt_plana2_Lex_grup0
+#LEXIS_dt_plana2_Lex_grup0
+
 dbs0 <- popEpi::splitMulti(LEXIS_dt_plana2_Lex_grup0, age = seq(35,100,1), per= seq(2006,2018,1))
 a.kn0 <- with(subset(dbs0, lex.Xst==1), quantile(age+lex.dur,(1:5-0.5)/5))
 p.kn0 <- with(subset(dbs0, lex.Xst==1), quantile(per+lex.dur,(1:5-0.5)/5))
@@ -1777,7 +1783,8 @@ figura_no_diabetic_supin
 
 
 #SI DIABÈTIC
-LEXIS_dt_plana2_Lex_grup1
+#LEXIS_dt_plana2_Lex_grup1
+
 dbs1 <- popEpi::splitMulti(LEXIS_dt_plana2_Lex_grup1, age = seq(35,100,1), per= seq(2006,2018,1))
 a.kn1 <- with(subset(dbs1, lex.Xst==1), quantile(age+lex.dur,(1:5-0.5)/5))
 p.kn1 <- with(subset(dbs1, lex.Xst==1), quantile(per+lex.dur,(1:5-0.5)/5))
@@ -1795,14 +1802,13 @@ figura_diabetic_supin
 # GRÀFIQUES:[]
 
 
-
-
-
-
+#-------------------------------------------------------------------------------------------#
+AGE0<-dt_plana%>%filter(grup==0)%>%select(agein2)
+AGE1<-dt_plana%>%filter(grup==1)%>%select(agein2)
 #-------------------------------------------------------------------------------------------#
 #grafica_supin_0H
 #Tasa_Mortlidad=PERIODO*EDAD*GRUPO  [GRUPO=NO Diabetis,EDAD=MEDIA POB]
-nd0h<- data.frame(per=2006:2018,sexe="H",lex.dur=1000,age=mean(dt_plana$agein2))
+nd0h<- data.frame(per=2006:2018,sexe="H",lex.dur=1000,age=mean(AGE0$agein2))
 png(here::here("images","grafica_supin_0h.png"))
 matplot( nd0h$per,ci.pred(r_supin_0, newdata=nd0h),
          type="l",
@@ -1818,7 +1824,7 @@ dev.off()
 #-------------------------------------------------------------------------------------------#
 #grafica_supin_0D
 #Tasa_Mortlidad=PERIODO*EDAD*GRUPO  [GRUPO=NO Diabetis,EDAD=MEDIA POB]
-nd0d<- data.frame(per=2006:2018,sexe="D",lex.dur=1000,age=mean(dt_plana$agein2))
+nd0d<- data.frame(per=2006:2018,sexe="D",lex.dur=1000,age=mean(AGE0$agein2))
 png(here::here("images","grafica_supin_0d.png"))
 matplot( nd0h$per,ci.pred(r_supin_0, newdata=nd0d),
          type="l",
@@ -1834,7 +1840,7 @@ dev.off()
 #-------------------------------------------------------------------------------------------#
 #grafica_supin_1H
 #Tasa_Mortlidad=PERIODO*EDAD*GRUPO  [GRUPO=Diabetis,EDAD=MEDIA POB]
-nd1h<- data.frame(per=2006:2018,sexe="H",lex.dur=1000,age=mean(dt_plana$agein2))
+nd1h<- data.frame(per=2006:2018,sexe="H",lex.dur=1000,age=mean(AGE1$agein2))
 png(here::here("images","grafica_supin_1h.png"))
 matplot( nd1h$per,ci.pred(r_supin_1, newdata=nd1h),
          type="l",
@@ -1851,7 +1857,7 @@ dev.off()
 #-------------------------------------------------------------------------------------------#
 #grafica_supin_1D
 #Tasa_Mortlidad=PERIODO*EDAD*GRUPO  [GRUPO=Diabetis,EDAD=MEDIA POB]
-nd1d<- data.frame(per=2006:2018,sexe="D",lex.dur=1000,age=mean(dt_plana$agein2))
+nd1d<- data.frame(per=2006:2018,sexe="D",lex.dur=1000,age=mean(AGE1$agein2))
 png(here::here("images","grafica_supin_1d.png"))
 matplot( nd1d$per,ci.pred(r_supin_1, newdata=nd1d),
          type="l",
@@ -1866,6 +1872,65 @@ rug( p.kn1, lwd=2 )
 par( mfrow=c(1,1) )
 dev.off()
 #-------------------------------------------------------------------------------------------#
+
+
+
+
+
+
+
+
+#fer l'excel!!!   
+
+#excel : no diabetic
+#-------------------------------------------------------------------------------------------#
+#FALTA FER-HO!
+#[prediccions taxes producte triple!]
+
+# figura02_TOTAL2
+# figura02_TOTAL3
+# Genera una matriu amb dades i fa les prediccions segons el model ajustat
+age          <- c(35:100)
+period       <- seq(2006,2018,1)
+sexe         <- c("D","H")
+nd           <- expand.grid(age, period,sexe)
+colnames(nd) <- c("age","per","sexe")
+nd           <- cbind(nd, lex.dur=1000)
+p1           <- ci.pred(r_supin_0, newdata = nd, Exp = FALSE)
+colnames(p1) <- c("es_d", "lb_d", "ub_d")
+acm_DM0       <- cbind(nd,p1, out="acm")
+
+res_MORTALITY_PRODUCTE_0 <-cbind(acm_DM0, rateD=exp(acm_DM0$es_d), rateD_lb=exp(acm_DM0$lb_d), rateD_ub=exp(acm_DM0$ub_d))
+# write.xlsx(res_MORTALITY_PRODUCTE, file="res_MORTALITY_PRODUCTE.xlsx")
+write.csv2(res_MORTALITY_PRODUCTE_0, file="res_MORTALITY_PRODUCTE_0.csv")
+#-------------------------------------------------------------------------------------------#
+
+
+
+#excel : diabetic
+#-------------------------------------------------------------------------------------------#
+#FALTA FER-HO!
+#[prediccions taxes producte triple!]
+
+# figura02_TOTAL2
+# figura02_TOTAL3
+# Genera una matriu amb dades i fa les prediccions segons el model ajustat
+age          <- c(35:100)
+period       <- seq(2006,2018,1)
+sexe         <- c("D","H")
+nd           <- expand.grid(age, period,sexe)
+colnames(nd) <- c("age","per","sexe")
+nd           <- cbind(nd, lex.dur=1000)
+p1           <- ci.pred(r_supin_1, newdata = nd, Exp = FALSE)
+colnames(p1) <- c("es_d", "lb_d", "ub_d")
+acm_DM1       <- cbind(nd,p1, out="acm")
+
+res_MORTALITY_PRODUCTE_1 <-cbind(acm_DM1, rateD=exp(acm_DM1$es_d), rateD_lb=exp(acm_DM1$lb_d), rateD_ub=exp(acm_DM1$ub_d))
+# write.xlsx(res_MORTALITY_PRODUCTE, file="res_MORTALITY_PRODUCTE.xlsx")
+write.csv2(res_MORTALITY_PRODUCTE_1, file="res_MORTALITY_PRODUCTE_1.csv")
+#-------------------------------------------------------------------------------------------#
+
+
 
 save(flow_chart1,
      flow_chart2,
