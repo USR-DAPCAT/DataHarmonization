@@ -1716,8 +1716,26 @@ write.csv2(res_MORTALITY_SUMA, file="res_MORTALITY_SUMA.csv")
 #USR
 
 
+#db1 <-Lexis(entry = list(period = yearin,age = agein),
+#            exit = list(period = outm),
+#            exit.status = crm,
+#            id = patid,
+#             data = subset(db, DM == 1))
 
-
+# dbs1 <-splitMulti(db1, age = seq(30,100,1), period= seq(1998,2018,1))
+# a.kn <- with(subset(dbs1, lex.Xst==1), quantile(age+lex.dur,(1:5-0.5)/5))
+# p.kn <- with(subset(dbs1, lex.Xst==1), quantile(period+lex.dur,(1:5-0.5)/5))
+# r1 <- glm((lex.Xst==1) ~ Ns(age, knots = a.kn)*Ns(period, knots = p.kn)*gender,
+#           family = poisson,
+#           offset = log(lex.dur),
+#           data = dbs1)
+# age <- c(40:80)
+# period <- seq(1998,2018,0.1)
+# gender <- c(1:2)
+# nd <- expand.grid(age, period, gender)
+# colnames(nd) <- c("age","period","gender")
+# nd <- cbind(nd, lex.dur=1000)
+# p1 <- ci.pred(r1, newdata = nd)
 
 
 #--------------------------------------------------------------------------------------------#
@@ -1738,13 +1756,27 @@ dt_plana_Lex2 <- cal.yr(dt_plana_Lex2, format="%y-%m-%d", wh=2:4 )
 dt_plana_Lex2_grup0<-dt_plana_Lex2 %>% filter(grup==0)
 dt_plana_Lex2_grup1<-dt_plana_Lex2 %>% filter(grup==1)
 #-------------------------------------------------------------------------------------------#
+
+
+
+#exemple supin! el mateix!!
+db1_sup <-Lexis(entry = list(period = entry,age = entry -birth),
+            exit = list(period = exit),
+            exit.status = fail,
+            id = idp,
+             data =  dt_plana_Lex2_grup0)
+
+
+
 #grup0 (NO_DIABETIS)
 # Define a Lexis object with timescales calendar time and age
 LEXIS_dt_plana2_Lex_grup0<- Lexis( 
   entry        =     list(per=entry),
   exit         =     list(per=exit,age=exit-birth ),
   exit.status  =     fail,
-  data         =     dt_plana_Lex2_grup0 )
+  id           =     idp,
+  data         =     dt_plana_Lex2_grup0 
+  )
 #-------------------------------------------------------------------------------------------#
 #grup1 (DIABETIS)
 # Define a Lexis object with timescales calendar time and age
@@ -1752,6 +1784,7 @@ LEXIS_dt_plana2_Lex_grup1<- Lexis(
   entry        =     list(per=entry),
   exit         =     list(per=exit,age=exit-birth ),
   exit.status  =     fail,
+  id           =     idp,
   data         =     dt_plana_Lex2_grup1 )
 #-------------------------------------------------------------------------------------------#
 LEXIS_dt_plana2_Lex_grup0
@@ -1901,10 +1934,9 @@ colnames(p1) <- c("es_d", "lb_d", "ub_d")
 acm_DM0       <- cbind(nd,p1, out="acm")
 
 res_MORTALITY_PRODUCTE_0 <-cbind(acm_DM0, rateD=exp(acm_DM0$es_d), rateD_lb=exp(acm_DM0$lb_d), rateD_ub=exp(acm_DM0$ub_d))
-# write.xlsx(res_MORTALITY_PRODUCTE, file="res_MORTALITY_PRODUCTE.xlsx")
+#write.xlsx(res_MORTALITY_PRODUCTE, file="res_MORTALITY_PRODUCTE.xlsx")
 write.csv2(res_MORTALITY_PRODUCTE_0, file="res_MORTALITY_PRODUCTE_0.csv")
 #-------------------------------------------------------------------------------------------#
-
 
 
 #excel : diabetic
@@ -1926,7 +1958,7 @@ colnames(p1) <- c("es_d", "lb_d", "ub_d")
 acm_DM1       <- cbind(nd,p1, out="acm")
 
 res_MORTALITY_PRODUCTE_1 <-cbind(acm_DM1, rateD=exp(acm_DM1$es_d), rateD_lb=exp(acm_DM1$lb_d), rateD_ub=exp(acm_DM1$ub_d))
-# write.xlsx(res_MORTALITY_PRODUCTE, file="res_MORTALITY_PRODUCTE.xlsx")
+#write.xlsx(res_MORTALITY_PRODUCTE, file="res_MORTALITY_PRODUCTE.xlsx")
 write.csv2(res_MORTALITY_PRODUCTE_1, file="res_MORTALITY_PRODUCTE_1.csv")
 #-------------------------------------------------------------------------------------------#
 
