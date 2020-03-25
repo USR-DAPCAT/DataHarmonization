@@ -101,22 +101,29 @@ output:
 
 ## 4  Construcción del Matching.
 
-###### 1. De toda la base de datos (DE), extraiga la cohorte T2DM con cualquier código en la hoja "expuesto"; luego retire a los pacientes con cualquier código en la hoja "excluir"        antes del final del estudio (31/12/2018); utilice el primer código de diagnóstico de aparición de DM2 como fecha índice para la cohorte de pacientes expuestos (T2C).
+
+###### 0.	Inicially , From the entire database remove users  with any codes in sheet “prevalent” or “cancer” appearing before the 01/01/2006  
+
+###### 1.	From the entire database (ED), extract T2DM cohort with any codes in sheet “exposed”; then remove patients with any codes in sheet “exclude” before the end of the study (31/12/2018); use the first appearance diagnosis code of T2DM as the index date for exposed patient cohort (T2C).
+
+###### 2.	From this cohort (T2C), remove patients with any codes in sheet “prevalent” or “cancer” appearing before the index date; this is the exposed cohort (EC).
+
+###### 3.	From the entire database (ED), remove patients with any codes in sheet “non-exposed pool” before the end of the study (31/12/2018), to get the candidate non-exposed patients (CNE).
+
+###### 4.	Exact matching the exposed cohort (EC) to the candidate non-exposed patients (CNE) with a ratio 1:10 (EC:CNE) by year of birth (+/-1year), sex, and practice, without replacement (each candidate non-exposed patient can be only matched once). This is the matched cohort (MC), and the index date is the same as the matched exposed patient.
+
+###### 5.	From the matched cohort (MC), remove patients died before the index date; then remove patients with any codes in sheet “prevalent” or “cancer” appearing before the index date; then keep a randomly selected 5 matched non-exposed patients (good to set a seed to make the random selection replicable). This is the final non-exposed cohort (FNE).
+
+###### 5.2.	 To select 5 matched non-exposed patients (Non randomly) date birth closest to each exposed
+
+###### 5.3.	 To remove set risk groups which number of non-exposed by exposed been 0 
+
+###### 5.4.	 Exclusion by group. To remove all set risk group when any subject had been removed by exclusion criteria (by age, prevalent , cancer etc..)
+
+###### 6.	The final study cohort is the combination of the exposed cohort (EC) and the final non-exposed cohort (FNE).
 
 
-###### 2. De esta cohorte (T2C), retire a los pacientes con cualquier código en la hoja "prevalente" o "cáncer" que aparece antes de la fecha índice; Esta es la cohorte expuesta (CE).
 
-
-###### 3. De toda la base de datos (DE), elimine a los pacientes con cualquier código en la hoja “grupo no expuesto” antes del final del estudio (31/12/2018), para obtener los pacientes candidatos no expuestos (CNE).
-
-
-###### 4. Coincidencia exacta de la cohorte expuesta (EC) con los pacientes candidatos no expuestos (CNE) con una proporción de 1:10 (EC: CNE) por año de nacimiento (+/- 1 año), sexo y práctica, sin reemplazo ( cada paciente candidato no expuesto solo puede ser emparejado una vez). Esta es la cohorte emparejada (MC), y la fecha índice es la misma que la del paciente expuesto emparejado.
-
-
-###### 5. De la cohorte emparejada (MC), eliminar pacientes fallecieron antes de la fecha índice; luego elimine a los pacientes con cualquier código en la hoja "prevalente" o "cáncer" que aparece antes de la fecha índice; luego mantenga a 5 pacientes no expuestos coincidentes seleccionados al azar (es bueno establecer una semilla para que la selección aleatoria sea replicable). Esta es la cohorte final no expuesta (FNE).
-
-
-###### 6. La cohorte final del estudio es la combinación de la cohorte expuesta (EC) y la cohorte final no expuesta (FNE).
 
    
    

@@ -1300,8 +1300,8 @@ dev.off()
 #TASAS CON EL MODELO DE COX. 
 
 
-COX1<-LEXIS_dt_plana_Lex%>% left_join(select(dt_plana,idp,sexe)) %>% mutate(gender=if_else(sexe=="H",1,0))
-cox_lexis_model <- coxph(Surv(lex.dur,lex.Xst)~factor(grup)+sexe+age+ cluster(caseid),data =  COX1)
+COX1<-LEXIS_dt_plana_Lex%>% left_join(select(dt_plana,idp,sexe)) %>% mutate(gender=if_else(sexe=="H","M","W"))
+cox_lexis_model <- coxph(Surv(lex.dur,lex.Xst)~factor(grup)+gender+age+ cluster(caseid),data =  COX1)
 cox_lexis_ratios <- cbind(HR = exp(coef(cox_lexis_model)), exp(confint(cox_lexis_model)))
 #As every other time we exponentiat the coefficients to get hazard ratios
 cox_lexis_out <- summary(cox_lexis_model)
@@ -1739,14 +1739,16 @@ write.csv2(res_MORTALITY_SUMA, file="res_MORTALITY_SUMA.csv")
 
 
 #--------------------------------------------------------------------------------------------#
-#[24.3.2020]:
+#[25.3.2020]:
 #--------------------------------------------------------------------------------------------#
 dt_plana_Lex2<-dt_plana%>%select(idp,dtindex,dnaix,sortida,exitus,sexe,caseid,grup)
 dt_plana_Lex2<-dt_plana_Lex2%>%mutate(birth =dnaix)
 dt_plana_Lex2<-dt_plana_Lex2%>%mutate(entry =dtindex)
 dt_plana_Lex2<-dt_plana_Lex2%>%mutate(exit =sortida)
 dt_plana_Lex2<-dt_plana_Lex2%>%mutate(fail =exitus)
-dt_plana_Lex2<-dt_plana_Lex2%>%select(idp,birth,entry,exit,fail,sexe,caseid,grup)
+dt_plana_Lex2<-dt_plana_Lex2%>%mutate(gender =sexe)
+dt_plana_Lex2<-dt_plana_Lex2%>%select(idp,birth,entry,exit,fail,gender,caseid,grup)
+dt_plana_Lex2<-dt_plana_Lex2%>%mutate(gender=if_else(gender=="H","M","W"))
 #D:0
 #H:1
 
@@ -1787,8 +1789,8 @@ LEXIS_dt_plana2_Lex_grup1<- Lexis(
   id           =     idp,
   data         =     dt_plana_Lex2_grup1 )
 #-------------------------------------------------------------------------------------------#
-LEXIS_dt_plana2_Lex_grup0
-LEXIS_dt_plana2_Lex_grup1
+# LEXIS_dt_plana2_Lex_grup0
+# LEXIS_dt_plana2_Lex_grup1
 #-------------------------------------------------------------------------------------------#
 #variable.names(dt_plana)
 
@@ -1806,7 +1808,7 @@ dbs0 <- popEpi::splitMulti(LEXIS_dt_plana2_Lex_grup0, age = seq(35,100,1), per= 
 a.kn0 <- with(subset(dbs0, lex.Xst==1), quantile(age+lex.dur,(1:5-0.5)/5))
 p.kn0 <- with(subset(dbs0, lex.Xst==1), quantile(per+lex.dur,(1:5-0.5)/5))
 #-------------------------------------------------------------------------------------------#
-r_supin_0 <- glm((lex.Xst==1)~Ns(age, knots = a.kn0)*Ns(per, knots = p.kn0)*sexe,
+r_supin_0 <- glm((lex.Xst==1)~Ns(age, knots = a.kn0)*Ns(per, knots = p.kn0)*gender,
            family = poisson,
            offset = log(lex.dur),
            data   = dbs0 )
@@ -1822,7 +1824,7 @@ dbs1 <- popEpi::splitMulti(LEXIS_dt_plana2_Lex_grup1, age = seq(35,100,1), per= 
 a.kn1 <- with(subset(dbs1, lex.Xst==1), quantile(age+lex.dur,(1:5-0.5)/5))
 p.kn1 <- with(subset(dbs1, lex.Xst==1), quantile(per+lex.dur,(1:5-0.5)/5))
 #-------------------------------------------------------------------------------------------#
-r_supin_1 <- glm((lex.Xst==1)~Ns(age, knots = a.kn1)*Ns(per, knots = p.kn1)*sexe,
+r_supin_1 <- glm((lex.Xst==1)~Ns(age, knots = a.kn1)*Ns(per, knots = p.kn1)*gender,
                  family = poisson,
                  offset = log(lex.dur),
                  data   = dbs1 )
@@ -1841,7 +1843,7 @@ AGE1<-dt_plana%>%filter(grup==1)%>%select(agein2)
 #-------------------------------------------------------------------------------------------#
 #grafica_supin_0H
 #Tasa_Mortlidad=PERIODO*EDAD*GRUPO  [GRUPO=NO Diabetis,EDAD=MEDIA POB]
-nd0h<- data.frame(per=2006:2018,sexe="H",lex.dur=1000,age=mean(AGE0$agein2))
+nd0h<- data.frame(per=2006:2018,gender="H",lex.dur=1000,age=mean(AGE0$agein2))
 png(here::here("images","grafica_supin_0h.png"))
 matplot( nd0h$per,ci.pred(r_supin_0, newdata=nd0h),
          type="l",
@@ -1857,7 +1859,7 @@ dev.off()
 #-------------------------------------------------------------------------------------------#
 #grafica_supin_0D
 #Tasa_Mortlidad=PERIODO*EDAD*GRUPO  [GRUPO=NO Diabetis,EDAD=MEDIA POB]
-nd0d<- data.frame(per=2006:2018,sexe="D",lex.dur=1000,age=mean(AGE0$agein2))
+nd0d<- data.frame(per=2006:2018,gender="D",lex.dur=1000,age=mean(AGE0$agein2))
 png(here::here("images","grafica_supin_0d.png"))
 matplot( nd0h$per,ci.pred(r_supin_0, newdata=nd0d),
          type="l",
@@ -1873,7 +1875,7 @@ dev.off()
 #-------------------------------------------------------------------------------------------#
 #grafica_supin_1H
 #Tasa_Mortlidad=PERIODO*EDAD*GRUPO  [GRUPO=Diabetis,EDAD=MEDIA POB]
-nd1h<- data.frame(per=2006:2018,sexe="H",lex.dur=1000,age=mean(AGE1$agein2))
+nd1h<- data.frame(per=2006:2018,gender="H",lex.dur=1000,age=mean(AGE1$agein2))
 png(here::here("images","grafica_supin_1h.png"))
 matplot( nd1h$per,ci.pred(r_supin_1, newdata=nd1h),
          type="l",
@@ -1890,7 +1892,7 @@ dev.off()
 #-------------------------------------------------------------------------------------------#
 #grafica_supin_1D
 #Tasa_Mortlidad=PERIODO*EDAD*GRUPO  [GRUPO=Diabetis,EDAD=MEDIA POB]
-nd1d<- data.frame(per=2006:2018,sexe="D",lex.dur=1000,age=mean(AGE1$agein2))
+nd1d<- data.frame(per=2006:2018,gender="D",lex.dur=1000,age=mean(AGE1$agein2))
 png(here::here("images","grafica_supin_1d.png"))
 matplot( nd1d$per,ci.pred(r_supin_1, newdata=nd1d),
          type="l",
@@ -1925,9 +1927,9 @@ dev.off()
 # Genera una matriu amb dades i fa les prediccions segons el model ajustat
 age          <- c(35:100)
 period       <- seq(2006,2018,1)
-sexe         <- c("D","H")
-nd           <- expand.grid(age, period,sexe)
-colnames(nd) <- c("age","per","sexe")
+gender         <- c("D","H")
+nd           <- expand.grid(age, period,gender)
+colnames(nd) <- c("age","per","gender")
 nd           <- cbind(nd, lex.dur=1000)
 p1           <- ci.pred(r_supin_0, newdata = nd, Exp = FALSE)
 colnames(p1) <- c("es_d", "lb_d", "ub_d")
@@ -1949,7 +1951,7 @@ write.csv2(res_MORTALITY_PRODUCTE_0, file="res_MORTALITY_PRODUCTE_0.csv")
 # Genera una matriu amb dades i fa les prediccions segons el model ajustat
 age          <- c(35:100)
 period       <- seq(2006,2018,1)
-sexe         <- c("D","H")
+gender         <- c("D","H")
 nd           <- expand.grid(age, period,sexe)
 colnames(nd) <- c("age","per","sexe")
 nd           <- cbind(nd, lex.dur=1000)
