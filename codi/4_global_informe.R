@@ -1,33 +1,69 @@
+####  Escenari 1 (Excloent exposats sense control ) --------------
+
 gc()
 rm(list = ls())
 
 # Funció parametritzal (Per defecte agafa mostra y conductor natural)
-
-parametres_conductuals<-function(mostra=F,conductor="conductor_DataHarmonization.xls"){
+parametres_conductuals<-function(mostra=F,conductor="conductor_DataHarmonization.xlsx"){
   list(mostra=mostra,conductor=conductor)}
 
 
-####  Escenari 1 (No s'exclou per antiguitat) -----
 # Generar informe global
-parametres<-parametres_conductuals()
+parametres<-parametres_conductuals(mostra = F)
 mostra<-parametres$mostra
 conductor<-parametres$conductor
 
 source(here::here("codi","1_lectura_DH.R"))
-rmarkdown::render(here::here("codi","3_analisisDH.Rmd"),output_file="Informe2_DH")
+rmarkdown::render(here::here("codi","3_analisisDH.Rmd"),output_file="Informe2_DH_esc1")
 
 
 
 
 
+####  Escenari 2  (Excloent exposats sense control + apestats ) --------------
+gc()
+rm(list = ls())
 
-####  Escenari 2  (Excloent exposats sense control ) --------------
-parametres<-parametres_conductuals(conductor="conductor_DataHarmonization2.xls")
+# Funció parametritzal (Per defecte agafa mostra y conductor natural)
+parametres_conductuals<-function(mostra=F,conductor="conductor_DataHarmonization.xlsx"){
+  list(mostra=mostra,conductor=conductor)}
+
+####  Escenari 2  (Excloent exposats sense control + apestats ) --------------
+parametres<-parametres_conductuals(mostra = T,conductor="conductor_DataHarmonization2.xlsx")
 mostra<-parametres$mostra
 conductor<-parametres$conductor
 
-source(here::here("codi","1_lectura_DH8.R"))
-rmarkdown::render(here::here("codi","3_analisisDH8.Rmd"),output_file="Informe2_DH")
+source(here::here("codi","1_lectura_DH.R"))
+rmarkdown::render(here::here("codi","3_analisisDH.Rmd"),output_file="Informe2_DH_esc2")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ####  Escenari 3 (Excloent exposats s control + contaminats)
