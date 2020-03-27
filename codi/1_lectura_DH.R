@@ -1,5 +1,5 @@
 ########################################
-# 23.03.2020[sant josep]
+# 27.03.2020
 # Lectura de fitxers --------------------
 
 #PACKRAT(tema versions)
@@ -506,6 +506,39 @@ dt_matching<-mutate(C_EXPOSATS,grup=1) %>% bind_rows(mutate(C_NO_EXPOSATS,grup=0
 #   que apareixin abans de la data de l’índex; es tracta de la cohort exposada (CE).
 #   I també tots aquells pacients amb data Index inferior al 2006 , aniran fora![DM_pre2005]
 
+
+
+
+
+
+
+
+
+# ull! els canvis que s'han de fer!
+#Canviar i Borrar! és una prova:!
+#----------------------------------------------------------------#
+#  A PARTIR D'AQUÍ ES  PODRIA DE MIRAR DE CANVIAR EL SISTEMA!:
+#----------------------------------------------------------------#
+#dt_temp<-dt_problemes_2018 %>% transmute(idp,
+#                                         DG18.cancer=ymd(DG18.cancer) ,
+#                                         DG18.prevalent_CVD=ymd(DG18.prevalent_CVD),
+#                                         DG18.prevalent_KD=ymd(DG18.prevalent_KD),
+#                                         DG18.prevalent_MET=ymd(DG18.prevalent_MET))
+#dt_matching<-dt_matching %>% left_join(dt_temp,by="idp")
+#rm(dt_temp)
+
+
+
+
+
+
+
+
+
+
+
+
+
 dt_matching<-dt_matching %>% 
   mutate(DG.cancer=ifelse(is.na(DG.cancer)  | DG.cancer==0,0,1))
 
@@ -588,6 +621,17 @@ dt_matching<-criteris_exclusio(dt_matching,taulavariables=conductor,criteris="ex
 dt_matching<-dt_matching %>% transmute(idp,dnaix,sexe,grup,dtevent=data_index,entrada,sortida) %>%
   left_join(LLEGIR.variables_geo_sanitaries,by="idp")
 
+
+# ull! els canvis que s'han de fer!
+#Canviar i Borrar! és una prova:!
+#dt_matching<-dt_matching %>% transmute(idp,dnaix,sexe,grup,dtevent=data_index,entrada,sortida,
+#                                       DG18.cancer,DG18.prevalent_CVD,DG18.prevalent_KD,DG18.prevalent_MET) %>%
+#  left_join(LLEGIR.variables_geo_sanitaries,by="idp")
+
+
+
+
+
 # Generar data de sortida (Data event / Data de censura)     
 dt_matching<-dt_matching %>% mutate(dtindex_case=ifelse(grup==1, as.Date(as.character(dtevent),format="%Y%m%d"),NA)) 
 
@@ -633,6 +677,27 @@ dades_match<-heaven::riskSetMatch(ptid="idp"                   # Unique patient 
                                   ,dateterms=NULL               # character list of date variables
                                   )
 
+
+#########################################################################################################
+# ull! els canvis que s'han de fer!
+#Canviar i Borrar! és una prova:!
+# Aplicar algoritme :  
+#dades_match<-heaven::riskSetMatch(ptid="idp"                   # Unique patient identifier
+#                                  ,event="grup"                # 0=Control, 1=case
+#                                  ,terms=llistaPS              # terms c("n1","n2",...) - list of vairables to match by
+#                                  ,dat=dt_matching              # dataset with all variables
+#                                  ,Ncontrols=num_controls         # number of controls to provide
+#                                  ,oldevent="oldevent"            # To distinguish cases used as controls
+#                                  ,caseid="caseid"                # variable to group cases and controls (case-ptid)
+#                                  ,reuseCases=F                   # T og F or NULL - can a case be a control prior to being a case?
+#                                  ,reuseControls=F                # T or F or NULL - can controls be reused?
+#                                  ,caseIndex="dtindex_case"       # Integer or date, date where controls must be prior
+#                                  ,controlIndex="dtindex_control" # controlIndex - Index date for controls
+#                                  ,NoIndex=FALSE                # If T ignore index
+#                                  ,cores=1                      # Number of cores to use, default 1
+#                                  ,dateterms=c("DG18.cancer","DG18.prevalent_CVD","DG18.prevalent_KD","DG18.prevalent_MET")               # character list of date variables
+#) 
+#########################################################################################################
 gc()
 
 # Número de controls per conjunt a risk  
@@ -812,15 +877,6 @@ dt_index_match<-dt_index_match%>%mutate(dies_filtre=ymd(sortida)-dtindex2)
 dt_index_match<-dt_index_match%>%mutate(exc_mort_index=ifelse((dies_filtre<0 & situacio=="D"),1,0))  
 dt_index_match<-dt_index_match%>%select(-dtindex2,-dies_filtre)
               
-
-
-
-
-
-
-
-
-
 
 
 # Generar flow_chart Post_matching i aplicar criteris exclusions ------------
@@ -1748,7 +1804,7 @@ dt_plana_Lex2<-dt_plana_Lex2%>%mutate(exit =sortida)
 dt_plana_Lex2<-dt_plana_Lex2%>%mutate(fail =exitus)
 dt_plana_Lex2<-dt_plana_Lex2%>%mutate(gender =sexe)
 dt_plana_Lex2<-dt_plana_Lex2%>%select(idp,birth,entry,exit,fail,gender,caseid,grup)
-dt_plana_Lex2<-dt_plana_Lex2%>%mutate(gender=if_else(gender=="H","M","W"))
+dt_plana_Lex2<-dt_plana_Lex2%>%mutate(gender=if_else(gender=="H",1,0))
 #D:0
 #H:1
 
@@ -1759,7 +1815,7 @@ dt_plana_Lex2_grup0<-dt_plana_Lex2 %>% filter(grup==0)
 dt_plana_Lex2_grup1<-dt_plana_Lex2 %>% filter(grup==1)
 #-------------------------------------------------------------------------------------------#
 
-
+#table(dt_plana_Lex2$gender)
 
 #exemple supin! el mateix!!
 db1_sup <-Lexis(entry = list(period = entry,age = entry -birth),
@@ -1843,8 +1899,9 @@ AGE1<-dt_plana%>%filter(grup==1)%>%select(agein2)
 #-------------------------------------------------------------------------------------------#
 #grafica_supin_0H
 #Tasa_Mortlidad=PERIODO*EDAD*GRUPO  [GRUPO=NO Diabetis,EDAD=MEDIA POB]
-nd0h<- data.frame(per=2006:2018,gender="H",lex.dur=1000,age=mean(AGE0$agein2))
+nd0h<- data.frame(per=2006:2018,gender=1,lex.dur=1000,age=mean(AGE0$agein2))
 png(here::here("images","grafica_supin_0h.png"))
+
 matplot( nd0h$per,ci.pred(r_supin_0, newdata=nd0h),
          type="l",
          lwd=c(3,1,1), 
@@ -1859,7 +1916,7 @@ dev.off()
 #-------------------------------------------------------------------------------------------#
 #grafica_supin_0D
 #Tasa_Mortlidad=PERIODO*EDAD*GRUPO  [GRUPO=NO Diabetis,EDAD=MEDIA POB]
-nd0d<- data.frame(per=2006:2018,gender="D",lex.dur=1000,age=mean(AGE0$agein2))
+nd0d<- data.frame(per=2006:2018,gender=0,lex.dur=1000,age=mean(AGE0$agein2))
 png(here::here("images","grafica_supin_0d.png"))
 matplot( nd0h$per,ci.pred(r_supin_0, newdata=nd0d),
          type="l",
@@ -1875,7 +1932,7 @@ dev.off()
 #-------------------------------------------------------------------------------------------#
 #grafica_supin_1H
 #Tasa_Mortlidad=PERIODO*EDAD*GRUPO  [GRUPO=Diabetis,EDAD=MEDIA POB]
-nd1h<- data.frame(per=2006:2018,gender="H",lex.dur=1000,age=mean(AGE1$agein2))
+nd1h<- data.frame(per=2006:2018,gender=1,lex.dur=1000,age=mean(AGE1$agein2))
 png(here::here("images","grafica_supin_1h.png"))
 matplot( nd1h$per,ci.pred(r_supin_1, newdata=nd1h),
          type="l",
@@ -1892,7 +1949,7 @@ dev.off()
 #-------------------------------------------------------------------------------------------#
 #grafica_supin_1D
 #Tasa_Mortlidad=PERIODO*EDAD*GRUPO  [GRUPO=Diabetis,EDAD=MEDIA POB]
-nd1d<- data.frame(per=2006:2018,gender="D",lex.dur=1000,age=mean(AGE1$agein2))
+nd1d<- data.frame(per=2006:2018,gender=0,lex.dur=1000,age=mean(AGE1$agein2))
 png(here::here("images","grafica_supin_1d.png"))
 matplot( nd1d$per,ci.pred(r_supin_1, newdata=nd1d),
          type="l",
@@ -1912,22 +1969,21 @@ dev.off()
 
 
 
+#E  X C E L:[]
 
 
 
-#fer l'excel!!!   
 
+
+#-------------------------------------------------------------------------------------------#
 #excel : no diabetic
 #-------------------------------------------------------------------------------------------#
-#FALTA FER-HO!
-#[prediccions taxes producte triple!]
-
-# figura02_TOTAL2
-# figura02_TOTAL3
-# Genera una matriu amb dades i fa les prediccions segons el model ajustat
+#D:0
+#H:1
+#-------------------------------------------------------------------------------------------#
 age          <- c(35:100)
 period       <- seq(2006,2018,1)
-gender         <- c("D","H")
+gender         <- c(0,1)
 nd           <- expand.grid(age, period,gender)
 colnames(nd) <- c("age","per","gender")
 nd           <- cbind(nd, lex.dur=1000)
@@ -1941,17 +1997,16 @@ write.csv2(res_MORTALITY_PRODUCTE_0, file="res_MORTALITY_PRODUCTE_0.csv")
 #-------------------------------------------------------------------------------------------#
 
 
+
+#-------------------------------------------------------------------------------------------#
 #excel : diabetic
 #-------------------------------------------------------------------------------------------#
-#FALTA FER-HO!
-#[prediccions taxes producte triple!]
-
-# figura02_TOTAL2
-# figura02_TOTAL3
-# Genera una matriu amb dades i fa les prediccions segons el model ajustat
+#D:0
+#H:1
+#-------------------------------------------------------------------------------------------#
 age          <- c(35:100)
 period       <- seq(2006,2018,1)
-gender         <- c("D","H")
+gender         <- c(0,1)
 nd           <- expand.grid(age, period,sexe)
 colnames(nd) <- c("age","per","sexe")
 nd           <- cbind(nd, lex.dur=1000)
