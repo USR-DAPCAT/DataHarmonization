@@ -7,6 +7,7 @@ rm(list = ls())
 parametres_conductuals<-function(mostra=F,conductor="conductor_DataHarmonization.xlsx"){
   list(mostra=mostra,conductor=conductor)}
 
+####  Escenari 1 (Excloent exposats sense control ) --------------
 
 # Generar informe global
 parametres<-parametres_conductuals(mostra = F)
@@ -28,8 +29,10 @@ rm(list = ls())
 parametres_conductuals<-function(mostra=F,conductor="conductor_DataHarmonization.xlsx"){
   list(mostra=mostra,conductor=conductor)}
 
+
+
 ####  Escenari 2  (Excloent exposats sense control + apestats ) --------------
-parametres<-parametres_conductuals(mostra = T,conductor="conductor_DataHarmonization2.xlsx")
+parametres<-parametres_conductuals(mostra = F,conductor="conductor_DataHarmonization2.xlsx")
 mostra<-parametres$mostra
 conductor<-parametres$conductor
 
