@@ -20,7 +20,6 @@ rmarkdown::render(here::here("codi","3_analisisDH.Rmd"),output_file="Informe2_DH
 
 
 
-
 ####  Escenari 2  (Excloent exposats sense control + apestats ) --------------
 gc()
 rm(list = ls())
