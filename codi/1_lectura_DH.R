@@ -4,7 +4,7 @@
 
 #PACKRAT(tema versions)
 
-rm(list = ls())
+# rm(list = ls())
 
 #
 ########################################
@@ -39,7 +39,7 @@ library("lubridate")
 library("LexisPlotR")
 library("Epi")
 library("lubridate")
-library("arsenal")
+# library("arsenal")
 library("devtools")
 library("pander")
 library("here")
@@ -1797,6 +1797,10 @@ write.csv2(res_MORTALITY_SUMA, file="res_MORTALITY_SUMA.csv")
 #--------------------------------------------------------------------------------------------#
 #[25.3.2020]:
 #--------------------------------------------------------------------------------------------#
+
+
+
+
 dt_plana_Lex2<-dt_plana%>%select(idp,dtindex,dnaix,sortida,exitus,sexe,caseid,grup)
 dt_plana_Lex2<-dt_plana_Lex2%>%mutate(birth =dnaix)
 dt_plana_Lex2<-dt_plana_Lex2%>%mutate(entry =dtindex)
@@ -1861,6 +1865,7 @@ LEXIS_dt_plana2_Lex_grup1<- Lexis(
 #LEXIS_dt_plana2_Lex_grup0
 
 dbs0 <- popEpi::splitMulti(LEXIS_dt_plana2_Lex_grup0, age = seq(35,100,1), per= seq(2006,2018,1))
+
 a.kn0 <- with(subset(dbs0, lex.Xst==1), quantile(age+lex.dur,(1:5-0.5)/5))
 p.kn0 <- with(subset(dbs0, lex.Xst==1), quantile(per+lex.dur,(1:5-0.5)/5))
 #-------------------------------------------------------------------------------------------#
@@ -1891,7 +1896,6 @@ figura_diabetic_supin
 
 
 # GRÀFIQUES:[]
-
 
 #-------------------------------------------------------------------------------------------#
 AGE0<-dt_plana%>%filter(grup==0)%>%select(agein2)
@@ -2007,8 +2011,8 @@ write.csv2(res_MORTALITY_PRODUCTE_0, file="res_MORTALITY_PRODUCTE_0.csv")
 age          <- c(35:100)
 period       <- seq(2006,2018,1)
 gender         <- c(0,1)
-nd           <- expand.grid(age, period,sexe)
-colnames(nd) <- c("age","per","sexe")
+nd           <- expand.grid(age, period,gender)
+colnames(nd) <- c("age","per","gender")
 nd           <- cbind(nd, lex.dur=1000)
 p1           <- ci.pred(r_supin_1, newdata = nd, Exp = FALSE)
 colnames(p1) <- c("es_d", "lb_d", "ub_d")
