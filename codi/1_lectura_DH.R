@@ -1,30 +1,10 @@
-########################################
 # 27.03.2020
-# Lectura de fitxers --------------------
-
-#PACKRAT(tema versions)
+# Lectura de fitxers 
 
 # rm(list = ls())
 
-#
-########################################
 
-# he de mirar el Diagrammer!!! falla exclusions?? jordi.
-
-
-#githubinstall("heaven",ref="964bbbd",force=T) # "2018.8.9"
-#https://cran.r-project.org/web/packages/githubinstall/vignettes/githubinstall.html
-
-#
-# 1. Lectura de fitxers 
-memory.limit()
-#
-
-# package ‘magrittr’ successfully unpacked and MD5 sums checked
-# Error in install.packages : ERROR: failed to lock directory ‘C:\ProgramFiles\R\R-3.6.1\library’ for modifying
-# Try removing ‘C:\ProgramFiles\R\R-3.6.1\library/00LOCK
-
-#################################################################
+# libreries i Funcions  ------------------------------
 library("dplyr")
 library("magrittr")
 library("mschart")
@@ -43,48 +23,15 @@ library("lubridate")
 library("devtools")
 library("pander")
 library("here")
-library("githubinstall")
 library("popEpi")
-#-----------------------------#
 
+#devtools::install_version("igraph", version = "1.2.4.2")
+#devtools::install_version("DiagrammeR", version = "1.0.1")
+#githubinstall("heaven",ref="964bbbd",force=T) # "2018.8.9"
 
-
-# Cohort define steps --------------------
-
-#0. Abans de tot exclorem tots els pacients siguin Diabetics o no , que abans del 1.1.2006, hagin tingut 
-#   cancer O DM O Prevalent_CVD O Prevalent_KD>0 o Prevalent_MET
-
-#1.	From the entire database (ED), extract T2DM cohort with any codes in sheet “exposed”; 
-#   then remove patients with any codes in sheet “exclude” before the end of the study (31/12/2018); 
-#   use the first appearance diagnosis code of T2DM as the index date for exposed patient cohort (T2C).
-
-#2.	From this cohort (T2C), 
-#   remove patients with any codes in sheet “prevalent” or “cancer” appearing before the index date;
-#   this is the exposed cohort (EC).
-
-#3.	From the entire database (ED), 
-#   remove patients with any codes in sheet “non-exposed pool” before the end of the study (31/12/2018),
-#   to get the candidate non-exposed patients (CNE).
-
-#4.	Exact matching the exposed cohort (EC) to the candidate non-exposed patients (CNE)
-#   with a ratio 1:10 (EC:CNE) by year of birth (+/-1year), sex, and practice,
-#   without replacement (each candidate non-exposed patient can be only matched once). This is the matched cohort (MC), and the index date is the same as the matched exposed patient.
-
-#5.	From the matched cohort (MC),
-#   remove patients died before the index date; 
-#   then remove patients with any codes in sheet “prevalent” or “cancer” appearing before the index date;
-#   then keep a randomly selected 5 matched non-exposed patients
-#   (good to set a seed to make the random selection replicable). 
-#   This is the final non-exposed cohort (FNE).
-
-#6.	The final study cohort is the combination of the exposed cohort (EC) 
-#   and the final non-exposed cohort (FNE).
-
-
-
-#
-# Directori Font 
-
+# Descarregar funcions github -
+link_source<-paste0("https://github.com/jrealgatius/Stat_codis/blob/master/funcions_propies.R","?raw=T")
+devtools::source_url(link_source)
 
 
 # Parametres  --------------------------
@@ -96,35 +43,14 @@ if (exists("parametres_conductuals")==FALSE) {
   conductor<-"conductor_DataHarmonization.xlsx"
   }
 
-
-#--------------------------------------------------------------------------#
-link_source<-paste0("https://github.com/jrealgatius/Stat_codis/blob/master/funcions_propies.R","?raw=T")
-devtools::source_url(link_source)
-#--------------------------------------------------------------------------#
-
-##########################
-#load(".Rdata") 
-#Quan hi ha ERRORS D'INTERNET!
-##########################
-
-
-
-#devtools::install_version("igraph", version = "1.2.4.2")
-#devtools::install_version("DiagrammeR", version = "1.0.1")
-
-
 # mostra<-F
 if (mostra) directori_dades<-"dades/sidiap/test" else directori_dades<-"dades/sidiap"
 
 
-
-# conductor<-"conductor_DataHarmonization.xls"
-
-# Llegir fitxers --------
+# Llegir fitxers -------------------
 
 #i       [dianostics.hospital.cim9]  mult
 LLEGIR.cmbdh_diagnostics_padris<-readRDS(directori_dades%>% here::here("DAPCRMM_entregable_cmbdh_diagnostics_padris_20190930_093320.rds")) %>% as_tibble()
-#variable.names(LLEGIR.cmbdh_diagnostics_padris)
 
 
 #min(LLEGIR.cmbdh_diagnostics_padris$dat)
@@ -136,7 +62,6 @@ LLEGIR.cmbdh_diagnostics_padris<-readRDS(directori_dades%>% here::here("DAPCRMM_
 #ii       [dianostics.cap.cim10]  mult
 LLEGIR.diagnostics<-readRDS(directori_dades %>% here::here("DAPCRMM_entregable_diagnostics_20190926_103409.rds")) %>% as_tibble()
 #variable.names(LLEGIR.diagnostics)
-
 
 #min(LLEGIR.diagnostics$dat)
 #12.01.1941
@@ -212,8 +137,6 @@ LLEGIR.variables_geo_sanitaries<-readRDS(directori_dades %>% here::here("DAPCRMM
 #variable.names(LLEGIR.variables_geo_sanitaries)
 
 
-
-
 #x        [variables socioeconòmiques] unic [prové de la població]
 LLEGIR.variables_socioeconomiques<-readRDS(directori_dades %>% here::here("DAPCRMM_entregable_variables_socioeconomiques_20190926_103409.rds")) %>% as_tibble()
 #variable.names(LLEGIR.variables_socioeconomiques)
@@ -222,52 +145,35 @@ LLEGIR.variables_socioeconomiques<-readRDS(directori_dades %>% here::here("DAPCR
 LLEGIR.variables_Cataleg<-readRDS("dades/SIDIAP/test" %>% here::here("DAPCRMM_entregable_cataleg_20190930_093320.rds")) %>% as_tibble()
 #variable.names(LLEGIR.variables_Cataleg)
 
-#table(LLEGIR.variables_Cataleg$agr)
 
-
-
-
-# 1. Captura de EXPOSATS (DM incidents entre 2006-2018)   --------------- 
+# 1. Identificar EXPOSATS i data index (DM incidents entre 2006-2018)   ------------------
 
 # a partir de la primera data de diagnòsis=EXPOSATS o bé data F.Prescrits o  data F.Facturats,
 # i eliminarem aquells Exposats que abans del 31.12.2018 tinguin una malatia  "EXCLUDE"
 
 
-#1. De tota la base de dades (ED), extreu la cohort T2DM amb els codis del full "exposat";
-#   després elimineu els pacients amb els codis del full "excloure" abans de finalitzar l'estudi (31/12/2018);
-#   utilitzeu el codi de diagnòstic de primera aparició de T2DM com a Data Index  de la cohort del pacient exposada (T2C). 
-
-#   Però atraparem la Data Index , entre 3 fonts : 
+#   Data Index , entre 3 fonts : 
 #     i)    Fàrmacs Prescrits Diabetics data mínima 31.12.2018 cap enrera!
 #     ii)   Fàrmacs Facturats Diabètics data mínima 31.12.2018 cap enrera!
 #     iii)  Diagnòstic provinents dels CAPS o Hospital, data mínima 31.12.2018 cap enrera!
-
 #     De les 3 Fonts agafarem al DATA MÍNIMA!!!
-
-
-
-#1.	From the entire database (ED), extract T2DM cohort with any codes in sheet “exposed”; 
-#   then remove patients with any codes in sheet “exclude” before the end of the study (31/12/2018); 
-#   use the first appearance diagnosis code of T2DM as the index date for exposed patient cohort (T2C).
 
 
 # Llegeixo cataleg 
 dt_cataleg<-read_excel("Spain_codes.xlsx") %>% select(cod,agr,exposed)
 
 #the candidate non-exposed patients (CNE) 
-dt_non_exposed_pool<-read_excel("Spain_codes.xls",sheet ="non-exposed pool" )%>%select(cod,agr)
+dt_non_exposed_pool<-read_excel("Spain_codes.xlsx",sheet ="non-exposed pool" )%>%select(cod,agr)
 
 
 # [De les dues B.D DIAGNOSTICS ---> AGAFEM DIABETIS[EXPOSED a l'excel(Spain_codes)]                  
 
 
-#  LLEGIR.farmacs_prescrits 
 #  Prescripcion de CODIS / AGREGADORS 
 LLEGIR.farmacs_prescrits<-LLEGIR.farmacs_prescrits %>% transmute(idp,cod,dat,dbaixa)
 #
 #LLEGIR.variables_Cataleg
 cataleg_antidiab<-LLEGIR.variables_Cataleg %>% filter(domini=="farmacs_facturats") %>% transmute(cod,agr="AD")
-
 
 
 # [dt_diagnostics_global==LLEGIR.cmbdh_diagnostics_padris+LLEGIR.diagnostics]
