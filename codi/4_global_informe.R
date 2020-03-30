@@ -10,12 +10,12 @@ parametres_conductuals<-function(mostra=T,conductor="conductor_DataHarmonization
 ####  Escenari 1 (Excloent exposats sense control ) --------------
 
 # Generar informe global
-parametres<-parametres_conductuals(mostra = T)
+parametres<-parametres_conductuals(mostra = F)
 mostra<-parametres$mostra
 conductor<-parametres$conductor
 
 source(here::here("codi","1_lectura_DH_prototipus.R"))
-rmarkdown::render(here::here("codi","3_analisisDH.Rmd"),output_file="Informe2_DH_esc1")
+rmarkdown::render(here::here("codi","3_analisisDH.Rmd"),output_file="Informe2_DH_esc_prototip")
 
 
 

@@ -4,7 +4,7 @@
 
 #PACKRAT(tema versions)
 
-rm(list = ls())
+# rm(list = ls())
 
 #
 ########################################
@@ -39,51 +39,13 @@ library("lubridate")
 library("LexisPlotR")
 library("Epi")
 library("lubridate")
-library("arsenal")
+# library("arsenal")
 library("devtools")
 library("pander")
 library("here")
-library("githubinstall")
+# library("githubinstall")
 library("popEpi")
 #-----------------------------#
-
-
-
-# Cohort define steps --------------------
-
-#0. Abans de tot exclorem tots els pacients siguin Diabetics o no , que abans del 1.1.2006, hagin tingut 
-#   cancer O DM O Prevalent_CVD O Prevalent_KD>0 o Prevalent_MET
-
-#1.	From the entire database (ED), extract T2DM cohort with any codes in sheet “exposed”; 
-#   then remove patients with any codes in sheet “exclude” before the end of the study (31/12/2018); 
-#   use the first appearance diagnosis code of T2DM as the index date for exposed patient cohort (T2C).
-
-#2.	From this cohort (T2C), 
-#   remove patients with any codes in sheet “prevalent” or “cancer” appearing before the index date;
-#   this is the exposed cohort (EC).
-
-#3.	From the entire database (ED), 
-#   remove patients with any codes in sheet “non-exposed pool” before the end of the study (31/12/2018),
-#   to get the candidate non-exposed patients (CNE).
-
-#4.	Exact matching the exposed cohort (EC) to the candidate non-exposed patients (CNE)
-#   with a ratio 1:10 (EC:CNE) by year of birth (+/-1year), sex, and practice,
-#   without replacement (each candidate non-exposed patient can be only matched once). This is the matched cohort (MC), and the index date is the same as the matched exposed patient.
-
-#5.	From the matched cohort (MC),
-#   remove patients died before the index date; 
-#   then remove patients with any codes in sheet “prevalent” or “cancer” appearing before the index date;
-#   then keep a randomly selected 5 matched non-exposed patients
-#   (good to set a seed to make the random selection replicable). 
-#   This is the final non-exposed cohort (FNE).
-
-#6.	The final study cohort is the combination of the exposed cohort (EC) 
-#   and the final non-exposed cohort (FNE).
-
-
-
-#
-# Directori Font 
 
 
 
@@ -1031,19 +993,18 @@ dt_sociodemo<-LLEGIR.variables_socioeconomiques
 # Unió de totes les agregacions 
 
 #Fem la Taula Final:[PLana]
-
-
-dt_plana<-dt_post_matching %>% 
-  left_join(select(LLEGIR.poblacio,idp,sortida,situacio))%>% 
+dt_plana<-dt_post_matching %>% select(-c(situacio,sortida)) %>% 
+  left_join(select(LLEGIR.poblacio,idp,sortida,situacio),by="idp")%>% 
     left_join(dtagr_variables,by="idp")%>%
       left_join(dtagr_tabac,by="idp")%>%
         left_join(dtagr_prescrip,by="idp")%>%
           left_join(dtagr_facturat ,by="idp")%>%
-                left_join(dt_sociodemo ,by="idp")
-  
+              left_join(dt_sociodemo ,by="idp") %>% 
+                left_join(select(dt_problemes_2018,-dtindex),by="idp")
+
+
 
 # RECODES / CALCULS     
-
 dt_plana<-dt_plana%>%mutate(dtindex=as_date(dtindex))
 dt_plana<-dt_plana %>% mutate(any_index=lubridate::year(lubridate::as_date(dtindex)))
 dt_plana<-dt_plana %>% mutate(agein=(as_date(dtindex)-ymd(dnaix))/365.25)
@@ -1075,6 +1036,13 @@ dt_plana<-mutate_at(dt_plana, vars( starts_with("FF.") ), funs( if_else(.==0  | 
 dt_plana<-mutate_at(dt_plana, vars( starts_with("FP.") ), funs( if_else(.==0  | is.na(.)  ,0,1)))
 
 
+# # Diagnostics Si es menor o igual a data index el recodifico
+dt_plana<-dt_plana %>%
+  mutate_at(vars(starts_with("DG18.")),funs(if_else(lubridate::ymd(.)<= dtindex & !is.na(.),1,0)))
+
+# Verifico (Queden 15 pajaros)
+dt_plana %>% filter(DG18.prevalent_CVD==1) %>% select(idp,caseid,dtindex,DG18.prevalent_CVD,situacio,sortida)
+
 
 
 # 6. La cohort d'estudi final [dt_plana] --------------
@@ -1083,9 +1051,6 @@ dt_plana<-mutate_at(dt_plana, vars( starts_with("FP.") ), funs( if_else(.==0  | 
 
 #6.	The final study cohort is the combination of the exposed cohort (EC) and the final non-exposed cohort (FNE).
 
-
-
-#table(dt_plana$exc_0controls)
 
 
 # ANALISIS  --------------
@@ -1112,10 +1077,6 @@ dt_plana<-mutate_at(dt_plana, vars( starts_with("FP.") ), funs( if_else(.==0  | 
 #flow_chart3
 
 
-
-
-
-
 #ii)
 
 
@@ -1123,7 +1084,11 @@ dt_plana<-recodificar(dt_plana,taulavariables =conductor,"recode",missings = T)
 
 #variable.names(dt_plana)
 
-dt_plana2<-dt_plana
+# Elimino pacients amb diagnostics prevalents
+dt_plana<-dt_plana %>% filter(DG18.prevalent_CVD==0 & DG18.exclude==0 & DG18.prevalent_CVD==0 & DG18.prevalent_KD==0 & DG18.prevalent_MET==0 & DG18.exclude==0)
+
+
+dt_plana2<-dt_plana 
 
 table(dt_plana2$exc_0controls,dt_plana2$grup)
 
@@ -1133,10 +1098,10 @@ dt_plana2<-convertir_dates(d=dt_plana2,taulavariables=conductor)
 dt_plana2<-etiquetar_valors(dt=dt_plana2,variables_factors=conductor,fulla="etiquetes",camp_etiqueta="etiqueta2")
 dt_plana2<-etiquetar(d=dt_plana2,taulavariables=conductor)
 
-
 variables_noconductuals<-extreure.variables("taula00",taulavariables = conductor)[!extreure.variables("taula00",taulavariables = conductor)%in%names(dt_plana2)]
 
 formula_taula00<-formula.text("taula00",y="grup",taulavariables = conductor,elimina = variables_noconductuals)
+
 
 T00<-descrTable(formula_taula00,
                 method = c(IMC.valor=2,temps_FU = 2,temps_FU2 = 2,agein=2,any_index=2),
@@ -1146,44 +1111,43 @@ T00<-descrTable(formula_taula00,
                 show.n = T,
                 hide.no="No",simplify=F)
 
-#################
+
 #comprovació:[] #
 #################
-
 #dt_problemes_2018
 
-dt_problemes_2018<-dt_problemes_2018%>%select(-dtindex)
-dt_plana2<-dt_plana2 %>% left_join(dt_problemes_2018,by="idp")
-
-
-#dt_plana<-mutate_at(dt_plana, vars( starts_with("FF.") ), funs( if_else(.==0  | is.na(.)  ,0,1)))
-
-
-prova<-dt_plana2%>%select(caseid,grup,dtindex,DG18.cancer,DG18.prevalent_CVD,DG18.prevalent_KD,DG18.prevalent_MET)
-#----------------------------------------------------------------------------------------------------------------#
-prova<-prova%>%mutate(DG18.cancer=ymd(DG18.cancer),
-                      DG18.prevalent_CVD=ymd(DG18.prevalent_CVD),
-                      DG18.prevalent_KD=ymd(DG18.prevalent_KD),
-                      DG18.prevalent_MET=ymd(DG18.prevalent_MET))
-#----------------------------------------------------------------------------------------------------------------#
-prova<-prova%>% mutate(error_cancer=if_else(DG18.cancer>dtindex | is.na(DG18.cancer),0,1),
-                       error_prevalent_CVD=if_else(DG18.prevalent_CVD>dtindex | is.na(DG18.prevalent_CVD),0,1),
-                       error_prevalent_KD=if_else(DG18.prevalent_KD>dtindex | is.na(DG18.prevalent_KD),0,1),
-                       error_prevalent_MET=if_else(DG18.prevalent_MET>dtindex | is.na(DG18.prevalent_MET),0,1))
-#----------------------------------------------------------------------------------------------------------------#                       
-prova<-prova%>%arrange(caseid)                       
-#----------------------------------------------------------------------------------------------------------------#                       
-
-#----------------------------------------------------------------------------------------------------------------#                       
-table(prova$error_cancer)
-table(prova$error_prevalent_CVD)
-table(prova$error_prevalent_KD)
-table(prova$error_prevalent_MET)
-#----------------------------------------------------------------------------------------------------------------#                       
-
-prova<-prova%>% mutate(ERROR=error_cancer+error_prevalent_CVD+error_prevalent_KD+error_prevalent_MET)
-table(prova$ERROR)
-#17 FALLOS[N=970]
+# dt_problemes_2018<-dt_problemes_2018%>%select(-dtindex)
+# dt_plana2<-dt_plana2 %>%select(-starts_with("DG18")) %>% 
+#   left_join(select(dt_problemes_2018,-dtindex),by="idp")
+# 
+# #dt_plana<-mutate_at(dt_plana, vars( starts_with("FF.") ), funs( if_else(.==0  | is.na(.)  ,0,1)))
+# 
+# prova<-dt_plana2 %>% 
+#   select(caseid,grup,dtindex,DG18.cancer,DG18.prevalent_CVD,DG18.prevalent_KD,DG18.prevalent_MET)
+# #----------------------------------------------------------------------------------------------------------------#
+# prova<-prova%>%mutate(DG18.cancer=ymd(DG18.cancer),
+#                       DG18.prevalent_CVD=ymd(DG18.prevalent_CVD),
+#                       DG18.prevalent_KD=ymd(DG18.prevalent_KD),
+#                       DG18.prevalent_MET=ymd(DG18.prevalent_MET))
+# #----------------------------------------------------------------------------------------------------------------#
+# prova<-prova%>% mutate(error_cancer=if_else(DG18.cancer>dtindex | is.na(DG18.cancer),0,1),
+#                        error_prevalent_CVD=if_else(DG18.prevalent_CVD>dtindex | is.na(DG18.prevalent_CVD),0,1),
+#                        error_prevalent_KD=if_else(DG18.prevalent_KD>dtindex | is.na(DG18.prevalent_KD),0,1),
+#                        error_prevalent_MET=if_else(DG18.prevalent_MET>dtindex | is.na(DG18.prevalent_MET),0,1))
+# #----------------------------------------------------------------------------------------------------------------#                       
+# prova<-prova%>%arrange(caseid)                       
+# #----------------------------------------------------------------------------------------------------------------#                       
+# 
+# #----------------------------------------------------------------------------------------------------------------#                       
+# table(prova$error_cancer)
+# table(prova$error_prevalent_CVD)
+# table(prova$error_prevalent_KD)
+# table(prova$error_prevalent_MET)
+# #----------------------------------------------------------------------------------------------------------------#                       
+# 
+# prova<-prova%>% mutate(ERROR=error_cancer+error_prevalent_CVD+error_prevalent_KD+error_prevalent_MET)
+# table(prova$ERROR)
+# #17 FALLOS[N=970]
 
 #                                        dtindex        DG18.prevalent_CVD
 #----------------------------------------------------------------------------------------------------------------#                       
