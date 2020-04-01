@@ -10,7 +10,7 @@ parametres_conductuals<-function(mostra=T,conductor="conductor_DataHarmonization
 ####  Escenari 1 (Excloent exposats sense control ) --------------
 
 # Generar informe global
-parametres<-parametres_conductuals(mostra = F)
+parametres<-parametres_conductuals(mostra = T)
 mostra<-parametres$mostra
 conductor<-parametres$conductor
 
