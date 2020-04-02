@@ -19,12 +19,11 @@ library("lubridate")
 library("LexisPlotR")
 library("Epi")
 library("lubridate")
-# library("arsenal")
-library("devtools")
-library("pander")
 library("here")
 library("popEpi")
 
+# library("pander")
+# library("devtools")
 #devtools::install_version("igraph", version = "1.2.4.2")
 #devtools::install_version("DiagrammeR", version = "1.0.1")
 #githubinstall("heaven",ref="964bbbd",force=T) # "2018.8.9"
@@ -49,126 +48,8 @@ if (mostra) directori_dades<-"dades/sidiap/test" else directori_dades<-"dades/si
 
 # Llegir fitxers --------
 
-#i       [dianostics.hospital.cim9]  mult
-LLEGIR.cmbdh_diagnostics_padris<-readRDS(directori_dades%>% here::here("DAPCRMM_entregable_cmbdh_diagnostics_padris_20190930_093320.rds")) %>% as_tibble()
+source("codi/global_lectura.R")
 
-#min(LLEGIR.cmbdh_diagnostics_padris$dat)
-#18.12.2006
-#max(LLEGIR.cmbdh_diagnostics_padris$dat)
-#28.12.2017
-
-#ii       [dianostics.cap.cim10]  mult
-LLEGIR.diagnostics<-readRDS(directori_dades %>% here::here("DAPCRMM_entregable_diagnostics_20190926_103409.rds")) %>% as_tibble()
-#variable.names(LLEGIR.diagnostics)
-
-#min(LLEGIR.diagnostics$dat)
-#12.01.1941
-#max(LLEGIR.diagnostics$dat)
-#31.12.2018
-
-#iii      [farmacs_facturats] mult
-LLEGIR.farmacs_facturat<-readRDS(directori_dades %>% here::here("DAPCRMM_entregable_farmacs_facturats_20190926_103409.rds")) %>% as_tibble()
-#variable.names(LLEGIR.farmacs_facturat)
-#table(LLEGIR.farmacs_facturat$agr)
-
-#min(LLEGIR.farmacs_facturat$dat)
-#01.2006
-#max(LLEGIR.farmacs_facturat$dat)
-#12.2018
-
-#iv       [farmacs_prescrits] mult
-LLEGIR.farmacs_prescrits<-readRDS(directori_dades %>% here::here("DAPCRMM_entregable_farmacs_prescrits_20190926_103409.rds")) %>% as_tibble()
-#variable.names(LLEGIR.farmacs_prescrits)
-#table(LLEGIR.farmacs_prescrits$agr)
-
-#min(LLEGIR.farmacs_prescrits$dat)
-#31.07.2000
-#max(LLEGIR.farmacs_prescrits$dat)
-#31.12.2018
-
-#v        [població] unic [min entrada 1.1.2006!!!]
-LLEGIR.poblacio<-readRDS(directori_dades %>% here::here("DAPCRMM_entregable_poblacio_20190926_103409.rds")) %>% as_tibble() %>% 
-  mutate(any_entrada=as.character(entrada) %>%stringr::str_sub(1,4))
-#-------------------#
-#variable.names(LLEGIR.poblacio)
-
-#min(LLEGIR.poblacio$entrada)
-#01.01.2006
-#max(LLEGIR.poblacio$entrada)
-#19.12.2018
-
-#vi       [tabaquisme] mult
-LLEGIR.tabaquisme<-readRDS(directori_dades %>% here::here("DAPCRMM_entregable_tabaquisme_20190926_103409.rds")) %>% as_tibble()
-#variable.names(LLEGIR.tabaquisme)
-
-#min(LLEGIR.tabaquisme$dat)
-#01.01.1930
-#max(LLEGIR.tabaquisme$dat)
-#19.12.2018
-
-#vii      [analitiques] mult
-LLEGIR.variables_analitiques<-readRDS(directori_dades %>% here::here("DAPCRMM_entregable_variables_analitiques_20190926_103409.rds")) %>% as_tibble()
-#variable.names(LLEGIR.variables_analitiques)
-
-#min(LLEGIR.variables_analitiques$dat)
-#02.01.2006
-#max(LLEGIR.variables_analitiques$dat)
-#31.12.2018
-
-
-#viii     [variables_cliíniques] mult
-LLEGIR.variables_cliniques<-readRDS(directori_dades %>% here::here("DAPCRMM_entregable_variables_cliniques_20190926_103409.rds")) %>% as_tibble()
-#variable.names(LLEGIR.variables_cliniques)
-
-#min(LLEGIR.variables_cliniques$dat)
-#03.01.2005
-#max(LLEGIR.variables_cliniques$dat)
-#31.12.2018
-
-#ix       [variables geo_sanitàries] unic [prové de la poblacio]
-LLEGIR.variables_geo_sanitaries<-readRDS(directori_dades %>% here::here("DAPCRMM_entregable_variables_geo_sanitaries_20190926_103409.rds")) %>% as_tibble()
-#variable.names(LLEGIR.variables_geo_sanitaries)
-
-#x        [variables socioeconòmiques] unic [prové de la població]
-LLEGIR.variables_socioeconomiques<-readRDS(directori_dades %>% here::here("DAPCRMM_entregable_variables_socioeconomiques_20190926_103409.rds")) %>% as_tibble()
-#variable.names(LLEGIR.variables_socioeconomiques)
-
-#xi        [Catàleg]
-LLEGIR.variables_Cataleg<-readRDS("dades/SIDIAP/test" %>% here::here("DAPCRMM_entregable_cataleg_20190930_093320.rds")) %>% as_tibble()
-#variable.names(LLEGIR.variables_Cataleg)
-
-#table(LLEGIR.variables_Cataleg$agr)
-
-# Llegeixo cataleg 
-dt_cataleg<-read_excel("Spain_codes.xlsx") %>% select(cod,agr,exposed)
-
-#the candidate non-exposed patients (CNE) 
-dt_non_exposed_pool<-read_excel("Spain_codes.xlsx",sheet ="non-exposed pool" )%>%select(cod,agr)
-
-
-# [De les dues B.D DIAGNOSTICS ---> AGAFEM DIABETIS[EXPOSED a l'excel(Spain_codes)]                  
-#  LLEGIR.farmacs_prescrits 
-#  Prescripcion de CODIS / AGREGADORS 
-LLEGIR.farmacs_prescrits<-LLEGIR.farmacs_prescrits %>% transmute(idp,cod,dat,dbaixa)
-#
-#LLEGIR.variables_Cataleg
-cataleg_antidiab<-LLEGIR.variables_Cataleg %>% filter(domini=="farmacs_facturats") %>% transmute(cod,agr="AD")
-
-
-# [dt_diagnostics_global==LLEGIR.cmbdh_diagnostics_padris+LLEGIR.diagnostics]
-dt_diagnostics<-LLEGIR.cmbdh_diagnostics_padris %>% 
-  transmute(idp,cod=as.character(cod),dat,agr) %>% 
-  bind_rows(select(LLEGIR.diagnostics,idp,cod,dat,agr))
-
-
-dt_diagnostics_global<-LLEGIR.cmbdh_diagnostics_padris %>% 
-  transmute(idp,cod=as.character(cod),dat,agr) %>% 
-  bind_rows(select(LLEGIR.diagnostics,idp,cod,dat,agr))
-
-#min(dt_diagnostics$dat)
-#12.01.1941
-#max(dt_diagnostics$dat)
-#31.12.2018
 
 # Exclusions d'inici   --------------------------------------------
 # Agrego a 2005 per excloure a inici
@@ -176,11 +57,11 @@ dt_problemes_2005<-agregar_problemes(select(dt_diagnostics_global,idp,cod,dat),
                                      bd.dindex = "20051231",
                                      dt.agregadors=select(dt_cataleg,cod,agr),
                                      finestra.dies=c(-Inf,0),prefix = "DG05.") 
-# Exclosos d'inici
+# Exclosos d'inici per Problemes de salut
 exclosos_inici<-dt_problemes_2005 %>% 
   filter(DG05.cancer>0 | DG05.DM2>0 | DG05.prevalent_CVD>0 | DG05.prevalent_KD>0 | DG05.prevalent_MET>0) %>% select(idp)
 
-# Excloure de tots els historics de pacients exclosos 2005 (Antijoin amb pacients inclosos)
+# Excloure de tots els historics de pacients exclosos 2005 (Antijoin amb pacients exclosos_inici)
 
 llistaNomenada(LLEGIR.poblacio,
                LLEGIR.tabaquisme,
@@ -195,15 +76,21 @@ llistaNomenada(LLEGIR.poblacio,
   map(~anti_join(.x,exclosos_inici,by="idp")) %>% 
   list2env(globalenv())
 
+
+# Ecloure morts anterior a 2006
+LLEGIR.poblacio<-LLEGIR.poblacio %>% filter(!(situacio=="D" & sortida<20051231))
+
+
 # Fusiono dt_diagnostics (E-CAP + hospital )
 dt_diagnostics<-LLEGIR.cmbdh_diagnostics_padris %>% 
   transmute(idp,cod=as.character(cod),dat,agr) %>% 
   bind_rows(select(LLEGIR.diagnostics,idp,cod,dat,agr))
 
+# Copia
 dt_diagnostics_global<-dt_diagnostics
 
 
-# Generar data index -----------
+# Generar data index  (Primer Diagnostic registrat de DM / primera prescripció/facturacio AD) -----------
 
 dtagr_prescrip_DIABET<-agregar_prescripcions(
   dt=LLEGIR.farmacs_prescrits,
@@ -215,7 +102,7 @@ dtagr_prescrip_DIABET<-agregar_prescripcions(
   agregar_data=T) %>% 
   transmute(idp,data_index=data.to.string(FP.AD) %>% as.numeric())
 
-dtagr_prescrip_DIABET
+# dtagr_prescrip_DIABET
 #min(dtagr_prescrip_DIABET$ data_index)
 
 # Facturació pendent de CODIS / AGREGADORS 
@@ -231,6 +118,7 @@ dtagr_facturat_DIABET<-agregar_facturacio(
   agregar_data=T) %>% 
   transmute(idp,data_index=data.to.string(FF.AD) %>% as.numeric())
 
+# Primer diagnostic DM
 dt_diagnostics<-select(dt_diagnostics,-agr) %>% 
   left_join(dt_cataleg,by="cod") %>% 
   filter(exposed=="exposed") %>% 
@@ -246,7 +134,7 @@ dt_diagnostics<-
 
 
 DINDEX<-dt_diagnostics %>% 
-  mutate(DM_pre2005=ifelse(data_index<20060101,1,0)) # Filtre per data d'entrada dels Casos
+  mutate(DM_pre2005=ifelse(data_index<20060101,1,0)) # Filtre per data d'entrada dels Casos (DM prevalents)
 
 # Construeixo el Grup Cohort dels EXPOSATS:
 # Afegeixo info de població sobre exposats 
@@ -340,7 +228,6 @@ dt_matching<-mutate(C_EXPOSATS,grup=1) %>% bind_rows(mutate(C_NO_EXPOSATS,grup=0
 
 
 #  A PARTIR D'AQUÍ ES  PODRIA DE MIRAR DE CANVIAR EL SISTEMA!:
-#----------------------------------------------------------------#
 dt_temp<-dt_problemes_2018 %>% transmute(idp,
                                          DG18.cancer=ymd(DG18.cancer) ,
                                          DG18.prevalent_CVD=ymd(DG18.prevalent_CVD),
@@ -376,6 +263,8 @@ dt_matching<-dt_matching %>% filter(!(situacio=="D" & sortida <20060101))
 # [Filtre_pre matching 2]: per generacions :# posteriors a 84   (Massa Joves) / anteriors al 1906 (Massa grans)  
 dt_matching<-dt_matching %>% mutate(exclusio2_generacio=if_else(dnaix>19840101 | dnaix<19060101,1,0)) 
 
+table(dt_matching$exclusio2_generacio)
+table(dt_matching$exclusio1_prev_2018)
 
 #table(dt_matching$exc_cancer)
 #table(dt_matching$exc_prev_CVD)
@@ -406,7 +295,6 @@ flow_chart1
 # Aplicar filtres 
 dt_matching_pre<-dt_matching
 dt_matching<-criteris_exclusio(dt_matching,taulavariables=conductor,criteris="exc_pre")
-
 
 # 4. Preparar matching i setriskmatching  ----------------------------
 
@@ -471,6 +359,8 @@ gc()
 #Canviar i Borrar! és una prova:!
 # Aplicar algoritme :  
 
+detach("package:tidyr", unload = TRUE)
+
 dades_match<-heaven::riskSetMatch(ptid="idp"                   # Unique patient identifier
                                   ,event="grup"                # 0=Control, 1=case
                                   ,terms=llistaPS              # terms c("n1","n2",...) - list of vairables to match by
@@ -483,10 +373,12 @@ dades_match<-heaven::riskSetMatch(ptid="idp"                   # Unique patient 
                                   ,caseIndex="dtindex_case"       # Integer or date, date where controls must be prior
                                   ,controlIndex="dtindex_control" # controlIndex - Index date for controls
                                   ,NoIndex=FALSE                # If T ignore index
-                                  ,cores=1                      # Number of cores to use, default 1
+                                  ,cores=2                      # Number of cores to use, default 1
                                   ,dateterms=c("DG18.cancer","DG18.prevalent_CVD","DG18.prevalent_KD","DG18.prevalent_MET")
                                   ) 
+library(tidyr)
 gc()
+
 
 # Número de controls per conjunt a risk  
 heaven::matchReport(dades_match, id="idp",case="grup",caseid="caseid")
@@ -498,8 +390,8 @@ dades_match<- dades_match %>% mutate(numControls=numControls-1)
 table(dades_match$grup,dades_match$numControls)
 
 # Verificació d'aparellament per edad + sexe 
-descrTable(grup~dnaix+any_naix+sexe,data=dt_matching)
-descrTable(grup~dnaix+any_naix+sexe,data=dades_match)
+# descrTable(grup~dnaix+any_naix+sexe,data=dt_matching)
+# descrTable(grup~dnaix+any_naix+sexe,data=dades_match)
 
 # Flowchart 2 afegeixo matching a dt_matching_pre
 dt_matching_pre<-dt_matching_pre %>% 
@@ -519,13 +411,10 @@ flow_chart2<-criteris_exclusio_diagrama(dt=dt_matching_pre,
                                         colors=c("white","grey"),
                                         forma=c("ellipse","box"))
 
-
-
 # Agregar base de dades aparellada i generar filtres d'exclusion POST MATCHING 
 
 #flow_chart1
 flow_chart2
-
 
 # Formatejo dt_index_match
 dt_index_match<-dades_match %>% 
@@ -544,23 +433,25 @@ bd_index<-dt_index_match %>%
 
 #x)   [Eliminen TOTS aquells que hagin tingut abans  DATINDEX;[CANCER,CVD,KD,MET]   ]     
 
-# Filtre de diagnostic prevalent en data index
+# Diagnostic prevalent en data index 
 
-dt_index_match <- dt_index_match %>%
- left_join(select(dt_problemes_2018,-dtindex),by="idp") %>% select(-DG18.DM2) %>% 
-  mutate_at(vars(starts_with("DG18.")), funs(if_else(ymd(.)>as_date(dtindex) | is.na(.),0,1))) 
-
-vars<-names(dt_index_match) %>% tidyselect::vars_select(starts_with("DG"))
+vars_exclusions<-c("DG18.cancer", "DG18.prevalent_CVD", "DG18.prevalent_KD","DG18.prevalent_MET")
 dt_index_match<-
-  comptar_valors(dt_index_match,vars,valor = "1") %>% 
+  dt_index_match %>% 
+  left_join(select(dt_problemes_2018,idp,vars_exclusions),by="idp") %>% 
+  mutate_at(vars(starts_with("DG18.")), funs(kk=if_else(ymd(.)>as_date(dtindex) | is.na(.),0,1))) %>% mutate(dtindex=as_date(dtindex)) %>% 
+  rename_at(vars( contains("_kk") ), list(~paste("", gsub("DG18.", "DG.", .), sep = "")) ) %>% 
+  rename_at(vars( contains("_kk") ), list(~paste("", gsub("_kk", "", .), sep = "")) )
+
+# comptar criteris dins
+vars_exclusions<-c("DG.cancer", "DG.prevalent_CVD", "DG.prevalent_KD","DG.prevalent_MET")
+dt_index_match<-
+  comptar_valors(dt_index_match,vars_exclusions,valor = "1") %>% 
   mutate(excl_diagnostic=if_else(num_valors>0,1,0)) %>% 
   select(-num_valors)
 
-
 #xi) Filtre EDAT edat. 
-
 # [Generem filtre :no agafarem edats superiors a 100 anys a dtindex , ni inferiors de 35 anys]
-
 dt_index_match<-dt_index_match %>% 
   mutate(edat_dtindex=(as_date(dtindex)-ymd(dnaix))/365.25, 
          exc_edat=ifelse(edat_dtindex>100 | edat_dtindex<35,1,0))
@@ -571,13 +462,55 @@ dt_index_match<-dt_index_match %>% mutate(exc_antiguitat=ifelse(as_date(dtindex)
 # estudiar Entrada Clínica!.
 
 
+
+# xiv ) Generar filtre apestats segons criteris anteriors (DG's i grup d'edat)
+dt_index_match<-dt_index_match %>%
+  mutate(exc_apestat=ifelse(DG.cancer==1 | DG.prevalent_CVD==1 | DG.prevalent_KD==1 | DG.prevalent_MET==1 | exc_edat==1 ,1,0)) %>% 
+  group_by(caseid) %>% 
+  mutate(exc_apestat=max(exc_apestat))%>% ungroup()
+
+# Si es apestat però te la patologia no es apestat 
+dt_index_match<-dt_index_match %>% 
+  mutate(exc_apestat=ifelse(DG.cancer==1 | DG.prevalent_CVD==1 | DG.prevalent_KD==1 | DG.prevalent_MET==1 | exc_edat==1,0,exc_apestat))
+
+
+#xv)  Casos sense controls 
+
+# Pajarracos sense control eliminats 
+
+dt_index_match<-dt_index_match %>% mutate(exc_0controls=ifelse(numControls==0,1,0))
+
+
+
+# Ara generar flow_chart i aplicar criteris 
+
+
+# Generar flow_chart Post_matching i aplicar criteris exclusions ------------
+
+flow_chart3<-criteris_exclusio_diagrama(dt=dt_index_match,
+                                        taulavariables=conductor,
+                                        criteris = "exc_post1",
+                                        ordre="exc_ordre",
+                                        grups="grup",
+                                        etiquetes="descripcio",
+                                        sequencial = T,
+                                        pob_lab=c("SIDIAP","Sample post matching"))
+
+flow_chart3
+
+# Aplicar criteris
+dt_post_matching<-criteris_exclusio(dt_index_match,taulavariables=conductor,criteris="exc_post1")
+
+
+# Aplicto criteri 5 controls màxim 
+
 # xiii). FILTRE DE RANDOM 1:5] 
 #[agafarem els 5 primers Controls més pròxims a la data de naixament del Cas, la resta els Exclourem!][1:5]             
 
-temp<-dt_index_match %>% filter(grup==1) %>% select(caseid,dnaix_grup=dnaix)
+temp<-dt_post_matching %>% filter(grup==1) %>% select(caseid,dnaix_grup=dnaix)
 
 # Junto data de naixament del grup
-dt_index_match<-dt_index_match %>% 
+dt_post_matching<-dt_post_matching %>% 
   left_join(temp,by="caseid") %>% 
   mutate(distancia_cas=abs(dnaix-dnaix_grup)) %>% 
   group_by(caseid) %>% 
@@ -589,90 +522,12 @@ dt_index_match<-dt_index_match %>%
 
 
 # Netejar variables transitoris
-dt_index_match$distancia_cas=NULL
+dt_post_matching$distancia_cas=NULL
 temp<-NULL
 
-# EL xiv i xv  , no l'aplicarem!
-
-# xiv ) Generar filtre apestats 
-
-# dt_index_match$DG18.cancer %>% table()
-# dt_index_match$DG18.prevalent_CVD %>% table()
-# dt_index_match$DG18.prevalent_KD %>% table()
-# table(dt_index_match$DG18.prevalent_MET)
-
-# dt_index_match<-dt_index_match%>%mutate(exc_apestat=ifelse(exc_cancer==1
-#                                                           | exc_prev_CVD==1
-#                                                           | exc_prev_KD==1
-#                                                           | exc_edat==1
-#                                                           | exc_antiguitat==1
-#                                                             ,1,0))
-# 
-#dt_index_match<-dt_index_match %>% group_by(caseid) %>% mutate(exc_apestat=max(exc_apestat))%>% ungroup()
-
-# Si es apestat però te la patologia no es apestat 
-
-#dt_index_match<-dt_index_match %>% mutate(exc_apestat=ifelse(exc_cancer==1  
-#                                                             | exc_prev_CVD==1 
-#                                                             | exc_prev_KD==1
-#                                                             | exc_edat==1 
-#                                                             | exc_antiguitat==1 
-#                                                             ,0,exc_apestat)) 
-
-
-
-#xv)  Casos sense controls 
-
-# Pajarracos sense control eliminats 
-
-dt_index_match<-dt_index_match %>% mutate(exc_0controls=ifelse(numControls==0,1,0))
-
-
-#xvi) From the matched cohort (MC), remove patients died before the index date
-LLEGIR.poblacio2<-LLEGIR.poblacio%>%select(idp,sortida,situacio)
-#variable.names(dt_index_match)
-
-dt_index_match<-dt_index_match%>%left_join(LLEGIR.poblacio2,by="idp")
-dt_index_match<-dt_index_match%>%mutate(dtindex2=lubridate::as_date(dtindex))  
-dt_index_match<-dt_index_match%>%mutate(dies_filtre=ymd(sortida)-dtindex2)  
-dt_index_match<-dt_index_match%>%mutate(exc_mort_index=ifelse((dies_filtre<0 & situacio=="D"),1,0))  
-dt_index_match<-dt_index_match%>%select(-dtindex2,-dies_filtre)
-              
 
 
 # Generar flow_chart Post_matching i aplicar criteris exclusions ------------
-
-flow_chart3<-criteris_exclusio_diagrama(dt=dt_index_match,
-                                        taulavariables=conductor,
-                                        criteris = "exc_post",
-                                        ordre="exc_ordre",
-                                        grups="grup",
-                                        etiquetes="descripcio",
-                                        sequencial = T,
-                                        pob_lab=c("SIDIAP","Sample post matching"))
-
-table(dt_index_match$exc_antiguitat,dt_index_match$grup)
-
-flow_chart3
-
-
-
-
-dt_post_matching<-criteris_exclusio(dt_index_match,taulavariables=conductor,criteris="exc_post")
-
-#dt_post_matching <-dt_post_matching %>% filter(exc_0controls==0)
-
-table(dt_post_matching$exc_0controls)
-table(dt_post_matching$numControls)
-
-# Actualitzar numero de controls per grup  
-dt_post_matching<-dt_post_matching %>% group_by(caseid) %>% mutate(numControls=max(idp2)) %>% ungroup()
-dt_post_matching<-dt_post_matching %>% mutate(exc_0controls=ifelse(numControls==0,1,0))
-
-table(dt_post_matching$exc_0controls)
-table(dt_post_matching$numControls)
-
-
 flow_chart4<-criteris_exclusio_diagrama(dt=dt_post_matching,
                                         taulavariables=conductor,
                                         criteris = "exc_post2",
@@ -680,26 +535,28 @@ flow_chart4<-criteris_exclusio_diagrama(dt=dt_post_matching,
                                         grups="grup",
                                         etiquetes="descripcio",
                                         sequencial = T,
-                                        pob_lab=c("SIDIAP","Sample post matching2"))
+                                        pob_lab=c("SIDIAP","Sample post matching"))
 
 
 flow_chart4
 
+# Aplicar filtre criteri d'enclusio 
 dt_post_matching<-criteris_exclusio(dt_post_matching,taulavariables=conductor,criteris="exc_post2")
 
+
+# Actualitzo numero de controls per grup  ------
 
 table(dt_post_matching$exc_0controls)
 table(dt_post_matching$numControls)
 
-# Actualitzar numero de controls per grup  
-
 dt_post_matching<-dt_post_matching %>% group_by(caseid) %>% mutate(numControls=max(idp2)) %>% ungroup()
+dt_post_matching<-dt_post_matching %>% mutate(exc_0controls=ifelse(numControls==0,1,0))
 
 table(dt_post_matching$exc_0controls)
-table(dt_post_matching$grup,dt_post_matching$numControls)
+table(dt_post_matching$numControls)
 
 
-# Agregar resta d'historics   
+# Agregar resta d'historics   --------------------------
 
 #i    LLEGIR.variables_analitiques
 #ii   LLEGIR.variables_cliniques
@@ -718,9 +575,6 @@ dtagr_variables<-agregar_analitiques(dt=dt_variables,bd.dindex=dt_temp,finestra.
 #03.01.2005
 #max(dt_variables$dat)
 #31.12.2018
-
-
-
 
 
 # Agregar tabac 
@@ -743,7 +597,6 @@ dtagr_prescrip<-agregar_prescripcions(
   agregar_data=F)
 
 
-#ULL HEM DE MIRAR ELS FÀRMACS PEL CONDUCTOR!?
 
 # v    LLEGIR.farmacs_facturat 
 # Facturació pendent de CODIS / AGREGADORS 
@@ -760,61 +613,47 @@ dtagr_facturat<-agregar_facturacio(
 
 
 
-#ULL HEM DE MIRAR ELS FÀRMACS PEL CONDUCTOR!
-
-#i    LLEGIR.variables_analitiques
-#ii   LLEGIR.variables_cliniques
-#iii  LLEGIR.tabaquisme
-#iv   LLEGIR.farmacs_prescrits
-#v    LLEGIR.farmacs_facturat
-
-
-#dt_variables             :#i    LLEGIR.variables_analitiques+#ii   LLEGIR.variables_cliniques
-#LLEGIR.tabaquisme        :#iii  LLEGIR.tabaquisme
-#LLEGIR.farmacs_prescrits :#iv   LLEGIR.farmacs_prescrits
-#LLEGIR.farmacs_facturat  :#v    LLEGIR.farmacs_facturat
-
-#i,ii                            dtagr_variables
-#iii                             dtagr_tabac
-#iv                              dtagr_prescrip
-#v                               dtagr_facturat
-
-#dt_index_match 
-#LLEGIR.poblacio
-
-dtagr_variables  <-dtagr_variables   %>%select(-dtindex )
-dtagr_tabac      <-dtagr_tabac       %>%select(-dtindex )
-dtagr_prescrip   <-dtagr_prescrip    %>%select(-dtindex )
-dtagr_facturat   <-dtagr_facturat    %>%select(-dtindex )
-
-#     [LLEGIR.variables_socioeconomiques]
-dt_sociodemo<-LLEGIR.variables_socioeconomiques
-
-
-# Unió de totes les agregacions 
+# Unió de totes les agregacions -------------------------
 
 #Fem la Taula Final:[PLana]
-dt_plana<-dt_post_matching %>% select(-c(situacio,sortida)) %>% 
+dt_plana<-dt_post_matching %>% 
   left_join(select(LLEGIR.poblacio,idp,sortida,situacio),by="idp")%>% 
-    left_join(dtagr_variables,by="idp")%>%
-      left_join(dtagr_tabac,by="idp")%>%
-        left_join(dtagr_prescrip,by="idp")%>%
-          left_join(dtagr_facturat ,by="idp")%>%
-              left_join(dt_sociodemo ,by="idp") %>% 
+    left_join(select(dtagr_variables,-dtindex),by="idp")%>%
+      left_join(select(dtagr_tabac,-dtindex),by="idp")%>%
+        left_join(select(dtagr_prescrip,-dtindex),by="idp")%>%
+          left_join(select(dtagr_facturat,-dtindex) ,by="idp")%>%
+              left_join(LLEGIR.variables_socioeconomiques,by="idp") %>% 
                 left_join(select(dt_problemes_2018,-dtindex),by="idp")
 
 
+# Eliminor dades
+rm(LLEGIR.poblacio,LLEGIR.tabaquisme,LLEGIR.variables_geo_sanitaries,
+               LLEGIR.variables_analitiques,
+               LLEGIR.variables_cliniques,
+               LLEGIR.diagnostics,
+               LLEGIR.cmbdh_diagnostics_padris,
+               LLEGIR.farmacs_facturat,
+               LLEGIR.farmacs_prescrits,
+               LLEGIR.variables_socioeconomiques) 
+
+gc()
+
+# Preparació  -----------------------
+
 
 # RECODES / CALCULS     
-dt_plana<-dt_plana%>%mutate(dtindex=as_date(dtindex))
-dt_plana<-dt_plana %>% mutate(any_index=lubridate::year(lubridate::as_date(dtindex)))
-dt_plana<-dt_plana %>% mutate(agein=(as_date(dtindex)-ymd(dnaix))/365.25)
-dt_plana<-dt_plana %>% mutate(exitus=if_else(situacio=="D",1,0))
-dt_plana<-dt_plana %>% mutate(temps_FU=ymd(sortida)-as_date(dtindex))
-dt_plana<-dt_plana %>% mutate(temps_FU2=(ymd(sortida)-as_date(dtindex))/365.25)
-dt_plana<-dt_plana %>% mutate(agein2=as.numeric(as_date(dtindex)-ymd(dnaix))/365.25)
-dt_plana$dnaix<-as.character(dt_plana$dnaix)
-dt_plana$any_index2<-as.character(dt_plana$any_index)
+dt_plana<-dt_plana %>% 
+  mutate(dtindex=as_date(dtindex), 
+         any_index=lubridate::year(lubridate::as_date(dtindex)),
+         agein=(as_date(dtindex)-ymd(dnaix))/365.25, 
+         exitus=if_else(situacio=="D",1,0),
+         temps_FU=ymd(sortida)-as_date(dtindex),
+         temps_FU2=(ymd(sortida)-as_date(dtindex))/365.25,
+         agein2 =as.numeric(as_date(dtindex)-ymd(dnaix))/365.25,
+         dnaix = as.character(dnaix),
+         any_index2<-as.character(any_index))
+
+
 
 #recodificació1:
 dt_plana<-dt_plana%>%mutate(agein3.cat6=case_when(  agein2<40~ 1,
@@ -832,17 +671,18 @@ dt_plana<-dt_plana%>%mutate(IMC.valor2=case_when(   IMC.valor   <15~ 1,
 
 
 
+
 # Farmacs 
 dt_plana<-mutate_at(dt_plana, vars( starts_with("FF.") ), funs( if_else(.==0  | is.na(.)  ,0,1)))
 dt_plana<-mutate_at(dt_plana, vars( starts_with("FP.") ), funs( if_else(.==0  | is.na(.)  ,0,1)))
 
 
 # # Diagnostics Si es menor o igual a data index el recodifico
-dt_plana<-dt_plana %>%
-  mutate_at(vars(starts_with("DG18.")),funs(if_else(lubridate::ymd(.)<= dtindex & !is.na(.),1,0)))
+# dt_plana<-dt_plana %>%
+#   mutate_at(vars(starts_with("DG18.")),funs(if_else(lubridate::ymd(.)<= dtindex & !is.na(.),1,0)))
 
 # Verifico (Queden 15 pajaros)
-dt_plana %>% filter(DG18.prevalent_CVD==1) %>% select(idp,caseid,dtindex,DG18.prevalent_CVD,situacio,sortida)
+dt_plana %>% filter(DG.prevalent_CVD==1) %>% select(idp,caseid,dtindex,DG.prevalent_CVD,situacio,sortida)
 
 
 
@@ -855,7 +695,6 @@ dt_plana %>% filter(DG18.prevalent_CVD==1) %>% select(idp,caseid,dtindex,DG18.pr
 
 
 # ANALISIS  --------------
-
 
 
 
@@ -886,7 +725,7 @@ dt_plana<-recodificar(dt_plana,taulavariables =conductor,"recode",missings = T)
 #variable.names(dt_plana)
 
 # Elimino pacients amb diagnostics prevalents
-dt_plana<-dt_plana %>% filter(DG18.prevalent_CVD==0 & DG18.exclude==0 & DG18.prevalent_CVD==0 & DG18.prevalent_KD==0 & DG18.prevalent_MET==0 & DG18.exclude==0)
+# dt_plana<-dt_plana %>% filter(DG18.prevalent_CVD==0 & DG18.exclude==0 & DG18.prevalent_CVD==0 & DG18.prevalent_KD==0 & DG18.prevalent_MET==0 & DG18.exclude==0)
 
 
 dt_plana2<-dt_plana 
