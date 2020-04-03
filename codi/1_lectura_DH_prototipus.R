@@ -222,10 +222,16 @@ C_EXPOSATS <-C_EXPOSATS %>%
 
 C_NO_EXPOSATS<-C_NO_EXPOSATS%>% filter(exclusio1_prev_2018==0)
 
+
+
 # Formateig PRE matching 
 # Fusionar base de dades en dues : 
 dt_matching<-mutate(C_EXPOSATS,grup=1) %>% bind_rows(mutate(C_NO_EXPOSATS,grup=0))
 
+# Netejo dades
+rm(C_NO_EXPOSATS,C_EXPOSATS,bd_index,DINDEX,dt_diagnostics,LLEGIR.cmbdh_diagnostics_padris,LLEGIR.diagnostics,exclosos_inici)
+
+gc()
 
 #  A PARTIR D'AQUÍ ES  PODRIA DE MIRAR DE CANVIAR EL SISTEMA!:
 dt_temp<-dt_problemes_2018 %>% transmute(idp,
@@ -237,27 +243,9 @@ dt_matching<-dt_matching %>% left_join(dt_temp,by="idp")
 rm(dt_temp)
 
 
-#dt_matching<-dt_matching %>% 
-#  mutate(DG.cancer=ifelse(is.na(DG.cancer)  | DG.cancer==0,0,1))
-
-#dt_matching<-dt_matching %>% 
-#  mutate(DG.prevalent_CVD=ifelse(is.na(DG.prevalent_CVD)  |   DG.prevalent_CVD==0,0,1))
-
-#dt_matching<-dt_matching %>% 
-#  mutate(DG.prevalent_KD=ifelse(is.na(DG.prevalent_KD) |  DG.prevalent_KD==0 ,0,1))
-
-#dt_matching<-dt_matching %>% 
-#  mutate(DG.prevalent_MET=ifelse(is.na(DG.prevalent_MET) | DG.prevalent_MET==0  ,0,1))
-
 # Excloc difunts anteriors a 20060101 (no té sentit, ja que la ppoblació és del 2006-2018!!)
 dt_matching<-dt_matching %>% filter(!(situacio=="D" & sortida <20060101)) 
 
-
-# [Filtre_pre matching 1]: DM prevalentsi CANCER abans DIAINDEX 
-#dt_matching<-dt_matching %>% mutate(exc_cancer=ifelse(DG.cancer==0,0,1)) 
-#dt_matching<-dt_matching %>% mutate(exc_prev_CVD=ifelse(DG.prevalent_CVD==0,0,1)) 
-#dt_matching<-dt_matching %>% mutate(exc_prev_KD=ifelse(DG.prevalent_KD==0,0,1)) 
-#dt_matching<-dt_matching %>% mutate(exc_prev_MET=ifelse(DG.prevalent_MET==0,0,1)) 
 
 
 # [Filtre_pre matching 2]: per generacions :# posteriors a 84   (Massa Joves) / anteriors al 1906 (Massa grans)  
@@ -266,11 +254,6 @@ dt_matching<-dt_matching %>% mutate(exclusio2_generacio=if_else(dnaix>19840101 |
 table(dt_matching$exclusio2_generacio)
 table(dt_matching$exclusio1_prev_2018)
 
-#table(dt_matching$exc_cancer)
-#table(dt_matching$exc_prev_CVD)
-#table(dt_matching$exc_prev_KD)
-#table(dt_matching$exc_prev_MET)
-#table(dt_matching$grup)
 
 # Generar flow_chart Post_matching i aplicar criteris exclusions ------------
 
@@ -325,7 +308,9 @@ dt_matching<-dt_matching %>% mutate (
 #vii [Parametres d'aparellament: llistaPS=c("sexe","any_naix","iddap")] 
 
 # Parametres d'aparellament
-llistaPS=extreure.variables("matching",conductor)
+llistaPS<-extreure.variables("matching",conductor)
+
+if (mostra) llistaPS<-llistaPS[llistaPS!="idup"] %>% cbind("iddap") #Si mostra canvio la idup per iddap
 
 num_controls<-10
 llavor<-125
@@ -337,29 +322,8 @@ gc()
 
 #heaven::riskSetMatch
 
-# Aplicar algoritme  
-#dades_match<-heaven::riskSetMatch(ptid="idp"                   # Unique patient identifier
-#                                  ,event="grup"                # 0=Control, 1=case
-#                                  ,terms=llistaPS              # terms c("n1","n2",...) - list of vairables to match by
-#                                  ,dat=dt_matching              # dataset with all variables
-#                                  ,Ncontrols=num_controls         # number of controls to provide
-#                                  ,oldevent="oldevent"            # To distinguish cases used as controls
-#                                  ,caseid="caseid"                # variable to group cases and controls (case-ptid)
-#                                  ,reuseCases=F                   # T og F or NULL - can a case be a control prior to being a case?
-#                                  ,reuseControls=F                # T or F or NULL - can controls be reused?
-#                                  ,caseIndex="dtindex_case"       # Integer or date, date where controls must be prior
-#                                  ,controlIndex="dtindex_control" # controlIndex - Index date for controls
-#                                  ,NoIndex=FALSE                # If T ignore index
-#                                  ,cores=1                      # Number of cores to use, default 1
-#                                  ,dateterms=NULL               # character list of date variables
-#                                  )
-#
-
-# ull! els canvis que s'han de fer!
-#Canviar i Borrar! és una prova:!
-# Aplicar algoritme :  
-
 detach("package:tidyr", unload = TRUE)
+
 
 dades_match<-heaven::riskSetMatch(ptid="idp"                   # Unique patient identifier
                                   ,event="grup"                # 0=Control, 1=case
@@ -373,11 +337,12 @@ dades_match<-heaven::riskSetMatch(ptid="idp"                   # Unique patient 
                                   ,caseIndex="dtindex_case"       # Integer or date, date where controls must be prior
                                   ,controlIndex="dtindex_control" # controlIndex - Index date for controls
                                   ,NoIndex=FALSE                # If T ignore index
-                                  ,cores=2                      # Number of cores to use, default 1
+                                  ,cores=1                      # Number of cores to use, default 1
                                   ,dateterms=c("DG18.cancer","DG18.prevalent_CVD","DG18.prevalent_KD","DG18.prevalent_MET")
                                   ) 
 library(tidyr)
 gc()
+
 
 
 # Número de controls per conjunt a risk  
@@ -484,7 +449,6 @@ dt_index_match<-dt_index_match %>% mutate(exc_0controls=ifelse(numControls==0,1,
 
 # Ara generar flow_chart i aplicar criteris 
 
-
 # Generar flow_chart Post_matching i aplicar criteris exclusions ------------
 
 flow_chart3<-criteris_exclusio_diagrama(dt=dt_index_match,
@@ -524,7 +488,6 @@ dt_post_matching<-dt_post_matching %>%
 # Netejar variables transitoris
 dt_post_matching$distancia_cas=NULL
 temp<-NULL
-
 
 
 # Generar flow_chart Post_matching i aplicar criteris exclusions ------------
@@ -571,6 +534,8 @@ dt_variables<-LLEGIR.variables_analitiques %>% bind_rows(LLEGIR.variables_cliniq
 dt_temp<-dt_post_matching %>% transmute(idp,dtindex=lubridate::as_date(dtindex))
 dtagr_variables<-agregar_analitiques(dt=dt_variables,bd.dindex=dt_temp,finestra.dies = c(-365,0))
 
+rm(LLEGIR.variables_analitiques)
+
 #min(dt_variables$dat)
 #03.01.2005
 #max(dt_variables$dat)
@@ -580,6 +545,7 @@ dtagr_variables<-agregar_analitiques(dt=dt_variables,bd.dindex=dt_temp,finestra.
 # Agregar tabac 
 LLEGIR.tabaquisme<-LLEGIR.tabaquisme %>% transmute(idp,cod="tabac",dat,val)
 dtagr_tabac<-agregar_analitiques(dt=LLEGIR.tabaquisme,bd.dindex=dt_temp,finestra.dies = c(-Inf,0))
+rm(LLEGIR.tabaquisme)
 
 # Prescripcions / Facturació pendent de CODIS / AGREGADORS  
 
@@ -596,6 +562,7 @@ dtagr_prescrip<-agregar_prescripcions(
   camp_agregador="agr",
   agregar_data=F)
 
+rm(LLEGIR.farmacs_prescrits)
 
 
 # v    LLEGIR.farmacs_facturat 
@@ -611,7 +578,7 @@ dtagr_facturat<-agregar_facturacio(
   camp_agregador="agr",
   agregar_data=F)
 
-
+rm(LLEGIR.farmacs_facturat)
 
 # Unió de totes les agregacions -------------------------
 
@@ -622,19 +589,14 @@ dt_plana<-dt_post_matching %>%
       left_join(select(dtagr_tabac,-dtindex),by="idp")%>%
         left_join(select(dtagr_prescrip,-dtindex),by="idp")%>%
           left_join(select(dtagr_facturat,-dtindex) ,by="idp")%>%
-              left_join(LLEGIR.variables_socioeconomiques,by="idp") %>% 
-                left_join(select(dt_problemes_2018,-dtindex),by="idp")
+              left_join(LLEGIR.variables_socioeconomiques,by="idp") 
 
 
 # Eliminor dades
-rm(LLEGIR.poblacio,LLEGIR.tabaquisme,LLEGIR.variables_geo_sanitaries,
-               LLEGIR.variables_analitiques,
-               LLEGIR.variables_cliniques,
-               LLEGIR.diagnostics,
-               LLEGIR.cmbdh_diagnostics_padris,
-               LLEGIR.farmacs_facturat,
-               LLEGIR.farmacs_prescrits,
-               LLEGIR.variables_socioeconomiques) 
+rm(LLEGIR.poblacio,
+   LLEGIR.variables_geo_sanitaries,
+   LLEGIR.variables_cliniques,
+   LLEGIR.variables_socioeconomiques) 
 
 gc()
 
@@ -651,7 +613,7 @@ dt_plana<-dt_plana %>%
          temps_FU2=(ymd(sortida)-as_date(dtindex))/365.25,
          agein2 =as.numeric(as_date(dtindex)-ymd(dnaix))/365.25,
          dnaix = as.character(dnaix),
-         any_index2<-as.character(any_index))
+         any_index2=as.character(any_index))
 
 
 
@@ -677,12 +639,8 @@ dt_plana<-mutate_at(dt_plana, vars( starts_with("FF.") ), funs( if_else(.==0  | 
 dt_plana<-mutate_at(dt_plana, vars( starts_with("FP.") ), funs( if_else(.==0  | is.na(.)  ,0,1)))
 
 
-# # Diagnostics Si es menor o igual a data index el recodifico
-# dt_plana<-dt_plana %>%
-#   mutate_at(vars(starts_with("DG18.")),funs(if_else(lubridate::ymd(.)<= dtindex & !is.na(.),1,0)))
-
-# Verifico (Queden 15 pajaros)
-dt_plana %>% filter(DG.prevalent_CVD==1) %>% select(idp,caseid,dtindex,DG.prevalent_CVD,situacio,sortida)
+# Calcul de exitus_basal
+dt_plana <- dt_plana %>% mutate(exitus_basasl=ifelse(situacio=="D" & ymd(sortida)<dtindex,"Si","No"))
 
 
 
@@ -724,19 +682,19 @@ dt_plana<-recodificar(dt_plana,taulavariables =conductor,"recode",missings = T)
 
 #variable.names(dt_plana)
 
-# Elimino pacients amb diagnostics prevalents
-# dt_plana<-dt_plana %>% filter(DG18.prevalent_CVD==0 & DG18.exclude==0 & DG18.prevalent_CVD==0 & DG18.prevalent_KD==0 & DG18.prevalent_MET==0 & DG18.exclude==0)
-
 
 dt_plana2<-dt_plana 
 
-table(dt_plana2$exc_0controls,dt_plana2$grup)
 
-###
-
+# Convertir dates 
 dt_plana2<-convertir_dates(d=dt_plana2,taulavariables=conductor)
 dt_plana2<-etiquetar_valors(dt=dt_plana2,variables_factors=conductor,fulla="etiquetes",camp_etiqueta="etiqueta2")
 dt_plana2<-etiquetar(d=dt_plana2,taulavariables=conductor)
+
+
+
+names(dt_plana2)
+
 
 variables_noconductuals<-extreure.variables("taula00",taulavariables = conductor)[!extreure.variables("taula00",taulavariables = conductor)%in%names(dt_plana2)]
 
@@ -753,49 +711,6 @@ T00<-descrTable(formula_taula00,
 
 
 #comprovació:[] #
-#################
-#dt_problemes_2018
-
-# dt_problemes_2018<-dt_problemes_2018%>%select(-dtindex)
-# dt_plana2<-dt_plana2 %>%select(-starts_with("DG18")) %>% 
-#   left_join(select(dt_problemes_2018,-dtindex),by="idp")
-# 
-# #dt_plana<-mutate_at(dt_plana, vars( starts_with("FF.") ), funs( if_else(.==0  | is.na(.)  ,0,1)))
-# 
-# prova<-dt_plana2 %>% 
-#   select(caseid,grup,dtindex,DG18.cancer,DG18.prevalent_CVD,DG18.prevalent_KD,DG18.prevalent_MET)
-# #----------------------------------------------------------------------------------------------------------------#
-# prova<-prova%>%mutate(DG18.cancer=ymd(DG18.cancer),
-#                       DG18.prevalent_CVD=ymd(DG18.prevalent_CVD),
-#                       DG18.prevalent_KD=ymd(DG18.prevalent_KD),
-#                       DG18.prevalent_MET=ymd(DG18.prevalent_MET))
-# #----------------------------------------------------------------------------------------------------------------#
-# prova<-prova%>% mutate(error_cancer=if_else(DG18.cancer>dtindex | is.na(DG18.cancer),0,1),
-#                        error_prevalent_CVD=if_else(DG18.prevalent_CVD>dtindex | is.na(DG18.prevalent_CVD),0,1),
-#                        error_prevalent_KD=if_else(DG18.prevalent_KD>dtindex | is.na(DG18.prevalent_KD),0,1),
-#                        error_prevalent_MET=if_else(DG18.prevalent_MET>dtindex | is.na(DG18.prevalent_MET),0,1))
-# #----------------------------------------------------------------------------------------------------------------#                       
-# prova<-prova%>%arrange(caseid)                       
-# #----------------------------------------------------------------------------------------------------------------#                       
-# 
-# #----------------------------------------------------------------------------------------------------------------#                       
-# table(prova$error_cancer)
-# table(prova$error_prevalent_CVD)
-# table(prova$error_prevalent_KD)
-# table(prova$error_prevalent_MET)
-# #----------------------------------------------------------------------------------------------------------------#                       
-# 
-# prova<-prova%>% mutate(ERROR=error_cancer+error_prevalent_CVD+error_prevalent_KD+error_prevalent_MET)
-# table(prova$ERROR)
-# #17 FALLOS[N=970]
-
-#                                        dtindex        DG18.prevalent_CVD
-#----------------------------------------------------------------------------------------------------------------#                       
-#54	Grupo  No Diabético  (No Expuestos)	 2017-05-30	NA	2013-06-07	
-#54	Grupo  Diabético     (Expuestos)	   2017-05-30	NA	2008-10-07
-#----------------------------------------------------------------------------------------------------------------#                       
-
-
 
 #DG18.cancer","DG18.prevalent_CVD","DG18.prevalent_KD","DG18.prevalent_MET"                     
 
@@ -829,7 +744,6 @@ taula_events<-dt_plana %>% group_by(grup,sexe) %>% summarise(
 
 
 #taula_events
-
 
 taula_events<-etiquetar_valors(dt=taula_events,variables_factors=conductor,fulla="etiquetes",camp_etiqueta="etiqueta2")
 
@@ -879,10 +793,12 @@ figura1<-survminer::ggsurvplot(fit,data =dt_plana)
 
 #Preparació LEXIS:
 
-dt_plana<-dt_plana%>%mutate(dtindex=as_date(dtindex))
-dt_plana<-dt_plana%>%mutate(dnaix=as.Date(as.character(dnaix),    format="%Y%m%d"))
-dt_plana<-dt_plana %>%mutate(sortida=as.Date(as.character(sortida),format = "%Y%m%d"))
-dt_plana_Lex<-dt_plana%>%select(idp,dtindex,dnaix,sortida,exitus,grup,caseid)
+dt_plana<-dt_plana %>% mutate(
+  dtindex=as_date(dtindex),
+  dnaix=ymd(dnaix),
+  sortida=ymd(sortida))
+
+dt_plana_Lex<-dt_plana %>% select(idp,dtindex,dnaix,sortida,exitus,grup,caseid)
 dt_plana_Lex<-dt_plana_Lex%>%mutate(birth =dnaix)
 dt_plana_Lex<-dt_plana_Lex%>%mutate(entry =dtindex)
 dt_plana_Lex<-dt_plana_Lex%>%mutate(exit =sortida)
@@ -1046,13 +962,6 @@ cox_lexis_out3 <- cbind(cox_lexis_ratios3,cox_lexis_out3$coefficients)
 
 
 
-
-
-
-
-
-
-
 #VIII
 
                       
@@ -1129,8 +1038,6 @@ dev.off()
 
 
 
-
-            
             # M O D E L     P O I S S O N   G L M:                              #
             
             #               Tasa de Moratlitat=EDAD*GRUPO                       #
@@ -1309,9 +1216,6 @@ dev.off()
 
 
 
-
-
-
 #[prediccions taxes producte triple!]
                          
 # figura02_TOTAL2
@@ -1352,97 +1256,6 @@ write.csv2(res_MORTALITY_SUMA, file="res_MORTALITY_SUMA.csv")
 
 # figures  --------------
 
-
-#TAULES i FIGURES:
-#flow_chart1
-#flow_chart2
-#flow_chart3
-#T00
-#rescox
-#taula_events
-#taula_events2
-#figura1
-#figura2a.png
-#figura2b.png
-#table_rate
-#Taxa_Bruta.png
-#figura5
-#cox_lexis_out
-#coxph(Surv(lex.dur,lex.Xst)~factor(grup)+sexe+age+ cluster(caseid)
-#cox_lexis_out2
-#coxph(Surv(lex.dur,lex.Xst)~factor(grup),data =  COX1)
-#cox_lexis_out3
-#coxph(Surv(lex.dur,lex.Xst)~factor(grup)+ cluster(caseid),data =  COX1)
-#figura00_TOTAL
-#figura00_TOTAL2
-#figura02_TOTAL2
-#figura02_TOTAL3
-#grafica1.png
-#grafica2.png
-#grafica3.png
-#grafica4.png
-#grafica5.png
-#grafica6.png
-#grafica7.png
-#grafica8.png
-
-#https://rpubs.com/aniuxa/socdem1
-#https://www.dataquest.io/blog/tutorial-poisson-regression-in-r/
-#http://www.sthda.com/english/wiki/cox-proportional-hazards-model
-#https://rstudio-pubs-static.s3.amazonaws.com/369387_b8a63ee7e039483e896cb91f442bc72f.html
-#http://bendixcarstensen.com/SDC/EPJmort/MortT2.pdf
-
-
-#DILLUNS [23.3.2020]
-
-#feina a fer: model interccions , per Diabetis i No diabetis, PERIODE,EDAT i SEXE! 
-
-#Tasa de Mortalidad=[PERIODOEDADGRUPO] 2006-2018/ Edad media NO Diabéticos cada 1000 Personas-año
-
-# GRAFICA i   CONTROL  +  H
-# GRAFICA ii  CONTROL  +  D
-# GRAFICA iii DIABETIS +  H
-# GRAFICA iv  DIABETIS +  D
-
-
-# a posterior mirar:
-
-#dateterms	
-#c(....) A list of variable neames (character) 
-#in "dat" specifying dates of conditions. 
-#When a list is specified it is not only checked that the caseIndex is not after controlIndex,
-#but also that for all variables in the list either both control/case dates are missing, both prior to case index,
-#both after case index - or missing for case and with control date after case index.
-
-
-#upadate:[]
-
-
-#shinydashboard!
-
-#USR
-
-
-#db1 <-Lexis(entry = list(period = yearin,age = agein),
-#            exit = list(period = outm),
-#            exit.status = crm,
-#            id = patid,
-#             data = subset(db, DM == 1))
-
-# dbs1 <-splitMulti(db1, age = seq(30,100,1), period= seq(1998,2018,1))
-# a.kn <- with(subset(dbs1, lex.Xst==1), quantile(age+lex.dur,(1:5-0.5)/5))
-# p.kn <- with(subset(dbs1, lex.Xst==1), quantile(period+lex.dur,(1:5-0.5)/5))
-# r1 <- glm((lex.Xst==1) ~ Ns(age, knots = a.kn)*Ns(period, knots = p.kn)*gender,
-#           family = poisson,
-#           offset = log(lex.dur),
-#           data = dbs1)
-# age <- c(40:80)
-# period <- seq(1998,2018,0.1)
-# gender <- c(1:2)
-# nd <- expand.grid(age, period, gender)
-# colnames(nd) <- c("age","period","gender")
-# nd <- cbind(nd, lex.dur=1000)
-# p1 <- ci.pred(r1, newdata = nd)
 
 
 #--------------------------------------------------------------------------------------------#
@@ -1670,7 +1483,7 @@ res_MORTALITY_PRODUCTE_1 <-cbind(acm_DM1, rateD=exp(acm_DM1$es_d), rateD_lb=exp(
 write.csv2(res_MORTALITY_PRODUCTE_1, file="res_MORTALITY_PRODUCTE_1.csv")
 #-------------------------------------------------------------------------------------------#
 
-
+# Salvar taula_plana
 
 save(flow_chart1,
      flow_chart2,

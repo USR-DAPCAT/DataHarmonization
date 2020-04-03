@@ -15,7 +15,8 @@ mostra<-parametres$mostra
 conductor<-parametres$conductor
 
 source(here::here("codi","1_lectura_DH_prototipus.R"))
-rmarkdown::render(here::here("codi","3_analisisDH.Rmd"),output_file="Informe2_DH_esc_prototip")
+
+rmarkdown::render(here::here("codi","3_analisisDH.Rmd"),output_file="Informe2_DH_esc_test")
 
 
 
