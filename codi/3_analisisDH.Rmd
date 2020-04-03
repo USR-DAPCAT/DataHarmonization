@@ -1,5 +1,5 @@
 ---
-title: "Análisis Descriptivo.Mortalidad en personas Diabéticas Tipo 2 en comparación en Población Control"
+title: "Análisis Descriptivo.Mortalidad en personas Diabéticas Tipo 2 en comparación con Población Control"
 author: "Jordi Real & Rai Puig"
 website: "https://github.com/USR-DAPCAT/"
 
@@ -125,10 +125,6 @@ output:
 ###### 6.	The final study cohort is the combination of the exposed cohort (EC) and the final non-exposed cohort (FNE).
 
 
-
-
-   
-   
 ## 5  Período de observación:
 
 ##### 1 de enero del 2006  a 31 de diciembre del 2018
@@ -199,15 +195,13 @@ load(here::here("DataHarmonization.Rdata"))
  + Pacientes antes del 2018 tengan la etiqueta código en la hoja “grupo no expuesto”.
 
 
-
-
 ## 7.1 Diagramas de flujo1
 
 #### Flow-chart 1 :
 
 * Flow-chart: una vez eliminado los pacientes anteriores,también excluiremos aquellos que:
 
- + Los Expuestos tengan la fecha de CANCER/CVD/KD/MET antes  de e la [DINDEX].
+ + Los Expuestos tengan la fecha de CANCER/CVD/KD/MET antes  de fecha indice  [DINDEX].
  + Excluidos por generación de los No Expuestos (mas grandes de 100 años 01.01.2006 y menores de 35 años al 31.12.2018)
 
 
@@ -325,7 +319,7 @@ figura1
 
 'Modelo lineal generalizado para ajustar un modelo de regresión de Poisson de la Tasas de  todo tipo de Mortalidad,en población no diabética [Tasa de Moratlitat=EDAD*PERIODO*SEXO]    '
 
-figura_no_diabetic_supin
+figura_no_diabetic_supin 
 
 'Modelo lineal generalizado para ajustar un modelo de regresión de Poisson de la Tasas de  todo tipo de Mortalidad,en población diabética [Tasa de Moratlitat=EDAD*PERIODO*SEXO]    '
 

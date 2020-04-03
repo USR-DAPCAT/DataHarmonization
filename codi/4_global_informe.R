@@ -14,11 +14,9 @@ parametres<-parametres_conductuals(mostra = T)
 mostra<-parametres$mostra
 conductor<-parametres$conductor
 
-source(here::here("codi","1_lectura_DH_prototipus.R"))
+source(here::here("codi","1_lectura_DH.R"))
 
-rmarkdown::render(here::here("codi","3_analisisDH.Rmd"),output_file="Informe2_DH_esc_test")
-
-
+rmarkdown::render(here::here("codi","3_analisisDH.Rmd"),output_file="Informe2_DH_esc_test2")
 
 
 ####  Escenari 2  (Excloent exposats sense control + apestats ) --------------
