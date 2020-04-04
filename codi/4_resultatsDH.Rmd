@@ -1,5 +1,5 @@
 ---
-title: "Análisis Descriptivo.Mortalidad en personas Diabéticas Tipo 2 en comparación en Población Control.PROTOTIPO"
+title: "Análisis Descriptivo.Mortalidad en personas Diabéticas Tipo 2 en comparación con Población Control"
 author: "Jordi Real & Rai Puig"
 website: "https://github.com/USR-DAPCAT/"
 
@@ -125,10 +125,6 @@ output:
 ###### 6.	The final study cohort is the combination of the exposed cohort (EC) and the final non-exposed cohort (FNE).
 
 
-
-
-   
-   
 ## 5  Período de observación:
 
 ##### 1 de enero del 2006  a 31 de diciembre del 2018
@@ -156,6 +152,7 @@ knitr::opts_chunk$set(echo = FALSE, message=FALSE, warning=FALSE, include=F,size
 
 library(ggplot2)
 library(dplyr)
+library(here)
 
 # CArrego funcions -------------------
 link_source<-paste0("https://github.com/jrealgatius/Stat_codis/blob/master/funcions_propies.R","?raw=T")
@@ -168,13 +165,26 @@ devtools::source_url(link_source)
 ```{r lectura, echo=FALSE, message=FALSE, warning=FALSE}
 # Carrega dades
 
-####  Llegir dades    #####
+##  Llegir dades    #####
 load(here::here("DataHarmonization.Rdata"))
+
+load(here::here("output","flow_chart.Rdata"))
+
+dt_plana<-readRDS(here::here("dades","dades_DH.rds"))
+
+conductor<-here::here("conductor_DataHarmonization.xlsx")
 
 ```
 
 
 ```{r preparacio,include=F}
+
+#entrada>=20060101  & entrada<=20181231
+
+# Convertir dates 
+dt_plana<-convertir_dates(d=dt_plana,taulavariables=conductor)
+dt_plana<-etiquetar_valors(dt=dt_plana,variables_factors=conductor,fulla="etiquetes",camp_etiqueta="etiqueta2")
+dt_plana<-etiquetar(d=dt_plana,taulavariables=conductor)
 
 
 
@@ -199,15 +209,13 @@ load(here::here("DataHarmonization.Rdata"))
  + Pacientes antes del 2018 tengan la etiqueta código en la hoja “grupo no expuesto”.
 
 
-
-
 ## 7.1 Diagramas de flujo1
 
 #### Flow-chart 1 :
 
 * Flow-chart: una vez eliminado los pacientes anteriores,también excluiremos aquellos que:
 
- + Los Expuestos tengan la fecha de CANCER/CVD/KD/MET antes  de e la [DINDEX].
+ + Los Expuestos tengan la fecha de CANCER/CVD/KD/MET antes  de fecha indice  [DINDEX].
  + Excluidos por generación de los No Expuestos (mas grandes de 100 años 01.01.2006 y menores de 35 años al 31.12.2018)
 
 
@@ -296,7 +304,26 @@ flow_chart4
 ```{r, message=FALSE, warning=FALSE, include=T, echo=FALSE,size="huge"}
 
 
-export2md(T00,caption="**Perfil demográfico y clínico del Grupo Caso(Diabético) y Grupo Control**")
+# Generar taula1 
+
+variables_noconductuals<-extreure.variables("taula00",taulavariables = conductor)[!extreure.variables("taula00",taulavariables = conductor)%in%names(dt_plana)]
+
+formula_taula00<-formula.text("taula00",y="grup",taulavariables = conductor,elimina = variables_noconductuals)
+
+descrTable(formula_taula00,
+                method = c(IMC.valor=2,temps_FU = 2,temps_FU2 = 2,agein=2,any_index=2),
+                data=dt_plana,
+                max.xlev = 100, 
+                show.p.overall=FALSE,
+                show.n = T,
+                hide.no="No",simplify=F) %>% 
+  export2md(caption="**Perfil demográfico y clínico del Grupo Caso(Diabético) y Grupo Control**")
+
+rm(dt_plana2)
+gc()
+
+
+
 
 
 
@@ -325,7 +352,7 @@ figura1
 
 'Modelo lineal generalizado para ajustar un modelo de regresión de Poisson de la Tasas de  todo tipo de Mortalidad,en población no diabética [Tasa de Moratlitat=EDAD*PERIODO*SEXO]    '
 
-figura_no_diabetic_supin
+figura_no_diabetic_supin 
 
 'Modelo lineal generalizado para ajustar un modelo de regresión de Poisson de la Tasas de  todo tipo de Mortalidad,en población diabética [Tasa de Moratlitat=EDAD*PERIODO*SEXO]    '
 
