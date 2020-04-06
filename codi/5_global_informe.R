@@ -1,5 +1,4 @@
 ####  Escenari 1 (Excloent exposats sense control ) --------------
-
 gc()
 rm(list = ls())
 # Funció parametritzal (Per defecte agafa mostra y conductor natural)
@@ -19,8 +18,10 @@ source(here::here("codi","2_preparacioDH.R"))
 
 source(here::here("codi","3_analisisDH.R"))
 
-rmarkdown::render(here::here("codi","4_resultatsDH.Rmd"),output_file="Informe2_DH_final")
+source(here::here("codi","3_2_analisis.R"))
 
+
+rmarkdown::render(here::here("codi","4_resultatsDH.Rmd"),output_file="Informe2_DH_final")
 
 
 
