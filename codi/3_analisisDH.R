@@ -286,3 +286,6 @@ save(taula_events,
      cox_lexis_out2,
      cox_lexis_out3,
      file="DataHarmonization.Rdata")
+
+
+
