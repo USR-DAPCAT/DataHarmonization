@@ -9,16 +9,21 @@ library("dplyr")
 link_source<-paste0("https://github.com/jrealgatius/Stat_codis/blob/master/funcions_propies.R","?raw=T")
 devtools::source_url(link_source)
 
+# Llegir parametrs  --------
+source("codi/funcio_parametre.R")
+load("parametre_mostra.Rdata")
+parametres<-parametres_directori(mostra)
+dir_dades<-parametres$dir_dades
+dir_output<-parametres$dir_output
 
 # Llegir plana
+dt_plana<-readRDS(here::here(dir_dades,"dades_DH.rds"))
 
-dt_plana<-readRDS("dades/dades_DH.rds")
 
 # Parametres 
 conductor<-"conductor_DataHarmonization.xlsx"
 
 # Preparació  -----------------------
-
 
 # RECODES / CALCULS     
 dt_plana<-dt_plana %>% 
@@ -31,7 +36,6 @@ dt_plana<-dt_plana %>%
          agein2 =as.numeric(as_date(dtindex)-ymd(dnaix))/365.25,
          dnaix = as.character(dnaix),
          any_index2=as.character(any_index))
-
 
 
 #recodificació1:
@@ -65,8 +69,7 @@ dt_plana<-recodificar(dt_plana,taulavariables =conductor,"recode",missings = T)
 
 
 # Salvar dades planes recodificade
-
-saveRDS(dt_plana,file="dades/dades_DH.rds")
+saveRDS(dt_plana,file=here::here(dir_dades,"dades_DH.rds"))
 
 
 

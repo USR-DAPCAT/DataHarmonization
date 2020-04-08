@@ -18,14 +18,19 @@ library("lubridate")
 link_source<-paste0("https://github.com/jrealgatius/Stat_codis/blob/master/funcions_propies.R","?raw=T")
 devtools::source_url(link_source)
 
+# Llegir parametrs  --------
+source("codi/funcio_parametre.R")
+load("parametre_mostra.Rdata")
+parametres<-parametres_directori(mostra)
+dir_dades<-parametres$dir_dades
+dir_output<-parametres$dir_output
+dir_images<-parametres$dir_images
 
 # Llegir plana
 
-dt_plana<-readRDS("dades/dades_DH.rds") %>% select(idp,dtindex,dnaix,sortida,exitus,grup,caseid,temps_FU,sexe,agein2)
+dt_plana<-readRDS(here::here(dir_dades,"dades_DH.rds")) %>% select(idp,dtindex,dnaix,sortida,exitus,grup,caseid,temps_FU,sexe,agein2)
 
-
-
-load(here::here("DataHarmonization.Rdata"))
+load(here::here(parametres$fitxer_Rdata))
 
 gc()
 
@@ -153,7 +158,7 @@ AGE1<-dt_plana%>%filter(grup==1)%>%select(agein2)
 #grafica_supin_0H
 #Tasa_Mortlidad=PERIODO*EDAD*GRUPO  [GRUPO=NO Diabetis,EDAD=MEDIA POB]
 nd0h<- data.frame(per=2006:2018,gender=1,lex.dur=1000,age=mean(AGE0$agein2))
-png(here::here("images","grafica_supin_0h.png"))
+png(here::here(dir_images,"grafica_supin_0h.png"))
 
 matplot( nd0h$per,ci.pred(r_supin_0, newdata=nd0h),
          type="l",
@@ -170,7 +175,7 @@ dev.off()
 #grafica_supin_0D
 #Tasa_Mortlidad=PERIODO*EDAD*GRUPO  [GRUPO=NO Diabetis,EDAD=MEDIA POB]
 nd0d<- data.frame(per=2006:2018,gender=0,lex.dur=1000,age=mean(AGE0$agein2))
-png(here::here("images","grafica_supin_0d.png"))
+png(here::here(dir_images,"grafica_supin_0d.png"))
 matplot( nd0h$per,ci.pred(r_supin_0, newdata=nd0d),
          type="l",
          lwd=c(3,1,1), 
@@ -186,7 +191,7 @@ dev.off()
 #grafica_supin_1H
 #Tasa_Mortlidad=PERIODO*EDAD*GRUPO  [GRUPO=Diabetis,EDAD=MEDIA POB]
 nd1h<- data.frame(per=2006:2018,gender=1,lex.dur=1000,age=mean(AGE1$agein2))
-png(here::here("images","grafica_supin_1h.png"))
+png(here::here(dir_images,"grafica_supin_1h.png"))
 matplot( nd1h$per,ci.pred(r_supin_1, newdata=nd1h),
          type="l",
          lwd=c(3,1,1), 
@@ -203,7 +208,7 @@ dev.off()
 #grafica_supin_1D
 #Tasa_Mortlidad=PERIODO*EDAD*GRUPO  [GRUPO=Diabetis,EDAD=MEDIA POB]
 nd1d<- data.frame(per=2006:2018,gender=0,lex.dur=1000,age=mean(AGE1$agein2))
-png(here::here("images","grafica_supin_1d.png"))
+png(here::here(dir_images,"grafica_supin_1d.png"))
 matplot( nd1d$per,ci.pred(r_supin_1, newdata=nd1d),
          type="l",
          lwd=c(3,1,1), 
@@ -241,8 +246,10 @@ colnames(p1) <- c("es_d", "lb_d", "ub_d")
 acm_DM0       <- cbind(nd,p1, out="acm")
 
 res_MORTALITY_PRODUCTE_0 <-cbind(acm_DM0, rateD=exp(acm_DM0$es_d), rateD_lb=exp(acm_DM0$lb_d), rateD_ub=exp(acm_DM0$ub_d))
+
+
 #write.xlsx(res_MORTALITY_PRODUCTE, file="res_MORTALITY_PRODUCTE.xlsx")
-write.csv2(res_MORTALITY_PRODUCTE_0, file="res_MORTALITY_PRODUCTE_0.csv")
+write.csv2(res_MORTALITY_PRODUCTE_0, here::here(dir_output,"res_MORTALITY_PRODUCTE_0.csv"))
 #-------------------------------------------------------------------------------------------#
 
 
@@ -265,7 +272,7 @@ acm_DM1       <- cbind(nd,p1, out="acm")
 
 res_MORTALITY_PRODUCTE_1 <-cbind(acm_DM1, rateD=exp(acm_DM1$es_d), rateD_lb=exp(acm_DM1$lb_d), rateD_ub=exp(acm_DM1$ub_d))
 #write.xlsx(res_MORTALITY_PRODUCTE, file="res_MORTALITY_PRODUCTE.xlsx")
-write.csv2(res_MORTALITY_PRODUCTE_1, file="res_MORTALITY_PRODUCTE_1.csv")
+write.csv2(res_MORTALITY_PRODUCTE_1, file=here::here(dir_output,"res_MORTALITY_PRODUCTE_1.csv"))
 #-------------------------------------------------------------------------------------------#
 
 # Salvar taula_plana
@@ -279,4 +286,4 @@ save(taula_events,
      cox_lexis_out3,
      figura_no_diabetic_supin,
      figura_diabetic_supin,
-     file="DataHarmonization.Rdata")
+     file=parametres$fitxer_Rdata)

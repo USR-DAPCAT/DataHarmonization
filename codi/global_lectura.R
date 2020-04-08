@@ -124,3 +124,10 @@ dt_diagnostics_global<-LLEGIR.cmbdh_diagnostics_padris %>%
 #12.01.1941
 #max(dt_diagnostics$dat)
 #31.12.2018
+
+
+
+
+
+
+

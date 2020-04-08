@@ -20,10 +20,6 @@ library("here")
 #devtools::install_version("DiagrammeR", version = "1.0.1")
 #githubinstall("heaven",ref="964bbbd",force=T) # "2018.8.9"
 
-# Descarregar funcions github -
-link_source<-paste0("https://github.com/jrealgatius/Stat_codis/blob/master/funcions_propies.R","?raw=T")
-devtools::source_url(link_source)
-
 
 # Parametres  --------------------------
 # Si no existeix el parametres conductuals
@@ -33,10 +29,27 @@ if (exists("parametres_conductuals")==FALSE) {
   conductor<-"conductor_DataHarmonization.xlsx"
   }
 
+# Descarregar funcions github -
+link_source<-paste0("https://github.com/jrealgatius/Stat_codis/blob/master/funcions_propies.R","?raw=T")
+devtools::source_url(link_source)
+
 
 # mostra<-F
 if (mostra) directori_dades<-"dades/sidiap/test" else directori_dades<-"dades/sidiap"
 
+# Crear directoris test i output
+dir.create(file.path("output_test"))
+dir.create(file.path("output"))
+dir.create(file.path("images"))
+dir.create(file.path("images_test"))
+dir.create(file.path("dades_test"))
+
+
+# Llegir parametrs  --------
+source("codi/funcio_parametre.R")
+parametres<-parametres_directori(mostra)
+dir_dades<-parametres$dir_dades
+dir_output<-parametres$dir_output
 
 # Llegir fitxers --------
 
@@ -192,7 +205,6 @@ C_NO_EXPOSATS<-C_NO_EXPOSATS %>% mutate(exclusio1_prev_2018=ifelse(DG18.pool==0,
 C_NO_EXPOSATS <- C_NO_EXPOSATS %>% select(idp, sexe,dnaix, entrada, sortida, situacio, any_entrada, exclusio1_prev_2018)
 
 
-
 # FILTRES ABANS DELS FLOW-CHART DELS EXPOSATS 
 
 # Pels Exposats:DIA INDEX SUPERIOR AL 2005, 
@@ -204,7 +216,9 @@ C_EXPOSATS <-C_EXPOSATS %>%
   filter(DM_pre2005==0) %>% 
   filter(entrada<=20181231) %>% 
   filter(exclusio1_prev_2018==0) %>% 
-  filter(exc_edat==0)
+  filter(exc_edat==0) %>% 
+  filter(!(situacio=="D" & sortida <data_index))  # Data de mort anterior a data index (Data DG)
+
 
 
 # [PelS No Exposats:No tenir DM2,EXCLUDE,PREVALENTS_MET anterior 2018]
@@ -301,6 +315,7 @@ dt_matching<-dt_matching %>% mutate (
 
 # Parametres d'aparellament
 llistaPS<-extreure.variables("matching",conductor)
+
 
 if (mostra) llistaPS<-llistaPS[llistaPS!="idup"] %>% cbind("iddap") #Si mostra canvio la idup per iddap
 
@@ -597,12 +612,14 @@ gc()
 
 # Salvar taula_plana + flow_charts      -----------------------
 
-saveRDS(dt_plana, file="dades/dades_DH.rds")
+saveRDS(dt_plana, file=here::here(dir_dades,"dades_DH.rds"))
 
 save(flow_chart1,
      flow_chart2,
      flow_chart3,
-     flow_chart4,file="output/flow_chart.Rdata")
+     flow_chart4,
+     file=here::here(dir_output,"flow_chart.Rdata"))
 
+save(mostra,file="parametre_mostra.Rdata")
 
 

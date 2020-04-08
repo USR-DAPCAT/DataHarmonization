@@ -18,26 +18,16 @@ source(here::here("codi","2_preparacioDH.R"))
 
 source(here::here("codi","3_analisisDH.R"))
 
-source(here::here("codi","3_2_analisis.R"))
+source(here::here("codi","3_2_analisisDH.R"))
 
-
-
-
-
-
-
-
-
-rmarkdown::render(here::here("codi","4_resultatsDH.Rmd"),output_file="Informe2_DH_final")
-
-
-
+rmarkdown::render(here::here("codi","4_resultatsDH.Rmd"),output_file="Informe2_DH_test")
 
 
 ####  Escenari 2  (Excloent exposats sense control + apestats ) --------------
 
 .rs.restartR()
 gc()
+
 rm(list = ls())
 # Funció parametritzal (Per defecte agafa mostra y conductor natural)
 parametres_conductuals<-function(mostra=F,conductor="conductor_DataHarmonization.xlsx"){

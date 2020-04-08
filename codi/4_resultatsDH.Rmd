@@ -158,6 +158,16 @@ library(here)
 link_source<-paste0("https://github.com/jrealgatius/Stat_codis/blob/master/funcions_propies.R","?raw=T")
 devtools::source_url(link_source)
 
+
+# Llegir parametrs  --------
+source(here::here("codi","funcio_parametre.R"))
+load(here::here("parametre_mostra.Rdata"))
+parametres<-parametres_directori(mostra)
+dir_dades<-parametres$dir_dades
+dir_output<-parametres$dir_output
+dir_images<-parametres$dir_images
+
+
 #   template: template.html
 ```
 
@@ -166,13 +176,15 @@ devtools::source_url(link_source)
 # Carrega dades
 
 ##  Llegir dades    #####
-load(here::here("DataHarmonization.Rdata"))
+load(here::here(parametres$fitxer_Rdata))
 
-load(here::here("output","flow_chart.Rdata"))
+load(here::here(dir_output,"flow_chart.Rdata"))
 
-dt_plana<-readRDS(here::here("dades","dades_DH.rds"))
+dt_plana<-readRDS(here::here(dir_dades,"dades_DH.rds"))
 
 conductor<-here::here("conductor_DataHarmonization.xlsx")
+
+
 
 ```
 
@@ -319,7 +331,7 @@ descrTable(formula_taula00,
                 hide.no="No",simplify=F) %>% 
   export2md(caption="**Perfil demográfico y clínico del Grupo Caso(Diabético) y Grupo Control**")
 
-rm(dt_plana2)
+rm(dt_plana)
 gc()
 
 

@@ -33,9 +33,16 @@ link_source<-paste0("https://github.com/jrealgatius/Stat_codis/blob/master/funci
 devtools::source_url(link_source)
 
 
+# Llegir parametrs  --------
+source("codi/funcio_parametre.R")
+load("parametre_mostra.Rdata")
+parametres<-parametres_directori(mostra)
+dir_dades<-parametres$dir_dades
+dir_output<-parametres$dir_output
+dir_images<-parametres$dir_images
 # Llegir plana
 
-dt_plana<-readRDS("dades/dades_DH.rds") %>% select(idp,dtindex,dnaix,sortida,exitus,grup,caseid,temps_FU,sexe)
+dt_plana<-readRDS(here::here(dir_dades,"dades_DH.rds")) %>% select(idp,dtindex,dnaix,sortida,exitus,grup,caseid,temps_FU,sexe)
 
 gc()
 
@@ -149,7 +156,7 @@ LEXIS_dt_plana_Lex_grup1<- Lexis(
 
 
 
-png(here::here('images','figura2a.png'))
+png(here::here(dir_images,'figura2a.png'))
 plot(LEXIS_dt_plana_Lex_grup1, grid=0:20*5, col="black", xaxs="i", yaxs="i",xlim=c(2006,2018), ylim=c(35,100), lwd=1, las=1 )
 points(LEXIS_dt_plana_Lex_grup1, pch=c(NA,16)[LEXIS_dt_plana_Lex_grup1$fail+1] )
 dev.off()
@@ -161,7 +168,7 @@ LEXIS_dt_plana_Lex_grup0<- Lexis(
   exit         =     list(per=exit,age=exit-birth ),
   exit.status  =     fail,
   data         =    dt_plana_Lex_grup0 )
-png(here::here("images",'figura2b.png'))
+png(here::here(dir_images,'figura2b.png'))
 plot(LEXIS_dt_plana_Lex_grup0, grid=0:20*5, col="black", xaxs="i", yaxs="i",xlim=c(2006,2018), ylim=c(35,100), lwd=1, las=1 )
 points(LEXIS_dt_plana_Lex_grup0, pch=c(NA,16)[LEXIS_dt_plana_Lex_grup0$fail+1] )
 dev.off()
@@ -222,7 +229,7 @@ table_rate<- table_rate%>%select(ANY,
 
 #[Taxa Bruta.png]:-> Taxa Bruta
 
-png(here::here("images","Taxa_Bruta.png"))
+png(here::here(dir_images,"Taxa_Bruta.png"))
 matplot(as.numeric(dimnames(YDrate)[[1]]), 
         log="y",
         las=1,
@@ -285,7 +292,5 @@ save(taula_events,
      cox_lexis_out,
      cox_lexis_out2,
      cox_lexis_out3,
-     file="DataHarmonization.Rdata")
-
-
+     file=parametres$fitxer_Rdata)
 
