@@ -1,5 +1,5 @@
 ---
-title: "Análisis Descriptivo.Mortalidad en personas Diabéticas Tipo 2 en comparación con Población Control"
+title: "All-cause and cardio-renal-metabolic mortality in people with type 2 diabetes: a comparative international trend study. DataHarmonization"
 author: "Jordi Real & Rai Puig"
 website: "https://github.com/USR-DAPCAT/"
 
@@ -33,24 +33,24 @@ output:
 
 **Últimas actualizaciones** 
 
-&check; Modelo de Poisson Tasas de Mortalidad.  <br/>
-
+&check; Reconstrucción de matching con criterios nuevos  <br/>
+&check; Reestimación de tasas de Mortalidad según modelo <br/>
+&check; Generación de tasas esperadas por grupos <br/>
 
 **Realizado**
-
+&check; Modelo de Poisson Tasas de Mortalidad <br/>
 &check; Construcción del Matching  <br/>
 &check; Diagramas de flujo1 <br/>
 &check; Diagramas de flujo2 <br/>
 &check; Diagramas de flujo3 <br/>
 &check; Análisis Descriptivo  <br/>
-&check; Gráfica Lexis         <br/>
-&check; Modelo de Poisson Tasas de Mortalidad.  <br/>
+&check; Gráfica Lexis  <br/>
+&check; Modelo de Poisson Tasas de Mortalidad  <br/>
 
 **Pendiente**
 
 * Revisión  y depuración de errores 
 * Edición de tablas 
-* Nuevos Modelo de Poisson Tasas de Mortalidad
 
 ## 1  Objectivos Principales
 
