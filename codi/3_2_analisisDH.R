@@ -1,3 +1,6 @@
+# 11.maig.2020 [actualitazció]
+
+
 gc()
 rm(list = ls())
 
@@ -73,6 +76,8 @@ dt_plana_Lex2_grup0<-dt_plana_Lex2 %>% filter(grup==0)
 dt_plana_Lex2_grup1<-dt_plana_Lex2 %>% filter(grup==1)
 #-------------------------------------------------------------------------------------------#
 
+
+
 #table(dt_plana_Lex2$gender)
 
 #exemple supin! el mateix!!
@@ -107,6 +112,8 @@ LEXIS_dt_plana2_Lex_grup1<- Lexis(
 # LEXIS_dt_plana2_Lex_grup1
 #-------------------------------------------------------------------------------------------#
 #variable.names(dt_plana)
+
+
 
 
 
@@ -277,6 +284,229 @@ write.csv2(res_MORTALITY_PRODUCTE_1, file=here::here(dir_output,"res_MORTALITY_P
 
 # Salvar taula_plana
 
+###########################################
+#[Sinatxis que hem canviat dia 11.5.2020!]
+###########################################
+
+
+
+#####################################################################
+# M O D E L     P O I S S O N   G L M:                              #
+#            Tasa de Moratlitat=EDAD*PERIODO                        #
+#####################################################################
+
+
+#HOME,NO DIABÈTIC!
+dt_plana_Lex2_grup0H<-dt_plana_Lex2 %>% filter(grup==0 & gender==1)
+#HOME,DIABÈTIC!
+dt_plana_Lex2_grup1H<-dt_plana_Lex2 %>% filter(grup==1 & gender==1)
+#DONA,NO DIABÈTICA!
+dt_plana_Lex2_grup0D<-dt_plana_Lex2 %>% filter(grup==0 & gender==0)
+#DONA,DIABÈTICA!
+dt_plana_Lex2_grup1D<-dt_plana_Lex2 %>% filter(grup==1 & gender==0)
+
+
+#-------------------------------------------------------------------------------------------#
+#HOME grup0 (NO_DIABETIS)
+# Define a Lexis object with timescales calendar time and age
+LEXIS_dt_plana2_Lex_grup0H<- Lexis( 
+  entry        =     list(per=entry),
+  exit         =     list(per=exit,age=exit-birth ),
+  exit.status  =     fail,
+  id           =     idp,
+  data         =     dt_plana_Lex2_grup0H 
+)
+#-------------------------------------------------------------------------------------------#
+#HOME grup1 (DIABETIS)
+# Define a Lexis object with timescales calendar time and age
+LEXIS_dt_plana2_Lex_grup1H<- Lexis( 
+  entry        =     list(per=entry),
+  exit         =     list(per=exit,age=exit-birth ),
+  exit.status  =     fail,
+  id           =     idp,
+  data         =     dt_plana_Lex2_grup1H )
+#-------------------------------------------------------------------------------------------#
+#DONA grup0 (NO_DIABETIS)
+# Define a Lexis object with timescales calendar time and age
+LEXIS_dt_plana2_Lex_grup0D<- Lexis( 
+  entry        =     list(per=entry),
+  exit         =     list(per=exit,age=exit-birth ),
+  exit.status  =     fail,
+  id           =     idp,
+  data         =     dt_plana_Lex2_grup0D 
+)
+#-------------------------------------------------------------------------------------------#
+#DONA grup1 (DIABETIS)
+# Define a Lexis object with timescales calendar time and age
+LEXIS_dt_plana2_Lex_grup1D<- Lexis( 
+  entry        =     list(per=entry),
+  exit         =     list(per=exit,age=exit-birth ),
+  exit.status  =     fail,
+  id           =     idp,
+  data         =     dt_plana_Lex2_grup1D )
+#-------------------------------------------------------------------------------------------#
+
+
+#NO DIABÈTIC HOME
+#LEXIS_dt_plana2_Lex_grup0H
+
+dbs0H <- popEpi::splitMulti(LEXIS_dt_plana2_Lex_grup0H, age = seq(35,100,1), per= seq(2006,2018,0.1))
+a.kn0H <- with(subset(dbs0H, lex.Xst==1), quantile(age+lex.dur,(1:5-0.5)/5))
+p.kn0H <- with(subset(dbs0H, lex.Xst==1), quantile(per+lex.dur,(1:5-0.5)/5))
+#-------------------------------------------------------------------------------------------#
+r_supin_0H <- glm((lex.Xst==1)~Ns(age, knots = a.kn0H)*Ns(per, knots = p.kn0H),
+                  family = poisson,
+                  offset = log(lex.dur),
+                  data   = dbs0H )
+figura_no_diabetic_H_supin<-summary(r_supin_0H)
+figura_no_diabetic_H_supin
+#-------------------------------------------------------------------------------------------#
+
+
+#SI DIABÈTIC HOME
+#LEXIS_dt_plana2_Lex_grup1H
+
+dbs1H <- popEpi::splitMulti(LEXIS_dt_plana2_Lex_grup1H, age = seq(35,100,1), per= seq(2006,2018,0.1))
+a.kn1H <- with(subset(dbs1H, lex.Xst==1), quantile(age+lex.dur,(1:5-0.5)/5))
+p.kn1H<- with(subset(dbs1H, lex.Xst==1), quantile(per+lex.dur,(1:5-0.5)/5))
+#-------------------------------------------------------------------------------------------#
+r_supin_1H <- glm((lex.Xst==1)~Ns(age, knots = a.kn1H)*Ns(per, knots = p.kn1H),
+                  family = poisson,
+                  offset = log(lex.dur),
+                  data   = dbs1 )
+figura_diabetic_H_supin<-summary(r_supin_1H)
+figura_diabetic_H_supin
+#-------------------------------------------------------------------------------------------#
+
+
+#NO DIABÈTIC DONA
+#LEXIS_dt_plana2_Lex_grup0D
+
+dbs0D <- popEpi::splitMulti(LEXIS_dt_plana2_Lex_grup0D, age = seq(35,100,1), per= seq(2006,2018,0.1))
+a.kn0D <- with(subset(dbs0D, lex.Xst==1), quantile(age+lex.dur,(1:5-0.5)/5))
+p.kn0D <- with(subset(dbs0D, lex.Xst==1), quantile(per+lex.dur,(1:5-0.5)/5))
+#-------------------------------------------------------------------------------------------#
+r_supin_0D <- glm((lex.Xst==1)~Ns(age, knots = a.kn0D)*Ns(per, knots = p.kn0D),
+                  family = poisson,
+                  offset = log(lex.dur),
+                  data   = dbs0D )
+figura_no_diabetic_D_supin<-summary(r_supin_0D)
+figura_no_diabetic_D_supin
+#-------------------------------------------------------------------------------------------#
+
+
+#SI DIABÈTIC DONA
+#LEXIS_dt_plana2_Lex_grup1D
+
+dbs1D <- popEpi::splitMulti(LEXIS_dt_plana2_Lex_grup1D, age = seq(35,100,1), per= seq(2006,2018,0.1))
+a.kn1D <- with(subset(dbs1D, lex.Xst==1), quantile(age+lex.dur,(1:5-0.5)/5))
+p.kn1D<- with(subset(dbs1D, lex.Xst==1), quantile(per+lex.dur,(1:5-0.5)/5))
+#-------------------------------------------------------------------------------------------#
+r_supin_1D <- glm((lex.Xst==1)~Ns(age, knots = a.kn1D)*Ns(per, knots = p.kn1D),
+                  family = poisson,
+                  offset = log(lex.dur),
+                  data   = dbs1D )
+figura_diabetic_D_supin<-summary(r_supin_1D)
+figura_diabetic_D_supin
+#-------------------------------------------------------------------------------------------#
+
+
+
+
+#E  X C E L:[]
+
+
+#-------------------------------------------------------------------------------------------#
+#excel : no diabetic HOME
+#-------------------------------------------------------------------------------------------#
+#D:0
+#H:1
+#-------------------------------------------------------------------------------------------#
+age          <- c(35:100)
+period       <- seq(2006,2018,0.1)
+#gender         <- c(0,1)
+nd           <- expand.grid(age, period)
+colnames(nd) <- c("age","per")
+nd           <- cbind(nd, lex.dur=1000)
+p1           <- ci.pred(r_supin_0H, newdata = nd, Exp = FALSE)
+colnames(p1) <- c("es_d", "lb_d", "ub_d")
+acm_DM0H       <- cbind(nd,p1, out="acm")
+#-------------------------------------------------------------------------------------------#
+res_MORTALITY_PRODUCTE_0H <-cbind(acm_DM0H, rateD=exp(acm_DM0H$es_d), rateD_lb=exp(acm_DM0H$lb_d), rateD_ub=exp(acm_DM0H$ub_d))
+#-------------------------------------------------------------------------------------------#
+#write.xlsx(res_MORTALITY_PRODUCTE, file="res_MORTALITY_PRODUCTE.xlsx")
+write.csv2(res_MORTALITY_PRODUCTE_0H, here::here(dir_output,"res_MORTALITY_PRODUCTE_0H.csv"))
+#-------------------------------------------------------------------------------------------#
+
+
+#-------------------------------------------------------------------------------------------#
+#excel : diabetic HOME
+#-------------------------------------------------------------------------------------------#
+#D:0
+#H:1
+#-------------------------------------------------------------------------------------------#
+age          <- c(35:100)
+period       <- seq(2006,2018,0.1)
+#gender         <- c(0,1)
+nd           <- expand.grid(age, period)
+colnames(nd) <- c("age","per")
+nd           <- cbind(nd, lex.dur=1000)
+p1           <- ci.pred(r_supin_1H, newdata = nd, Exp = FALSE)
+colnames(p1) <- c("es_d", "lb_d", "ub_d")
+acm_DM1H       <- cbind(nd,p1, out="acm")
+#-------------------------------------------------------------------------------------------#
+res_MORTALITY_PRODUCTE_1H <-cbind(acm_DM1H, rateD=exp(acm_DM1H$es_d), rateD_lb=exp(acm_DM1H$lb_d), rateD_ub=exp(acm_DM1H$ub_d))
+#-------------------------------------------------------------------------------------------#
+#write.xlsx(res_MORTALITY_PRODUCTE, file="res_MORTALITY_PRODUCTE.xlsx")
+write.csv2(res_MORTALITY_PRODUCTE_1H, here::here(dir_output,"res_MORTALITY_PRODUCTE_1H.csv"))
+#-------------------------------------------------------------------------------------------#
+
+
+#-------------------------------------------------------------------------------------------#
+#excel : no diabetic DONA
+#-------------------------------------------------------------------------------------------#
+#D:0
+#H:1
+#-------------------------------------------------------------------------------------------#
+age          <- c(35:100)
+period       <- seq(2006,2018,0.1)
+#gender         <- c(0,1)
+nd           <- expand.grid(age, period)
+colnames(nd) <- c("age","per")
+nd           <- cbind(nd, lex.dur=1000)
+p1           <- ci.pred(r_supin_0D, newdata = nd, Exp = FALSE)
+colnames(p1) <- c("es_d", "lb_d", "ub_d")
+acm_DM0D       <- cbind(nd,p1, out="acm")
+#-------------------------------------------------------------------------------------------#
+res_MORTALITY_PRODUCTE_0D <-cbind(acm_DM0D, rateD=exp(acm_DM0D$es_d), rateD_lb=exp(acm_DM0D$lb_d), rateD_ub=exp(acm_DM0D$ub_d))
+#-------------------------------------------------------------------------------------------#
+#write.xlsx(res_MORTALITY_PRODUCTE, file="res_MORTALITY_PRODUCTE.xlsx")
+write.csv2(res_MORTALITY_PRODUCTE_0D, here::here(dir_output,"res_MORTALITY_PRODUCTE_0D.csv"))
+#-------------------------------------------------------------------------------------------#
+
+
+#-------------------------------------------------------------------------------------------#
+#excel : diabetic DONA
+#-------------------------------------------------------------------------------------------#
+#D:0
+#H:1
+#-------------------------------------------------------------------------------------------#
+age          <- c(35:100)
+period       <- seq(2006,2018,0.1)
+#gender         <- c(0,1)
+nd           <- expand.grid(age, period)
+colnames(nd) <- c("age","per")
+nd           <- cbind(nd, lex.dur=1000)
+p1           <- ci.pred(r_supin_1D, newdata = nd, Exp = FALSE)
+colnames(p1) <- c("es_d", "lb_d", "ub_d")
+acm_DM1D       <- cbind(nd,p1, out="acm")
+#-------------------------------------------------------------------------------------------#
+res_MORTALITY_PRODUCTE_1D <-cbind(acm_DM1D, rateD=exp(acm_DM1D$es_d), rateD_lb=exp(acm_DM1D$lb_d), rateD_ub=exp(acm_DM1D$ub_d))
+#-------------------------------------------------------------------------------------------#
+#write.xlsx(res_MORTALITY_PRODUCTE, file="res_MORTALITY_PRODUCTE.xlsx")
+write.csv2(res_MORTALITY_PRODUCTE_1D, here::here(dir_output,"res_MORTALITY_PRODUCTE_1D.csv"))
+#-------------------------------------------------------------------------------------------#
+
 save(taula_events,
      taula_events2,
      table_rate,
@@ -286,4 +516,8 @@ save(taula_events,
      cox_lexis_out3,
      figura_no_diabetic_supin,
      figura_diabetic_supin,
+     figura_no_diabetic_H_supin,
+     figura_diabetic_H_supin,
+     figura_no_diabetic_D_supin,
+     figura_diabetic_D_supin,
      file=parametres$fitxer_Rdata)
