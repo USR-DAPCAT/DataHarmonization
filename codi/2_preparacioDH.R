@@ -68,6 +68,38 @@ dt_plana <- dt_plana %>% mutate(exitus_basasl=ifelse(situacio=="D" & ymd(sortida
 dt_plana<-recodificar(dt_plana,taulavariables =conductor,"recode",missings = T)
 
 
+# Calcular la taula de vida 
+dt_plana<-dt_plana %>%  mutate(year_exit=year(ymd(sortida)) %>% as.character()) 
+
+dt_plana<-dt_plana %>%  
+  mutate(year_enter_exit=paste0(any_index2,"_",year_exit))
+
+porca<-dt_plana %>% as_tibble() %>% group_by(year_enter_exit) %>% summarise(sum(exitus),n())
+
+
+life_table<-function(dades,year=2010) {
+
+  # dades<-dt_plana %>% as_tibble()
+  # year=2010
+  
+  dades<-dades %>% filter(any_index2<=year & ((exitus==1 & year_exit>=year) | exitus==0))
+  
+  # Mutate exitus posteriors a 2010 vius a 2010
+  dades %>% mutate (exitus=if_else((exitus==1 & year_exit>year) | (exitus==0),0,1)) 
+  
+  # Resum d'exitus i persones vives per any 
+  dades %>% summarise(exitus=sum(exitus),N=n(), censura=N-exitus)
+  }
+
+# life_table(dt_plana,2010) 
+
+vector_any<-c(2006:2018) 
+vector_any<-purrr::set_names(vector_any,vector_any) 
+taula_vida<-vector_any %>% map_df(~life_table(dt_plana,.x),.id="any")
+
+
+
+
 # Salvar dades planes recodificade
 saveRDS(dt_plana,file=here::here(dir_dades,"dades_DH.rds"))
 
