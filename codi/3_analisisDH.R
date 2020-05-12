@@ -1,3 +1,6 @@
+#####################
+# 12.05.2020
+
 # ANALISIS  --------------
 
 #6.	The final study cohort is the combination of the exposed cohort (EC) 
@@ -42,12 +45,13 @@ dir_output<-parametres$dir_output
 dir_images<-parametres$dir_images
 # Llegir plana
 
-dt_plana<-readRDS(here::here(dir_dades,"dades_DH.rds")) %>% select(idp,dtindex,dnaix,sortida,exitus,grup,caseid,temps_FU,sexe)
+dt_plana<-readRDS(here::here(dir_dades,"dades_DH.rds")) %>% select(idp,dtindex,dnaix,sortida,exitus,grup,caseid,temps_FU,sexe,any_index)
 
 gc()
 
 # Parametres 
 conductor<-"conductor_DataHarmonization.xlsx"
+
 
 
 
@@ -186,7 +190,7 @@ gc()
 #Raw mortality by calendar year
 
 S1 <- splitLexis(LEXIS_dt_plana_Lex, time.scale="per", breaks=2006+seq(0,14,1) )
-S1<-S1%>%left_join(select(dt_plana,idp,grup))%>%mutate(grup2=(if_else(grup==1,"Diabético","No Diabético")))   
+S1<-S1%>%left_join(select(dt_plana,idp,grup))%>%mutate(grup2=(if_else(grup==1,"Diabetic","Non Diabetic")))   
 #summary( S1 )
 
 gc()
@@ -205,36 +209,43 @@ table_rate<-table_rate %>% as.data.frame() %>% unite(kk,"grup","Var3") %>% sprea
 
 #variable.names(table_rate)
 
-colnames(table_rate)[1] <- "ANY"
-colnames(table_rate)[2] <- "Mort_No_Diabet"
-colnames(table_rate)[3] <- "Tasa_de_Mort_1000_Personas_ANY_No_Diabet"
-colnames(table_rate)[4] <- "Per_ANY_No_Diabet"
-colnames(table_rate)[5] <- "Mort_Diabet"
-colnames(table_rate)[6] <- "Tasa_de_Mort_1000_Personas_ANY_Diabet"
-colnames(table_rate)[7] <- "Per_ANY_Diabet"
+colnames(table_rate)[1] <- "Year"
+colnames(table_rate)[2] <- "Death_in_Non_Diabetic_Group"
+colnames(table_rate)[3] <- "Mortality_Rate_1000_Person_year_Non_Diabetic"
+colnames(table_rate)[4] <- "Person_year_Non_Diabetic"
+colnames(table_rate)[5] <- "Death_in_Diabetic_group"
+colnames(table_rate)[6] <- "Mortality_Rate_1000_Person_year_Diabetic"
+colnames(table_rate)[7] <- "Person_year_Diabetic"
 # ordenar..
 
-variable.names(table_rate)
-table_rate<- table_rate%>%select(ANY,
-                                 Mort_Diabet,
-                                 Per_ANY_Diabet,
-                                 Tasa_de_Mort_1000_Personas_ANY_Diabet,
-                                 Mort_No_Diabet,
-                                 Per_ANY_No_Diabet,
-                                 Tasa_de_Mort_1000_Personas_ANY_No_Diabet)%>% tibble() 
+#variable.names(table_rate) 
+table_rate<- table_rate%>%select(Year,
+                                 Death_in_Non_Diabetic_Group,
+                                 Person_year_Non_Diabetic,
+                                 Mortality_Rate_1000_Person_year_Non_Diabetic,
+                                 Death_in_Diabetic_group,
+                                 Person_year_Diabetic,
+                                 Mortality_Rate_1000_Person_year_Diabetic)%>% tibble() 
+
+
 
 #table_rate
 
 
 
+
+
+
+
+
 #[Taxa Bruta.png]:-> Taxa Bruta
 
-png(here::here(dir_images,"Taxa_Bruta.png"))
+png(here::here(dir_images,"Taxa_Bruta2.png"))
 matplot(as.numeric(dimnames(YDrate)[[1]]), 
         log="y",
         las=1,
-        xlab="Periodo",
-        ylab="Tasa de Mortalidad Bruta por cada 1000 personas-año ,por Periodo ",
+        xlab="Period",
+        ylab="Mortality Rate 1000 Person-year ,for Period ",
         YDrate[,,"rate"], type="l",
         lty=1, lwd=3,
         col=c("black","blue"),
@@ -243,6 +254,66 @@ matplot(as.numeric(dimnames(YDrate)[[1]]),
 
 
 dev.off()
+
+
+##########################################################################
+#12.5.2020
+# life_table(dt_plana,2010) 
+dt_plana<-dt_plana %>% mutate(any_index2=as.character(any_index))
+
+
+##########################################################################
+# Calcular la taula de vida 
+#
+#
+
+dt_plana<-dt_plana %>%mutate(year_exit=year(ymd(sortida)) %>% as.character()) 
+
+
+
+life_table<-function(dades,year=2010) {
+  
+  #dades<-dt_plana %>% as_tibble()
+  #year=2016
+  
+  dades<-dades %>% filter(any_index2<=year & ((exitus==1 & year_exit>=year) | exitus==0))
+  
+  #any_index2<=year
+  
+  # Mutate exitus posteriors a 2010 vius a 2010
+  dades<-dades %>% mutate (exitus=if_else((exitus==1 & year_exit>year) | (exitus==0),0,1)) 
+  
+  # Resum d'exitus i persones vives per any 
+  
+  #dades %>%group_by(grup)%>%summarise(exitus=sum(exitus),N=n(), censura=N-exitus,taxa=(exitus/N)*1000)
+  
+  dades %>%group_by(grup)%>%summarise(exitus=sum(exitus),N=n(), censura=N-exitus)
+}
+
+
+vector_any<-c(2006:2018) 
+vector_any<-purrr::set_names(vector_any,vector_any) 
+taula_vida<-vector_any %>% map_df(~life_table(dt_plana,.x),.id="Year",grup="Group")
+#----------------------------------------------------------------------------------#
+taula_vida0<-taula_vida %>%filter(grup==0)
+taula_vida1<-taula_vida %>%filter(grup==1)
+#----------------------------------------------------------------------------------#
+taula_vida0<-taula_vida0%>%select(Year,Censored_Non_DM=censura,Death_Non_DM=exitus,N_Non_DM=N)
+taula_vida1<-taula_vida1%>%select(Year,Censored_DM=censura,Death_DM=exitus,N_DM=N)
+#----------------------------------------------------------------------------------#
+taula_vida2<-taula_vida0 %>% 
+  left_join(taula_vida1,by="Year") 
+#----------------------------------------------------------------------------------#
+
+###########
+#table_rate
+###########
+
+###########
+#taula_vida
+###########
+
+
 
 
 #vii) 
@@ -288,6 +359,7 @@ cox_lexis_out3 <- cbind(cox_lexis_ratios3,cox_lexis_out3$coefficients)
 save(taula_events,
      taula_events2,
      table_rate,
+     taula_vida2,
      figura1,
      cox_lexis_out,
      cox_lexis_out2,

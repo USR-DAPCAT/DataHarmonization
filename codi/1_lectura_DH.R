@@ -1,4 +1,5 @@
-# 27.03.2020
+#####################
+# 12.05.2020
 # Lectura de fitxers 
 
 # rm(list = ls())
@@ -279,7 +280,7 @@ flow_chart1<-criteris_exclusio_diagrama(dt=dt_matching,
 
 
 
-flow_chart1
+#flow_chart1
 
 # Aplicar filtres 
 dt_matching_pre<-dt_matching
@@ -330,6 +331,7 @@ gc()
 #heaven::riskSetMatch
 
 detach("package:tidyr", unload = TRUE)
+library("heaven",lib.loc="C:/Users/Ramon/Desktop/llibreria_R/heaven_2018")
 
 
 dades_match<-heaven::riskSetMatch(ptid="idp"                   # Unique patient identifier
@@ -386,7 +388,7 @@ flow_chart2<-criteris_exclusio_diagrama(dt=dt_matching_pre,
 # Agregar base de dades aparellada i generar filtres d'exclusion POST MATCHING 
 
 #flow_chart1
-flow_chart2
+#flow_chart2
 
 # Formatejo dt_index_match
 dt_index_match<-dades_match %>% 
@@ -467,7 +469,7 @@ flow_chart3<-criteris_exclusio_diagrama(dt=dt_index_match,
                                         sequencial = T,
                                         pob_lab=c("SIDIAP","Sample post matching"))
 
-flow_chart3
+#flow_chart3
 
 # Aplicar criteris
 dt_post_matching<-criteris_exclusio(dt_index_match,taulavariables=conductor,criteris="exc_post1")
@@ -508,7 +510,7 @@ flow_chart4<-criteris_exclusio_diagrama(dt=dt_post_matching,
                                         pob_lab=c("SIDIAP","Sample post matching"))
 
 
-flow_chart4
+#flow_chart4
 
 # Aplicar filtre criteri d'enclusio 
 dt_post_matching<-criteris_exclusio(dt_post_matching,taulavariables=conductor,criteris="exc_post2")

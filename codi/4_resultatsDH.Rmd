@@ -154,7 +154,7 @@ library(ggplot2)
 library(dplyr)
 library(here)
 
-# CArrego funcions -------------------
+# Carrego funcions -------------------
 link_source<-paste0("https://github.com/jrealgatius/Stat_codis/blob/master/funcions_propies.R","?raw=T")
 devtools::source_url(link_source)
 
@@ -332,7 +332,7 @@ descrTable(formula_taula00,
   export2md(caption="**Perfil demográfico y clínico del Grupo Caso(Diabético) y Grupo Control**")
 
 rm(dt_plana)
-gc()
+#gc()
 
 
 
@@ -343,10 +343,13 @@ gc()
 
 ```{r, message=FALSE, warning=FALSE, include=T, echo=FALSE,size="huge"}
 
-kable(taula_events2, digits = 2, caption="Tasa de Moratlidad por cada 1000 perosnas-año") %>% kableExtra::kable_styling()
-
 #Taula0
+kable(taula_events2, digits = 2, caption="Tasa de Moratlidad por cada 1000 perosnas-año") %>% kableExtra::kable_styling()
+#Taula1
 kable(taula_events, digits = 2, caption="Tasa de Moratlidad por cada 1000 perosnas-año/Sexe") %>% kableExtra::kable_styling()
+#Taula2
+kable(taula_vida2, digits = 2, caption="Tabla de Moratlidad por años") %>% kableExtra::kable_styling()
+
 
 ```
 
@@ -362,13 +365,22 @@ figura1
 
 ```{r, message=FALSE, warning=FALSE, include=T, echo=FALSE,size="huge"}
 
-'Modelo lineal generalizado para ajustar un modelo de regresión de Poisson de la Tasas de  todo tipo de Mortalidad,en población no diabética [Tasa de Moratlitat=EDAD*PERIODO*SEXO]    '
+'Modelo lineal generalizado para ajustar un modelo de regresión de Poisson de la Tasas de  todo tipo de Mortalidad,en población Hombres no diabéticos [Tasa de Moratlitat=EDAD*PERIODO]    '
 
-figura_no_diabetic_supin 
+figura_no_diabetic_H_supin
 
-'Modelo lineal generalizado para ajustar un modelo de regresión de Poisson de la Tasas de  todo tipo de Mortalidad,en población diabética [Tasa de Moratlitat=EDAD*PERIODO*SEXO]    '
+'Modelo lineal generalizado para ajustar un modelo de regresión de Poisson de la Tasas de  todo tipo de Mortalidad,en población Hombres diabéticos [Tasa de Moratlitat=EDAD*PERIODO]    '
 
-figura_diabetic_supin
+figura_diabetic_H_supin
+
+'Modelo lineal generalizado para ajustar un modelo de regresión de Poisson de la Tasas de  todo tipo de Mortalidad,en población Mujeres no diabéticas [Tasa de Moratlitat=EDAD*PERIODO]    '
+
+figura_no_diabetic_D_supin
+
+'Modelo lineal generalizado para ajustar un modelo de regresión de Poisson de la Tasas de  todo tipo de Mortalidad,en población Mujeres diabéticas  [Tasa de Moratlitat=EDAD*PERIODO]    '
+
+figura_diabetic_D_supin
+
 
 ```
 
@@ -388,24 +400,24 @@ cox_lexis_out3
 ```
 
 *Tasa de Mortalidad en hombres no Diabéticos con edad media poblacional  entre  2006-2018 cada  1000 Personas-año 
-*[Modelo de Poisson:PERIODO X EDAD X SEXO]
+*[Modelo de Poisson:PERIODO X EDAD ]
 
 ![](../images/grafica_supin_0h.png)
 
 
 *Tasa de Mortalidad Hombres Diabéticos con edad media poblacional entre 2006-2018 cada  1000 Personas-año 
-*[MOD:PERIODO X EDAD X SEXO]
+*[MOD:PERIODO X EDAD]
 
 ![](../images/grafica_supin_1h.png)
 
 *Tasa de Mortalidad Mujeres No Diabéticas con edad media poblacional entre 2006-2018 cada  1000 Personas-año 
-*[M:PERIODO X EDAD X SEXO]
+*[M:PERIODO X EDAD]
 
 ![](../images/grafica_supin_0d.png)
 
 
 *Tasa de Mortalidad Mujeres Diabéticas con edad media poblacional entre 2006-2018 cada  1000 Personas-año 
-*[MOD:PERIODO X EDAD X SEXO]
+*[MOD:PERIODO X EDAD]
 
 ![](../images/grafica_supin_1d.png)
 
