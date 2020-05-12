@@ -331,7 +331,7 @@ gc()
 #heaven::riskSetMatch
 
 detach("package:tidyr", unload = TRUE)
-library("heaven",lib.loc="C:/Users/Ramon/Desktop/llibreria_R/heaven_2018")
+# library("heaven",lib.loc="C:/Users/Ramon/Desktop/llibreria_R/heaven_2018")
 
 
 dades_match<-heaven::riskSetMatch(ptid="idp"                   # Unique patient identifier

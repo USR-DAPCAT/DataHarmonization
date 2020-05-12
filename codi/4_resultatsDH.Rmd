@@ -344,11 +344,11 @@ rm(dt_plana)
 ```{r, message=FALSE, warning=FALSE, include=T, echo=FALSE,size="huge"}
 
 #Taula0
-kable(taula_events2, digits = 2, caption="Tasa de Moratlidad por cada 1000 perosnas-año") %>% kableExtra::kable_styling()
+kable(taula_events2, digits = 2, caption="Tasa de Mortalidad por cada 1000 perosnas-año") %>% kableExtra::kable_styling()
 #Taula1
-kable(taula_events, digits = 2, caption="Tasa de Moratlidad por cada 1000 perosnas-año/Sexe") %>% kableExtra::kable_styling()
+kable(taula_events, digits = 2, caption="Tasa de Mortalidad por cada 1000 perosnas-año/Sexo") %>% kableExtra::kable_styling()
 #Taula2
-kable(taula_vida2, digits = 2, caption="Tabla de Moratlidad por años") %>% kableExtra::kable_styling()
+kable(taula_vida2, digits = 2, caption="Tabla de Mortalidad por año") %>% kableExtra::kable_styling()
 
 
 ```
@@ -367,19 +367,19 @@ figura1
 
 'Modelo lineal generalizado para ajustar un modelo de regresión de Poisson de la Tasas de  todo tipo de Mortalidad,en población Hombres no diabéticos [Tasa de Moratlitat=EDAD*PERIODO]    '
 
-figura_no_diabetic_H_supin
+# figura_no_diabetic_H_supin
 
 'Modelo lineal generalizado para ajustar un modelo de regresión de Poisson de la Tasas de  todo tipo de Mortalidad,en población Hombres diabéticos [Tasa de Moratlitat=EDAD*PERIODO]    '
 
-figura_diabetic_H_supin
+# figura_diabetic_H_supin
 
 'Modelo lineal generalizado para ajustar un modelo de regresión de Poisson de la Tasas de  todo tipo de Mortalidad,en población Mujeres no diabéticas [Tasa de Moratlitat=EDAD*PERIODO]    '
 
-figura_no_diabetic_D_supin
+# figura_no_diabetic_D_supin
 
 'Modelo lineal generalizado para ajustar un modelo de regresión de Poisson de la Tasas de  todo tipo de Mortalidad,en población Mujeres diabéticas  [Tasa de Moratlitat=EDAD*PERIODO]    '
 
-figura_diabetic_D_supin
+# figura_diabetic_D_supin
 
 
 ```
