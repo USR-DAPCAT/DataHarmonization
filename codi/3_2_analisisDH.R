@@ -285,15 +285,6 @@ dt_plana_Lex2 <- cal.yr(dt_plana_Lex2, format="%y-%m-%d", wh=2:4 )
 
 
 
-
-
-
-
-
-
-
-
-
 #[V.Xii.2020]
 
 
@@ -523,11 +514,6 @@ dev.off()
 
 #
 #
-.
-
-
-
-
 
 
 
@@ -552,7 +538,7 @@ acm_DM0H       <- cbind(nd,p1, out="acm")
 res_MORTALITY_PRODUCTE_0H <-cbind(acm_DM0H, rateD=exp(acm_DM0H$es_d), rateD_lb=exp(acm_DM0H$lb_d), rateD_ub=exp(acm_DM0H$ub_d))
 #-------------------------------------------------------------------------------------------#
 #write.xlsx(res_MORTALITY_PRODUCTE, file="res_MORTALITY_PRODUCTE.xlsx")
-write.csv2(res_MORTALITY_PRODUCTE_0H, here::here(dir_output,"res_MORTALITY_PRODUCTE_0H.csv"))
+write.csv2(res_MORTALITY_PRODUCTE_0H, here::here(dir_output,"res_MORTALITY_PRODUCTE_0H.csv"), append = T)
 #-------------------------------------------------------------------------------------------#
 
 
@@ -575,7 +561,7 @@ acm_DM1H       <- cbind(nd,p1, out="acm")
 res_MORTALITY_PRODUCTE_1H <-cbind(acm_DM1H, rateD=exp(acm_DM1H$es_d), rateD_lb=exp(acm_DM1H$lb_d), rateD_ub=exp(acm_DM1H$ub_d))
 #-------------------------------------------------------------------------------------------#
 #write.xlsx(res_MORTALITY_PRODUCTE, file="res_MORTALITY_PRODUCTE.xlsx")
-write.csv2(res_MORTALITY_PRODUCTE_1H, here::here(dir_output,"res_MORTALITY_PRODUCTE_1H.csv"))
+write.csv2(res_MORTALITY_PRODUCTE_1H, here::here(dir_output,"res_MORTALITY_PRODUCTE_1H.csv"),append = TRUE)
 #-------------------------------------------------------------------------------------------#
 
 
@@ -598,7 +584,7 @@ acm_DM0D       <- cbind(nd,p1, out="acm")
 res_MORTALITY_PRODUCTE_0D <-cbind(acm_DM0D, rateD=exp(acm_DM0D$es_d), rateD_lb=exp(acm_DM0D$lb_d), rateD_ub=exp(acm_DM0D$ub_d))
 #-------------------------------------------------------------------------------------------#
 #write.xlsx(res_MORTALITY_PRODUCTE, file="res_MORTALITY_PRODUCTE.xlsx")
-write.csv2(res_MORTALITY_PRODUCTE_0D, here::here(dir_output,"res_MORTALITY_PRODUCTE_0D.csv"))
+write.csv2(res_MORTALITY_PRODUCTE_0D, here::here(dir_output,"res_MORTALITY_PRODUCTE_0D.csv"),append = TRUE)
 #-------------------------------------------------------------------------------------------#
 
 
@@ -621,7 +607,7 @@ acm_DM1D       <- cbind(nd,p1, out="acm")
 res_MORTALITY_PRODUCTE_1D <-cbind(acm_DM1D, rateD=exp(acm_DM1D$es_d), rateD_lb=exp(acm_DM1D$lb_d), rateD_ub=exp(acm_DM1D$ub_d))
 #-------------------------------------------------------------------------------------------#
 #write.xlsx(res_MORTALITY_PRODUCTE, file="res_MORTALITY_PRODUCTE.xlsx")
-write.csv2(res_MORTALITY_PRODUCTE_1D, here::here(dir_output,"res_MORTALITY_PRODUCTE_1D.csv"))
+write.csv2(res_MORTALITY_PRODUCTE_1D, here::here(dir_output,"res_MORTALITY_PRODUCTE_1D.csv"),append = TRUE)
 #-------------------------------------------------------------------------------------------#
 
 save(taula_events,
