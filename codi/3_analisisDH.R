@@ -233,11 +233,6 @@ table_rate<- table_rate%>%select(Year,
 
 
 
-
-
-
-
-
 #[Taxa Bruta.png]:-> Taxa Bruta
 
 png(here::here(dir_images,"Taxa_Bruta2.png"))
@@ -314,13 +309,9 @@ taula_vida2<-taula_vida0 %>%
 ###########
 
 
-
-
 #vii) 
 
-
 #COX#
-
 
 # TASAS CON EL MODELO DE COX (Elimino efecte cluster).
 COX1<-LEXIS_dt_plana_Lex%>% left_join(select(dt_plana,idp,sexe)) %>% mutate(gender=if_else(sexe=="H","M","W"))
