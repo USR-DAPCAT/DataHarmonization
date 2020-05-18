@@ -9,7 +9,9 @@ output:
   html_document:
     df_print: paged
     toc: true
+    toc_float: true
     fig_caption: true
+    css: logos_css/usr_styles.css
   pdf_document: default
   word_document: default
 
@@ -19,11 +21,15 @@ output:
 <script>
    $(document).ready(function() {
      $head = $('#header');
-     $head.prepend('<img src=\"logoIDIAP.png\" style=\"float: right ;width: 130px;\"/>')
-     $head.prepend('<img src=\"logo_bio.jpg\" style=\"margin-left:25% ;width: 80px;\"/>')
-     $head.prepend('<img src=\"logoDAP_Cat.png\" style=\"float: left:1;width: 185px;\"/>')
+     $head.prepend('<img src=\"https://www.idiapjgol.org/images/logo.png\" style=\"float: right ;width: 130px;\"/>')
+     $head.prepend('<img src=\"https://avatars2.githubusercontent.com/u/57066591?s=200&v=4\" style=\"margin-left:25% ;width: 80px;\"/>')
+     $head.prepend('<img src=\"logos_css/logoDAP_Cat.png\" style=\"float: left:1;width: 185px;\"/>')
    });
 </script>
+
+
+<div class="watermark">DRAFT</div>
+
 
 ****
 
@@ -33,12 +39,18 @@ output:
 
 **Últimas actualizaciones** 
 
+&check; We have removed interactions with gender in the regression <br/>
+&check; Prediction by 0.1 unit for period. New setting: 
+- For prediction period <- seq(2006,2018,0.1)  
+- & popEpi::splitMulti(bd, age = seq(35,100,1), per= seq(2006,2018,1)  
+&check; Add table with numbers of censored and deaths by the end of follow-up years <br/>
+
+**Realizado**
+
 &check; Reconstrucción de matching con criterios nuevos  <br/>
 &check; Reestimación de tasas de Mortalidad según modelo <br/>
 &check; Generación de tasas esperadas por grupos <br/>
-
-**Realizado**
-&check; Modelo de Poisson Tasas de Mortalidad <br/>
+&check; Modelo de Poisson tasas de Mortalidad <br/>
 &check; Construcción del Matching  <br/>
 &check; Diagramas de flujo1 <br/>
 &check; Diagramas de flujo2 <br/>
@@ -56,7 +68,7 @@ output:
 
 - Análisis de las tendencias en mortalidad a lo largo del tiempo  de todas las causas entre el 01.01.2006 y la   captura más reciente del SIDIAP (31.12.2018) en personas con reciente diabetes tipo 2 y en comparación con 1 población control sin diabetes.
 
-- Análisis de las diferncias y las proporciones de las tasas  en mortalidad a lo largo del tiempo  de todas las causas entre el 01.01.2006 y la   captura más reciente del SIDIAP (31.12.2018) en personas con reciente diabetes tipo 2 y en comparación con 1 población control sin diabetes.
+- Análisis de las diferencias y las proporciones de las tasas  en mortalidad a lo largo del tiempo  de todas las causas entre el 01.01.2006 y la   captura más reciente del SIDIAP (31.12.2018) en personas con reciente diabetes tipo 2 y en comparación con 1 población control sin diabetes.
 
 ## 2  Objectivos Secundarios
 
@@ -139,7 +151,7 @@ output:
 
   + Aplicamos un Diagrama de Lexis para el Grupo Caso(Diabético) y Grupo Control.(figura2)
 
-  + Modelo lineal generalizado para ajustar una regresión de Poisson de la Tasas de  todo tipo de Mortalidad ,para el Grupo Caso(Diabético) y Grupo Control.(figura3)
+  + Modelo lineal generalizado para ajustar una regresión de Poisson de la Tasas de  todo tipo de Mortalidad ,para el Grupo Caso (Diabético) y Grupo Control.(figura3)
 
 
 
@@ -202,7 +214,7 @@ dt_plana<-etiquetar(d=dt_plana,taulavariables=conductor)
 
 ```
 
-## 7.0 Exlusiones anteriores als Diagramas de flujo.
+## 7.0 Exclusiones anteriores al diagramas de flujo.
 
 #### Partíamos de toda población SIDIAP hasta 2018:
 
@@ -215,20 +227,20 @@ dt_plana<-etiquetar(d=dt_plana,taulavariables=conductor)
  + Pacientes antes del 2018 tengan la etiqueta "Exclude" : Diabetis tipo , etc.
  + La edad en [DINDEX] sea superior a 100 años y menor a 35 años. 
 
-##### Excluyremos todos los pacientes No Expuestos a diabetes que:
+##### Se excluyen los pacientes Controles que:
  
  + La entrada de los pacientes sea superior a 2018.
- + Pacientes antes del 2018 tengan la etiqueta código en la hoja “grupo no expuesto”.
+ + Sujetos que antes del 2018 tengan la etiqueta código en la hoja “grupo no expuesto”.
 
 
-## 7.1 Diagramas de flujo1
+### 7.1 Diagrama de flujo1
 
 #### Flow-chart 1 :
 
-* Flow-chart: una vez eliminado los pacientes anteriores,también excluiremos aquellos que:
+* Flow-chart: una vez eliminado los pacientes anteriores,también se excluiyen aquellos que:
 
- + Los Expuestos tengan la fecha de CANCER/CVD/KD/MET antes  de fecha indice  [DINDEX].
- + Excluidos por generación de los No Expuestos (mas grandes de 100 años 01.01.2006 y menores de 35 años al 31.12.2018)
+ + Los DM tengan la fecha de CANCER/CVD/KD/MET antes  de fecha indice  [DINDEX].
+ + Excluidos por generación de los controles (> 100 años 01.01.2006 y < 35 años al 31.12.2018)
 
 
 ```{r, message=FALSE, warning=FALSE, include=T, echo=FALSE,size="huge"}
@@ -240,7 +252,7 @@ flow_chart1
 ```
 
 
-## 7.2  Diagramas de flujo2
+### 7.2  Diagrama de flujo2
 
 #### Flow-chart 2 :
 
@@ -256,22 +268,22 @@ flow_chart2
 
 ```
 
-## 7.3  Diagramas de flujo3
+### 7.3  Diagrama de flujo 3
 
 #### Flow-chart 3 :
 
 #### Una vez apareados, y con su fecha índice :
 
 
-##### Excluyremos aquellos individuos NO EXPUESTOS  que antes de su  fecha índice tengan:
+##### Se excluyen controles que en fecha índice
 
  + Cancer.
  + Patologías Cardiovasculares[CVD]. 
  + Patologías Renales[KD] .
 
-##### Excluyremos aquellos individuos NO EXPUESTOS  que en su fecha índice  tengan mas de 100 años y  menos de 35 años.
+##### Se excluyen individuos Controles que en su fecha índice  >100 y < 35 años.
 
-##### Excluyeroms  aquellos individuos  que tengan  menos de un año de historia clínica previa antes de su fecha índice
+##### Se excluyen  aquellos individuos  que tengan  menos de un año de historia clínica previa antes de su fecha índice
 
 ##### Escogemos aleatoriament 1 : 5 controles
 
@@ -288,13 +300,13 @@ flow_chart3
 
 ```
 
-## 7.4  Diagramas de flujo4
+### 7.4  Diagramas de flujo4
 
 #### Flow-chart 4 :
 
 
 
-##### Excluyremos,también, aquellos individuos EXPUESTOS que no tengan Controles , para balancear el posterior análisis.
+##### Se excluyen aquellos individuos EXPUESTOS que no tengan Controles , para balancear el posterior análisis.
 
  
 
@@ -308,10 +320,9 @@ flow_chart4
 ```
 
 
+## 8  Análisis
 
-
-
-## 8  Análisis Descriptivo
+### Descriptivo
 
 ```{r, message=FALSE, warning=FALSE, include=T, echo=FALSE,size="huge"}
 
@@ -322,21 +333,17 @@ variables_noconductuals<-extreure.variables("taula00",taulavariables = conductor
 
 formula_taula00<-formula.text("taula00",y="grup",taulavariables = conductor,elimina = variables_noconductuals)
 
-descrTable(formula_taula00,
-                method = c(IMC.valor=2,temps_FU = 2,temps_FU2 = 2,agein=2,any_index=2),
-                data=dt_plana,
-                max.xlev = 100, 
-                show.p.overall=FALSE,
-                show.n = T,
-                hide.no="No",simplify=F) %>% 
-  export2md(caption="**Perfil demográfico y clínico del Grupo Caso(Diabético) y Grupo Control**")
+# descrTable(formula_taula00,
+#                 method = c(IMC.valor=2,temps_FU = 2,temps_FU2 = 2,agein=2,any_index=2),
+#                 data=dt_plana,
+#                 max.xlev = 100, 
+#                 show.p.overall=FALSE,
+#                 show.n = T,
+#                 hide.no="No",simplify=F) %>% 
+#   export2md(caption="**Perfil demográfico y clínico del Grupo Caso(Diabético) y Grupo Control**")
 
 rm(dt_plana)
 #gc()
-
-
-
-
 
 
 ```
@@ -344,16 +351,14 @@ rm(dt_plana)
 ```{r, message=FALSE, warning=FALSE, include=T, echo=FALSE,size="huge"}
 
 #Taula0
-kable(taula_events2, digits = 2, caption="Tasa de Mortalidad por cada 1000 perosnas-año") %>% kableExtra::kable_styling()
+kable(taula_events2, digits = 2, caption="Tasa de mortalidad por cada 1000 personas-año") %>% kableExtra::kable_styling()
 #Taula1
-kable(taula_events, digits = 2, caption="Tasa de Mortalidad por cada 1000 perosnas-año/Sexo") %>% kableExtra::kable_styling()
+kable(taula_events, digits = 2, caption="Tasa de mortalidad por cada 1000 personas-año estratificado por sexo") %>% kableExtra::kable_styling()
 #Taula2
-kable(taula_vida2, digits = 2, caption="Tabla de Mortalidad por año") %>% kableExtra::kable_styling()
+kable(taula_vida2, digits = 2, caption="Table with numbers of censored and deaths by the end of follow-up years") %>% kableExtra::kable_styling()
 
 
 ```
-
-
 
 
 Curva de Supervivencia, con el método Kaplan-Meier para ara el Grupo Caso(Diabético) y Grupo Control(figura1)
@@ -361,7 +366,7 @@ Curva de Supervivencia, con el método Kaplan-Meier para ara el Grupo Caso(Diab�
 figura1
 ```
 
-## 9  Análisis de Modelos de Tasas 
+### Modelos de regressión de Poisson 
 
 ```{r, message=FALSE, warning=FALSE, include=T, echo=FALSE,size="huge"}
 
@@ -386,7 +391,7 @@ figura_diabetic_D_supin
 
 
 
-
+### Modelos de regressión de Cox 
 
 ```{r, message=FALSE, warning=FALSE, include=T, echo=FALSE,size="huge"}
 
@@ -398,6 +403,8 @@ cox_lexis_out
 cox_lexis_out3
 
 ```
+
+### Evolución de la tasa de mortalidad segun modelo de Poisson
 
 *Tasa de Mortalidad en hombres no Diabéticos con edad media poblacional  entre  2006-2018 cada  1000 Personas-año 
 *[Modelo de Poisson:PERIODO X EDAD ]
@@ -426,9 +433,8 @@ cox_lexis_out3
 
 &nbsp;
 <hr />
-<p style="text-align: center;">A work by $Jordi Real  Rai Puig$ </a></p>
+<p style="text-align: center;">A work by $Jordi Real & Rai Puig$ </a></p>
+<p style="text-align: center;">$Llepali System$ </a></p>
 <p style="text-align: center;"><span style="color: #808080;"><em><https://github.com/USR-DAPCAT/></em></span></p>
-
-
 
 

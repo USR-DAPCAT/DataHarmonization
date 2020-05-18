@@ -138,7 +138,7 @@ dt_plana_Lex2 <- cal.yr(dt_plana_Lex2, format="%y-%m-%d", wh=2:4 )
 #-------------------------------------------------------------------------------------------#
 
 
-#SI DIABÃTIC
+#SI DIAB?TIC
 #LEXIS_dt_plana2_Lex_grup1
 
 #dbs1 <- popEpi::splitMulti(LEXIS_dt_plana2_Lex_grup1, age = seq(35,100,1), per= seq(2006,2018,1))
@@ -155,7 +155,7 @@ dt_plana_Lex2 <- cal.yr(dt_plana_Lex2, format="%y-%m-%d", wh=2:4 )
 
 
 
-# GRÃFIQUES:[]
+# GR?FIQUES:[]
 
 
 #-------------------------------------------------------------------------------------------#
@@ -353,10 +353,10 @@ LEXIS_dt_plana2_Lex_grup1D<- Lexis(
 #-------------------------------------------------------------------------------------------#
 
 
-#NO DIABÃIC HOME
+#NO DIAB?IC HOME
 #LEXIS_dt_plana2_Lex_grup0H
 
-dbs0H <- popEpi::splitMulti(LEXIS_dt_plana2_Lex_grup0H, age = seq(35,100,1), per= seq(2006,2018,0.1))
+dbs0H <- popEpi::splitMulti(LEXIS_dt_plana2_Lex_grup0H, age = seq(35,100,1), per= seq(2006,2018,1))
 a.kn0H <- with(subset(dbs0H, lex.Xst==1), quantile(age+lex.dur,(1:5-0.5)/5))
 p.kn0H <- with(subset(dbs0H, lex.Xst==1), quantile(per+lex.dur,(1:5-0.5)/5))
 #-------------------------------------------------------------------------------------------#
@@ -369,10 +369,10 @@ figura_no_diabetic_H_supin<-summary(r_supin_0H)
 #-------------------------------------------------------------------------------------------#
 
 
-#SI DIABÃTIC HOME
+#SI DIAB?TIC HOME
 #LEXIS_dt_plana2_Lex_grup1H
 
-dbs1H <- popEpi::splitMulti(LEXIS_dt_plana2_Lex_grup1H, age = seq(35,100,1), per= seq(2006,2018,0.1))
+dbs1H <- popEpi::splitMulti(LEXIS_dt_plana2_Lex_grup1H, age = seq(35,100,1), per= seq(2006,2018,1))
 a.kn1H <- with(subset(dbs1H, lex.Xst==1), quantile(age+lex.dur,(1:5-0.5)/5))
 p.kn1H<- with(subset(dbs1H, lex.Xst==1), quantile(per+lex.dur,(1:5-0.5)/5))
 #-------------------------------------------------------------------------------------------#
@@ -388,7 +388,7 @@ figura_diabetic_H_supin<-summary(r_supin_1H)
 #NO DIABTIC DONA
 #LEXIS_dt_plana2_Lex_grup0D
 
-dbs0D <- popEpi::splitMulti(LEXIS_dt_plana2_Lex_grup0D, age = seq(35,100,1), per= seq(2006,2018,0.1))
+dbs0D <- popEpi::splitMulti(LEXIS_dt_plana2_Lex_grup0D, age = seq(35,100,1), per= seq(2006,2018,1))
 a.kn0D <- with(subset(dbs0D, lex.Xst==1), quantile(age+lex.dur,(1:5-0.5)/5))
 p.kn0D <- with(subset(dbs0D, lex.Xst==1), quantile(per+lex.dur,(1:5-0.5)/5))
 #-------------------------------------------------------------------------------------------#
@@ -404,7 +404,7 @@ figura_no_diabetic_D_supin<-summary(r_supin_0D)
 #SI DIABTIC DONA
 #LEXIS_dt_plana2_Lex_grup1D
 
-dbs1D <- popEpi::splitMulti(LEXIS_dt_plana2_Lex_grup1D, age = seq(35,100,1), per= seq(2006,2018,0.1))
+dbs1D <- popEpi::splitMulti(LEXIS_dt_plana2_Lex_grup1D, age = seq(35,100,1), per= seq(2006,2018,1))
 a.kn1D <- with(subset(dbs1D, lex.Xst==1), quantile(age+lex.dur,(1:5-0.5)/5))
 p.kn1D<- with(subset(dbs1D, lex.Xst==1), quantile(per+lex.dur,(1:5-0.5)/5))
 #-------------------------------------------------------------------------------------------#
@@ -422,7 +422,7 @@ figura_diabetic_D_supin<-summary(r_supin_1D)
 
 #GRAFIQUES!!:[]
 
-##GRFICA:::NO DIABÃIC HOME
+##GRFICA:::NO DIAB?IC HOME
 #Tasa_Mortlidad=PERIODO*EDAD*GRUPO  [GRUPO=NO Diabetis,EDAD=MEDIA POB]
 
 
